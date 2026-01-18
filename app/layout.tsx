@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import Footer from "@/components/footer/Footer";
 import localFont from "next/font/local";
 
 export const metadata: Metadata = {
@@ -62,6 +63,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={ginoraSans.className}>
         <ThemeProvider>{children}</ThemeProvider>
+        <Footer />
       </body>
     </html>
   );

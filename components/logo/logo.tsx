@@ -9,7 +9,7 @@ const Logo = ({ width, height }: LogoTypes) => {
     <div>
       <Link href="/">
         <Image
-          src="./Goyone-logo.svg"
+          src="/Goyone-logo.svg"
           alt="goyone"
           width={width || 180}
           height={height || 60}

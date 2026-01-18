@@ -7,7 +7,6 @@ const Layout = ({
   children: React.ReactNode;
 }>) => {
   return <div className='bg-background/5 px-[3%] py-5 min-h-screen'>
-    <Header/>
     {children}</div>;
 };
 

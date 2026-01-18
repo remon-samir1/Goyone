@@ -32,12 +32,14 @@ import ColorPickerModal from "@/components/modals/ColorPickerModal";
 import Image from "next/image";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { cn } from "@/lib/utils";
+import NotificationSidebar from "@/components/crm/NotificationSidebar";
 const Header = () => {
   const pathname = usePathname();
 
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const { primaryColor, setPrimaryColor } = useTheme();
   const themeColors = ["#3B82F6", "#84CC16", "#EAB308", "#EF4444", "#22C55E"];
 
@@ -130,7 +132,10 @@ const Header = () => {
               placeholder="Serach"
             />
           </div>
-          <div className="w-[40px] h-[40px] bg-white flex items-center justify-center rounded-full border border-stroke">
+          <div
+            onClick={() => setIsNotificationOpen(true)}
+            className="w-[40px] h-[40px] bg-white flex items-center justify-center rounded-full border border-stroke cursor-pointer hover:bg-gray-50 transition-colors"
+          >
             <Bell className="text-body w-[18px] h-[18px]" />
             <div className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full border border-white"></div>
           </div>
@@ -213,7 +218,7 @@ const Header = () => {
                         "w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110",
                         primaryColor.toUpperCase() === color.toUpperCase()
                           ? "ring-2 ring-primary ring-offset-2"
-                          : ""
+                          : "",
                       )}
                       style={{ backgroundColor: color }}
                       onClick={() => setPrimaryColor(color)}
@@ -297,6 +302,10 @@ const Header = () => {
           );
         })}
       </div>
+      <NotificationSidebar
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+      />
     </div>
   );
 };
