@@ -30,26 +30,79 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
         const tl = gsap.timeline();
         tl.fromTo(
           modalRef.current,
-          { scale: 0, opacity: 0, transformOrigin: "bottom right" },
+          {
+            scale: 0.5,
+            opacity: 0,
+            y: 40,
+            transformOrigin: "bottom right",
+          },
           {
             scale: 1,
             opacity: 1,
-            duration: 0.5,
-            ease: "back.out(1.7)",
-            display: "block",
+            y: 0,
+            duration: 0.2,
+            ease: "back.out(1.5)",
           },
-        );
+        )
+          .from(
+            ".help-header",
+            {
+              opacity: 0,
+              y: -10,
+              duration: 0.3,
+            },
+            "-=0.3",
+          )
+          .from(
+            ".help-search",
+            {
+              opacity: 0,
+              scale: 0.9,
+              duration: 0.3,
+            },
+            "-=0.2",
+          )
+          .from(
+            ".help-card",
+            {
+              opacity: 0,
+              y: 20,
+              stagger: 0.08,
+              duration: 0.4,
+              ease: "power2.out",
+            },
+            "-=0.2",
+          )
+          .from(
+            ".help-close",
+            {
+              opacity: 0,
+              scale: 0,
+              duration: 0.3,
+              ease: "back.out(2)",
+            },
+            "-=0.3",
+          );
       } else if (!isOpen && render) {
         const tl = gsap.timeline({
           onComplete: () => setRender(false),
         });
         tl.to(modalRef.current, {
-          scale: 0,
+          scale: 0.5,
           opacity: 0,
-          duration: 0.3,
+          y: 40,
+          duration: 0.4,
           ease: "power2.in",
           transformOrigin: "bottom right",
-        });
+        }).to(
+          ".help-close",
+          {
+            scale: 0,
+            opacity: 0,
+            duration: 0.2,
+          },
+          0,
+        );
       }
     },
     { dependencies: [isOpen], scope: containerRef },
@@ -61,15 +114,15 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
     <div ref={containerRef} className="fixed bottom-20 right-6 z-50">
       <div
         ref={modalRef}
-        className="bg-white rounded-2xl shadow-xl w-[400px] overflow-hidden border border-gray-100 origin-bottom-right"
+        className="bg-white rounded-3xl shadow-2xl w-[400px] overflow-hidden border border-gray-100 origin-bottom-right"
       >
         {/* Header */}
-        <div className="p-5 flex items-center justify-between">
+        <div className="p-6 pb-2 help-header flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="bg-primary rounded-full p-1">
+            <div className="bg-primary rounded-full p-1.5 shadow-sm shadow-blue-100">
               <HelpCircle className="w-4 h-4 text-white" />
             </div>
-            <h2 className="font-semibold text-lg text-gray-800">
+            <h2 className="font-bold text-xl text-gray-900 italic">
               Help & Support
             </h2>
           </div>
@@ -78,19 +131,19 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute -left-12 bottom-0 bg-white p-2 rounded-full shadow-lg hover:bg-gray-50 transition-colors"
+          className="absolute -left-14 bottom-0 bg-white p-3 rounded-full shadow-xl hover:bg-gray-50 transition-all hover:scale-110 active:scale-95 help-close group z-10"
         >
-          <X className="w-5 h-5 text-gray-500" />
+          <X className="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" />
         </button>
 
-        <div className="px-5 pb-5">
+        <div className="p-6">
           {/* Search */}
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <div className="relative mb-6 help-search">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search help articles..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-transparent rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary/10 transition-all placeholder:italic"
             />
           </div>
 
@@ -99,42 +152,56 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
             {/* Help Articles */}
             <Link
               href="/crm/help-articles"
-              className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group"
+              className="p-4 border border-gray-50 rounded-2xl hover:bg-gray-50 transition-all cursor-pointer group help-card hover:border-primary/10 hover:shadow-sm"
             >
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
-                <Book className="w-5 h-5 text-primary" />
+              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-all group-hover:scale-110">
+                <Book className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="font-medium text-gray-900 mb-1">Help Articles</h3>
-              <p className="text-xs text-gray-500">Browse guides and FAQs</p>
+              <h3 className="font-bold text-gray-900 mb-1 text-sm italic">
+                Help Articles
+              </h3>
+              <p className="text-[11px] text-gray-400 font-medium">
+                Browse guides and FAQs
+              </p>
             </Link>
 
             {/* Tutorials */}
-            <div className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group">
-              <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center mb-3 group-hover:bg-purple-100 transition-colors">
-                <PlayCircle className="w-5 h-5 text-purple-500" />
+            <div className="p-4 border border-gray-50 rounded-2xl hover:bg-gray-50 transition-all cursor-pointer group help-card hover:border-purple-500/10 hover:shadow-sm">
+              <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-purple-100 transition-all group-hover:scale-110">
+                <PlayCircle className="w-6 h-6 text-purple-500" />
               </div>
-              <h3 className="font-medium text-gray-900 mb-1">Tutorials</h3>
-              <p className="text-xs text-gray-500">Watch video guides</p>
+              <h3 className="font-bold text-gray-900 mb-1 text-sm italic">
+                Tutorials
+              </h3>
+              <p className="text-[11px] text-gray-400 font-medium">
+                Watch video guides
+              </p>
             </div>
 
             {/* Contact Support */}
-            <div className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group">
-              <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
-                <MessageCircle className="w-5 h-5 text-green-500" />
+            <div className="p-4 border border-gray-50 rounded-2xl hover:bg-gray-50 transition-all cursor-pointer group help-card hover:border-green-500/10 hover:shadow-sm">
+              <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-green-100 transition-all group-hover:scale-110">
+                <MessageCircle className="w-6 h-6 text-green-500" />
               </div>
-              <h3 className="font-medium text-gray-900 mb-1">
+              <h3 className="font-bold text-gray-900 mb-1 text-sm italic">
                 Contact Support
               </h3>
-              <p className="text-xs text-gray-500">Chat with our team</p>
+              <p className="text-[11px] text-gray-400 font-medium">
+                Chat with our team
+              </p>
             </div>
 
             {/* Submit Ticket */}
-            <div className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group">
-              <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center mb-3 group-hover:bg-orange-100 transition-colors">
-                <FileText className="w-5 h-5 text-orange-500" />
+            <div className="p-4 border border-gray-50 rounded-2xl hover:bg-gray-50 transition-all cursor-pointer group help-card hover:border-orange-500/10 hover:shadow-sm">
+              <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-orange-100 transition-all group-hover:scale-110">
+                <FileText className="w-6 h-6 text-orange-500" />
               </div>
-              <h3 className="font-medium text-gray-900 mb-1">Submit Ticket</h3>
-              <p className="text-xs text-gray-500">Report an issue</p>
+              <h3 className="font-bold text-gray-900 mb-1 text-sm italic">
+                Submit Ticket
+              </h3>
+              <p className="text-[11px] text-gray-400 font-medium">
+                Report an issue
+              </p>
             </div>
           </div>
         </div>

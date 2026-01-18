@@ -134,10 +134,10 @@ const Header = () => {
           </div>
           <div
             onClick={() => setIsNotificationOpen(true)}
-            className="w-[40px] h-[40px] bg-white flex items-center justify-center rounded-full border border-stroke cursor-pointer hover:bg-gray-50 transition-colors"
+            className="w-[40px] h-[40px] relative bg-white flex items-center justify-center rounded-full border border-stroke cursor-pointer hover:bg-gray-50 transition-colors"
           >
-            <Bell className="text-body w-[18px] h-[18px]" />
-            <div className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full border border-white"></div>
+            <Bell className="text-body  -[18px] h-[18px]" />
+            <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></div>
           </div>
 
           <DropdownMenu>
