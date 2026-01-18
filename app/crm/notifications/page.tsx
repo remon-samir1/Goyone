@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState } from "react";
 import {
@@ -38,9 +37,9 @@ const NotificationsPage = () => {
           time: "15m ago",
           type: "lead",
           icon: User,
-          iconBg: "bg-blue-100",
-          iconColor: "text-blue-600",
-          border: "border-l-blue-500",
+          iconBg: "bg-primary/10",
+          iconColor: "text-primary",
+          border: "border-l-primary",
           isUnread: true,
           isNew: true,
         },
@@ -68,7 +67,7 @@ const NotificationsPage = () => {
           icon: MessageSquare,
           iconBg: "bg-yellow-100",
           iconColor: "text-yellow-600",
-          border: "border-l-blue-500", // Using blue based on image for reminder, or could be yellow
+          border: "border-l-primary", // Using primary based on image for reminder, or could be yellow
           isUnread: false,
           isNew: false,
         },
@@ -85,8 +84,8 @@ const NotificationsPage = () => {
           time: "Yesterday",
           type: "calendar",
           icon: Calendar,
-          iconBg: "bg-blue-100",
-          iconColor: "text-blue-600",
+          iconBg: "bg-primary/10",
+          iconColor: "text-primary",
           border: "border-l-green-500", // Greenish in image
           isUnread: false,
           isNew: false,
@@ -118,8 +117,8 @@ const NotificationsPage = () => {
           time: "2d ago",
           type: "email",
           icon: Mail,
-          iconBg: "bg-blue-100",
-          iconColor: "text-blue-600",
+          iconBg: "bg-primary/10",
+          iconColor: "text-primary",
           border: "border-l-yellow-400",
           isUnread: false,
           isNew: false,
@@ -145,14 +144,14 @@ const NotificationsPage = () => {
   return (
     <div className="p-4 min-h-screen font-sans">
       <div className="flex items-center justify-between">
-  <div className="flex items-center gap-1">
-          <Logo width={160}/>
+        <div className="flex items-center gap-1">
+          <Logo width={160} />
           <ChevronsRight className="text-[#8CE553] w-[18px] h-[18px]" />
           <p className="text-primary text-sm font-semibold">CRM</p>
         </div>
 
-  <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-full text-blue-500 text-sm font-medium italic shadow-sm hover:shadow transition-shadow">
+        <div className="flex items-center gap-3">
+          <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-full text-primary text-sm font-medium italic shadow-sm hover:shadow transition-shadow">
             <CheckCheck className="w-4 h-4" />
             Mark all as read
           </button>
@@ -161,7 +160,7 @@ const NotificationsPage = () => {
             <input
               type="text"
               placeholder="Search notifications..."
-              className="pl-9 pr-4 py-2 bg-white border-none rounded-full text-sm w-64 shadow-sm outline-none focus:ring-1 focus:ring-blue-100"
+              className="pl-9 pr-4 py-2 bg-white border-none rounded-full text-sm w-64 shadow-sm outline-none focus:ring-1 focus:ring-primary/20"
             />
           </div>
         </div>
@@ -176,8 +175,6 @@ const NotificationsPage = () => {
             Stay updated without distraction
           </p>
         </div>
-
-      
       </div>
 
       {/* Filters */}
@@ -189,7 +186,7 @@ const NotificationsPage = () => {
             className={cn(
               "px-6 py-1.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 italic",
               activeFilter === filter.name
-                ? "bg-blue-50 text-blue-600"
+                ? "bg-primary/10 text-primary"
                 : "text-gray-500 hover:text-gray-900 hover:bg-gray-50",
             )}
           >
@@ -199,7 +196,7 @@ const NotificationsPage = () => {
                 className={cn(
                   "text-[10px] px-1.5 py-0.5 rounded-md font-bold",
                   activeFilter === filter.name
-                    ? "bg-blue-500 text-white"
+                    ? "bg-primary text-white"
                     : "bg-gray-100 text-gray-600",
                 )}
               >

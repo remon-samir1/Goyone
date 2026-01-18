@@ -34,7 +34,7 @@ const HelpArticlesPage = () => {
           <input
             type="text"
             placeholder="Search articles..."
-            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm"
+            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm"
           />
         </div>
       </div>
@@ -48,7 +48,7 @@ const HelpArticlesPage = () => {
               Help Menu
             </h3>
             <div className="space-y-1">
-              <button className="w-full flex items-center gap-3 px-3 py-2.5 bg-blue-50 text-blue-600 rounded-xl transition-colors font-medium text-sm">
+              <button className="w-full flex items-center gap-3 px-3 py-2.5 bg-primary/10 text-primary rounded-xl transition-colors font-medium text-sm">
                 <Book className="w-4 h-4" />
                 Help Articles
               </button>
@@ -71,18 +71,18 @@ const HelpArticlesPage = () => {
           </div>
 
           {/* Need Help? */}
-          <div className="bg-blue-50/50 rounded-2xl p-5 border border-blue-100">
+          <div className="bg-primary/5 rounded-2xl p-5 border border-primary/20">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">
               Need Help?
             </h3>
             <div className="space-y-4">
               <div className="flex items-center gap-3 group cursor-pointer">
-                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-sm shadow-blue-200">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-sm shadow-blue-200">
                   <Mail className="w-4 h-4" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium">Email us</p>
-                  <p className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  <p className="text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors">
                     support@crm.com
                   </p>
                 </div>
@@ -112,8 +112,8 @@ const HelpArticlesPage = () => {
             </h2>
             <div className="grid grid-cols-3 gap-5">
               <CategoryCard
-                icon={<Zap className="w-5 h-5 text-blue-500" />}
-                color="bg-blue-50"
+                icon={<Zap className="w-5 h-5 text-primary" />}
+                color="bg-primary/10"
                 title="Getting Started"
                 count={16}
               />
@@ -156,7 +156,7 @@ const HelpArticlesPage = () => {
               <h2 className="text-lg font-semibold text-gray-900">
                 Popular Articles
               </h2>
-              <button className="text-sm text-blue-500 hover:text-blue-600 font-medium">
+              <button className="text-sm text-primary hover:text-primary/80 font-medium">
                 Clear filter
               </button>
             </div>
@@ -221,7 +221,7 @@ const CategoryCard = ({
     </div>
     <div className="flex-1 min-w-0">
       <div className="flex justify-between items-start mb-1">
-        <h3 className="font-semibold text-gray-900 text-sm group-hover:text-blue-600 transition-colors truncate pr-2">
+        <h3 className="font-semibold text-gray-900 text-sm group-hover:text-primary transition-colors truncate pr-2">
           {title}
         </h3>
         <span className="bg-gray-100 text-gray-500 text-[10px] font-medium px-1.5 py-0.5 rounded-full">
@@ -250,12 +250,12 @@ const ArticleCard = ({
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           {isNew && (
-            <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
+            <span className="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
               New
             </span>
           )}
           <h3
-            className={`font-semibold text-gray-900 group-hover:text-blue-600 transition-colors ${!isNew && "mt-1"}`}
+            className={`font-semibold text-gray-900 group-hover:text-primary transition-colors ${!isNew && "mt-1"}`}
           >
             {title}
           </h3>
@@ -272,7 +272,7 @@ const ArticleCard = ({
           </div>
         </div>
       </div>
-      <div className="text-gray-300 group-hover:text-blue-500 transition-colors transform group-hover:translate-x-1 duration-300">
+      <div className="text-gray-300 group-hover:text-primary transition-colors transform group-hover:translate-x-1 duration-300">
         <ArrowRight className="w-5 h-5" />
       </div>
     </div>

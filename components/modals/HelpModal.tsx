@@ -66,7 +66,7 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
         {/* Header */}
         <div className="p-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="bg-blue-600 rounded-full p-1">
+            <div className="bg-primary rounded-full p-1">
               <HelpCircle className="w-4 h-4 text-white" />
             </div>
             <h2 className="font-semibold text-lg text-gray-800">
@@ -90,16 +90,19 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
             <input
               type="text"
               placeholder="Search help articles..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
           {/* Grid */}
           <div className="grid grid-cols-2 gap-4">
             {/* Help Articles */}
-            <Link href='/crm/help-articles' className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group">
-              <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
-                <Book className="w-5 h-5 text-blue-500" />
+            <Link
+              href="/crm/help-articles"
+              className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group"
+            >
+              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+                <Book className="w-5 h-5 text-primary" />
               </div>
               <h3 className="font-medium text-gray-900 mb-1">Help Articles</h3>
               <p className="text-xs text-gray-500">Browse guides and FAQs</p>

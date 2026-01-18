@@ -99,7 +99,7 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
         {/* Header */}
         <div className="p-6 pb-4 border-b border-gray-100 flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
               <Filter className="w-5 h-5" />
             </div>
             <div>
@@ -120,7 +120,7 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
         </div>
 
         <div className="px-6 py-2 border-b border-gray-50">
-          <button className="flex items-center gap-1.5 text-blue-500 text-xs font-medium hover:text-blue-600 transition-colors">
+          <button className="flex items-center gap-1.5 text-primary text-xs font-medium hover:text-primary transition-colors">
             <RotateCcw className="w-3.5 h-3.5" />
             Reset all filters
           </button>
@@ -134,7 +134,7 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
               Seller Name
             </label>
             <div className="relative">
-              <select className="w-full p-3 bg-gray-50 border-none rounded-xl text-sm text-gray-500 appearance-none outline-none focus:ring-1 focus:ring-blue-500">
+              <select className="w-full p-3 bg-gray-50 border-none rounded-xl text-sm text-gray-500 appearance-none outline-none focus:ring-1 focus:ring-primary">
                 <option>Select a seller...</option>
                 <option>Remon Samir</option>
                 <option>John Doe</option>
@@ -163,8 +163,8 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
                   className={cn(
                     "px-4 py-1.5 rounded-full text-xs font-medium border transition-colors italic",
                     status === "New"
-                      ? "border-blue-500 text-blue-600 bg-blue-50"
-                      : "border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-500",
+                      ? "border-primary text-primary bg-primary/10"
+                      : "border-gray-200 text-gray-500 hover:border-primary/50 hover:text-primary",
                   )}
                 >
                   {status}
@@ -260,7 +260,7 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
                       <input
                         type="text"
                         placeholder="12/22/2025"
-                        className="w-full pl-3 pr-9 py-2.5 bg-blue-50/50 border border-blue-100 rounded-lg text-xs text-gray-600 placeholder:text-gray-400 focus:outline-none focus:border-blue-300"
+                        className="w-full pl-3 pr-9 py-2.5 bg-primary/5 border border-primary/20 rounded-lg text-xs text-gray-600 placeholder:text-gray-400 focus:outline-none focus:border-primary/50"
                       />
                       <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     </div>
@@ -273,7 +273,7 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
                       <input
                         type="text"
                         placeholder="12/22/2025"
-                        className="w-full pl-3 pr-9 py-2.5 bg-blue-50/50 border border-blue-100 rounded-lg text-xs text-gray-600 placeholder:text-gray-400 focus:outline-none focus:border-blue-300"
+                        className="w-full pl-3 pr-9 py-2.5 bg-primary/5 border border-primary/20 rounded-lg text-xs text-gray-600 placeholder:text-gray-400 focus:outline-none focus:border-primary/50"
                       />
                       <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     </div>
@@ -288,13 +288,13 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
         <div className="p-6 border-t border-gray-100 flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-full border border-blue-500 text-blue-500 text-sm font-medium hover:bg-blue-50 transition-colors italic"
+            className="flex-1 py-2.5 rounded-full border border-primary text-primary text-sm font-medium hover:bg-blue-50 transition-colors italic"
           >
             Clear
           </button>
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-full bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all italic"
+            className="flex-1 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bgprimary/70 shadow-lg shadow-blue-200 transition-all italic"
           >
             Apply Filters
           </button>

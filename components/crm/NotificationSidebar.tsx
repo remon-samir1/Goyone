@@ -48,8 +48,8 @@ const NotificationSidebar = ({ isOpen, onClose }: NotificationSidebarProps) => {
       description: "Sarah Johnson from TechCorp has been assigned to you",
       time: "2m ago",
       icon: User,
-      iconColor: "text-blue-500",
-      iconBg: "bg-blue-100",
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
       isUnread: true,
     },
     {
@@ -81,8 +81,8 @@ const NotificationSidebar = ({ isOpen, onClose }: NotificationSidebarProps) => {
       description: 'Emily Chen commented on "ProDev Solutions"',
       time: "1h ago",
       icon: MessageSquare,
-      iconColor: "text-blue-500",
-      iconBg: "bg-blue-100",
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
       isUnread: true,
     },
   ];
@@ -95,8 +95,8 @@ const NotificationSidebar = ({ isOpen, onClose }: NotificationSidebarProps) => {
       description: "Sarah Johnson from TechCorp has been assigned to you",
       time: "2m ago",
       icon: User,
-      iconColor: "text-blue-500",
-      iconBg: "bg-blue-100",
+      iconColor: "text-primary",
+      iconBg: "bg-primary/10",
       isUnread: true,
     },
     {
@@ -145,7 +145,7 @@ const NotificationSidebar = ({ isOpen, onClose }: NotificationSidebarProps) => {
         <div className=" p-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-bold text-gray-900">Notifications</h2>
-            <span className="bg-blue-50 text-blue-600 text-xs font-bold px-2 py-0.5 rounded-full">
+            <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-0.5 rounded-full">
               7
             </span>
           </div>
@@ -159,7 +159,7 @@ const NotificationSidebar = ({ isOpen, onClose }: NotificationSidebarProps) => {
 
         {/* Mark as read */}
         <div className="px-4 border-b border-gray-100 pb-2  flex ">
-          <button className="text-xs font-medium text-blue-500 hover:text-blue-600 italic flex items-center gap-1">
+          <button className="text-xs font-medium text-primary hover:text-primary/80 italic flex items-center gap-1">
             Mark all as read
           </button>
         </div>
@@ -187,7 +187,7 @@ const NotificationSidebar = ({ isOpen, onClose }: NotificationSidebarProps) => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
-                      <h4 className="font-semibold text-gray-900 text-sm group-hover:text-blue-600 transition-colors">
+                      <h4 className="font-semibold text-gray-900 text-sm group-hover:text-primary transition-colors">
                         {notification.title}
                       </h4>
                       <span className="text-xs text-gray-400 italic shrink-0 ml-2">
@@ -199,7 +199,7 @@ const NotificationSidebar = ({ isOpen, onClose }: NotificationSidebarProps) => {
                     </p>
                   </div>
                   {notification.isUnread && (
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 shrink-0" />
+                    <div className="w-2 h-2 bg-primary rounded-full mt-2 shrink-0" />
                   )}
                 </div>
               ))}
@@ -227,7 +227,7 @@ const NotificationSidebar = ({ isOpen, onClose }: NotificationSidebarProps) => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
-                      <h4 className="font-semibold text-gray-900 text-sm group-hover:text-blue-600 transition-colors">
+                      <h4 className="font-semibold text-gray-900 text-sm group-hover:text-primary transition-colors">
                         {notification.title}
                       </h4>
                       <span className="text-xs text-gray-400 italic shrink-0 ml-2">
@@ -239,7 +239,7 @@ const NotificationSidebar = ({ isOpen, onClose }: NotificationSidebarProps) => {
                     </p>
                   </div>
                   {notification.isUnread && (
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 shrink-0" />
+                    <div className="w-2 h-2 bg-primary rounded-full mt-2 shrink-0" />
                   )}
                 </div>
               ))}
@@ -248,8 +248,11 @@ const NotificationSidebar = ({ isOpen, onClose }: NotificationSidebarProps) => {
         </div>
 
         {/* Footer */}
-        <Link href="/crm/notifications" className="p-4 border-t border-gray-100 text-center">
-          <button className="text-blue-500 hover:text-blue-600 text-sm font-medium italic">
+        <Link
+          href="/crm/notifications"
+          className="p-4 border-t border-gray-100 text-center"
+        >
+          <button className="text-primary hover:text-primary/80 text-sm font-medium italic">
             View all notifications
           </button>
         </Link>
