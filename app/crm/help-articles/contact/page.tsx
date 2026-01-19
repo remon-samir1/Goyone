@@ -127,8 +127,8 @@ const ContactPage = () => {
             </h2>
             <div className="grid grid-cols-3 gap-5">
               {/* Live Chat */}
-              <div className="bg-white p-6 rounded-[2rem] border border-[#8CE553]/20 shadow-sm hover:shadow-md transition-all flex flex-col items-start">
-                <div className="w-10 h-10 bg-[#E8FAD8] rounded-full flex items-center justify-center mb-4">
+              <div className="bg-[#ECFDF5] p-6 rounded-[2rem] border border-[#8CE553] shadow-sm hover:shadow-md transition-all flex flex-col items-start">
+                <div className="w-10 h-10 bg-[#D0FAE5] rounded-full flex items-center justify-center mb-4">
                   <MessageCircle className="w-5 h-5 text-[#8CE553]" />
                 </div>
                 <h3 className="text-base font-bold text-gray-900 mb-1 italic leading-tight">
@@ -142,14 +142,14 @@ const ContactPage = () => {
                 </p>
                 <button
                   onClick={() => setIsChatOpen(true)}
-                  className="w-full py-2.5 bg-[#8CE553] text-white rounded-xl text-xs font-bold italic hover:bg-[#7cd442] transition-colors mt-auto"
+                  className="w-full py-2.5 bg-[linear-gradient(92.89deg,_#8CE553_2.41%,_#4E7F2E_147.72%)] text-white rounded-full text-xs font-bold italic hover:bg-[#7cd442] transition-colors mt-auto"
                 >
                   Start Chat
                 </button>
               </div>
 
               {/* Email Support */}
-              <div className="bg-white p-6 rounded-[2rem] border border-primary/20 shadow-sm hover:shadow-md transition-all flex flex-col items-start">
+              <div className="bg-primary/10 p-6 rounded-[2rem] border border-primary shadow-sm hover:shadow-md transition-all flex flex-col items-start">
                 <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Mail className="w-5 h-5 text-primary" />
                 </div>
@@ -162,15 +162,16 @@ const ContactPage = () => {
                 <p className="text-[11px] text-gray-400 font-medium italic mb-6">
                   support@crm.com
                 </p>
-                <button className="w-full py-2.5 bg-primary text-white rounded-xl text-xs font-bold italic hover:bg-primary/90 transition-colors mt-auto">
+                <button className="w-full py-2.5 bg-[linear-gradient(92.89deg,_theme(colors.primary.DEFAULT)_2.41%,_theme(colors.primary.DEFAULT)_147.72%)]
+ text-white rounded-full text-xs font-bold italic hover:opacity-90 transition-all mt-auto">
                   Send Email
                 </button>
               </div>
 
               {/* Phone Support */}
-              <div className="bg-white p-6 rounded-[2rem] border border-yellow-100 shadow-sm hover:shadow-md transition-all flex flex-col items-start">
-                <div className="w-10 h-10 bg-yellow-50 rounded-full flex items-center justify-center mb-4">
-                  <Phone className="w-5 h-5 text-yellow-500" />
+              <div className="bg-[#EDDA2E]/15 p-6 rounded-[2rem] border border-[#EDDA2E] shadow-sm hover:shadow-md transition-all flex flex-col items-start">
+                <div className="w-10 h-10 bg-[#DECF4B]/15 rounded-full flex items-center justify-center mb-4">
+                  <Phone className="w-5 h-5 text-[#EDDA2E]" />
                 </div>
                 <h3 className="text-base font-bold text-gray-900 mb-1 italic leading-tight">
                   Phone Support
@@ -181,7 +182,8 @@ const ContactPage = () => {
                 <p className="text-[11px] text-gray-400 font-medium italic mb-6">
                   1-800-CRM-HELP
                 </p>
-                <button className="w-full py-2.5 bg-yellow-500 text-white rounded-xl text-xs font-bold italic hover:bg-yellow-600 transition-colors mt-auto">
+                <button className="w-full py-2.5 bg-[linear-gradient(92.05deg,_#EDDA2E_1.73%,_#877C1A_151.92%)]
+  text-white rounded-full text-xs font-bold italic hover:bg-yellow-600 transition-colors mt-auto">
                   Call Now
                 </button>
               </div>
