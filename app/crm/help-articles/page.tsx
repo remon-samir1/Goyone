@@ -17,6 +17,8 @@ import {
   Phone,
   ArrowRight,
 } from "lucide-react";
+import HelpSidebar from "@/components/help/HelpSidebar";
+import Link from "next/link";
 
 const HelpArticlesPage = () => {
   return (
@@ -43,33 +45,8 @@ const HelpArticlesPage = () => {
         {/* Sidebar */}
         <div className="w-[260px] flex-shrink-0 space-y-6">
           {/* Help Menu */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3 px-2">
-              Help Menu
-            </h3>
-            <div className="space-y-1">
-              <button className="w-full flex items-center gap-3 px-3 py-2.5 bg-primary/10 text-primary rounded-xl transition-colors font-medium text-sm">
-                <Book className="w-4 h-4" />
-                Help Articles
-              </button>
-              <button className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl transition-colors text-sm">
-                <PlayCircle className="w-4 h-4" />
-                Tutorials
-                <span className="text-xs text-gray-400 ml-auto font-normal">
-                  Video guides
-                </span>
-              </button>
-              <button className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl transition-colors text-sm">
-                <MessageCircle className="w-4 h-4" />
-                Contact Support
-              </button>
-              <button className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl transition-colors text-sm">
-                <FileText className="w-4 h-4" />
-                Submit Ticket
-              </button>
-            </div>
-          </div>
-
+        
+<HelpSidebar/>
           {/* Need Help? */}
           <div className="bg-primary/5 rounded-2xl p-5 border border-primary/20">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">
@@ -245,13 +222,13 @@ const ArticleCard = ({
   time: string;
   views: string;
 }) => (
-  <div className="bg-white p-5 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow cursor-pointer group">
+  <Link href='/crm/help-articles/details' className="bg-white block p-5 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow cursor-pointer group">
     <div className="flex items-start justify-between">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           {isNew && (
             <span className="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
-              New
+              New 
             </span>
           )}
           <h3
@@ -276,7 +253,7 @@ const ArticleCard = ({
         <ArrowRight className="w-5 h-5" />
       </div>
     </div>
-  </div>
+  </Link>
 );
 
 export default HelpArticlesPage;

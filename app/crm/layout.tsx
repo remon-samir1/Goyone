@@ -1,5 +1,6 @@
 import React from "react";
 import Header from "./header";
+import Footer from "@/components/footer/Footer";
 
 const Layout = ({
   children,
@@ -7,7 +8,9 @@ const Layout = ({
   children: React.ReactNode;
 }>) => {
   return <div className='bg-background/5 px-[3%] py-5 min-h-screen'>
-    {children}</div>;
+    {children}
+        <Footer />
+    </div>;
 };
 
 export default Layout;
