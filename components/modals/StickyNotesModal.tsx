@@ -210,7 +210,7 @@ const StickyNotesModal = ({ isOpen, onClose }: StickyNotesModalProps) => {
                 className={`relative p-3 rounded-xl border-l-4 ${getNoteColorClasses(note.color)} shadow-sm`}
               >
                 {/* Red indicator dot */}
-                <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-red-500 rounded-full" />
+                <div className="absolute right-1 top-1 -translate-y-1/2 w-2.5 h-2.5 bg-red-500 rounded-full" />
 
                 <p className="text-gray-900 text-sm font-medium pr-6 leading-relaxed">
                   {note.content}
