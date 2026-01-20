@@ -2,9 +2,11 @@
 import React, { useState } from "react";
 import { Sparkles, FileText, Command, Clock, HelpCircle } from "lucide-react";
 import HelpModal from "@/components/modals/HelpModal";
+import StickyNotesModal from "@/components/modals/StickyNotesModal";
 
 const Footer = () => {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isStickyNotesOpen, setIsStickyNotesOpen] = useState(false);
 
   return (
     <>
@@ -14,7 +16,10 @@ const Footer = () => {
             <Sparkles className="w-4 h-4 text-primary group-hover:text-primary" />
           </button>
           <div className="w-px h-6 bg-gray-200 mx-1"></div>
-          <button className="p-2 hover:bg-primary/5 rounded-md transition-colors group">
+          <button
+            onClick={() => setIsStickyNotesOpen(!isStickyNotesOpen)}
+            className={`p-2 rounded-md transition-colors group ${isStickyNotesOpen ? "bg-primary/10" : "hover:bg-primary/5"}`}
+          >
             <FileText className="w-4 h-4 text-primary group-hover:text-primary" />
           </button>
           <button className="p-2 hover:bg-primary/5 rounded-md transition-colors group">
@@ -32,6 +37,10 @@ const Footer = () => {
         </div>
       </div>
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      <StickyNotesModal
+        isOpen={isStickyNotesOpen}
+        onClose={() => setIsStickyNotesOpen(false)}
+      />
     </>
   );
 };
