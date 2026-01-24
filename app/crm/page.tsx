@@ -20,9 +20,9 @@ import {
   Pencil,
   Send,
   User,
-  Link,
   Trash2,
   Phone,
+  Link2,
 } from "lucide-react";
 import React, { useState } from "react";
 import { HiViewColumns } from "react-icons/hi2";
@@ -31,6 +31,7 @@ import ExportModal from "@/components/modals/ExportModal";
 import ImportModal from "@/components/modals/ImportModal";
 import FiltersModal from "@/components/modals/FiltersModal";
 import Header from "./header";
+import Link from "next/link";
 
 // Define your data type
 interface LeadData {
@@ -246,7 +247,7 @@ const Page = () => {
         Change Owner
       </DropdownMenuItem>
       <DropdownMenuItem className="gap-3 text-body font-medium">
-        <Link className="h-4 w-4" />
+        <Link2 className="h-4 w-4" />
         Copy URL
       </DropdownMenuItem>
       <DropdownMenuItem className="gap-3 text-red-500 focus:text-red-500 font-medium">
@@ -273,8 +274,8 @@ const Page = () => {
   };
 
   return (
-    <>
-      <Header />
+    <div className="pb-12">
+      <Header Links={true}/>
 
       <div className="mt-7">
         <ExportModal
@@ -328,12 +329,13 @@ const Page = () => {
               <Upload className="text-white w-[1.3rem] h-[1.3rem] " />
               <span className="text-white text-sm font-bold ">Export</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-3 border bg-primary rounded-lg border-primary">
-              <Plus className="text-white w-[1.3rem] h-[1.3rem] " />
-              <span className="text-white text-sm font-bold ">
-                Add new lead
-              </span>
-            </button>
+            <Link
+              href="/crm/addLead"
+              className="flex items-center gap-2 px-4 py-3 border bg-primary rounded-lg border-primary hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="text-white w-[1.3rem] h-[1.3rem]" />
+              <span className="text-white block text-sm font-bold">Add new lead</span>
+            </Link>
           </div>
         </div>
         <div className="flex mt-5 max-w-[50%] items-center gap-3">
@@ -386,7 +388,7 @@ const Page = () => {
           onRowSelect={handleRowSelect}
         />
       </div>
-    </>
+    </div>
   );
 };
 

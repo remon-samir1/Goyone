@@ -18,7 +18,24 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  horizontalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export interface TableColumn<T = any> {
   key: string;
@@ -42,6 +59,81 @@ export interface TableProps<T = any> {
   className?: string;
 }
 
+// Sortable Table Head Component
+const SortableTableHead = ({
+  column,
+  id,
+}: {
+  column: TableColumn;
+  id: string;
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.8 : 1,
+    zIndex: isDragging ? 10 : "auto",
+    position: isDragging ? "relative" : ("auto" as any),
+    backgroundColor: isDragging ? "#f3f4f6" : "transparent",
+  };
+
+  return (
+    <th
+      ref={setNodeRef}
+      style={style}
+      className={`px-4 py-3 text-left text-sm font-semibold text-mainText whitespace-nowrap ${
+        isDragging ? "cursor-grabbing shadow-md rounded-md" : ""
+      }`}
+      {...attributes}
+      {...listeners}
+    >
+      <div className="flex items-center gap-2 cursor-grab active:cursor-grabbing">
+        <span>{column.label}</span>
+        {column.sortable !== false && (
+          <DropdownMenu>
+            <DropdownMenuTrigger className="h-6 w-6 flex items-center justify-center rounded hover:bg-gray-200">
+              <Menu className="h-4 w-4 text-body" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              className="w-52 rounded-xl p-2 shadow-lg"
+            >
+              <DropdownMenuItem className="gap-3">
+                <ArrowUp className="h-4 w-4 text-muted-foreground" />
+                Asc
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-3">
+                <ArrowDown className="h-4 w-4 text-muted-foreground" />
+                Desc
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-3">
+                <Pin className="h-4 w-4 text-muted-foreground" />
+                Pin column
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-3">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                Filter by
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-3 text-red-500 focus:text-red-500">
+                <EyeOff className="h-4 w-4" />
+                Hide column
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+    </th>
+  );
+};
+
 const Table = <T extends Record<string, any>>({
   data,
   columns,
@@ -52,6 +144,37 @@ const Table = <T extends Record<string, any>>({
   className = "",
 }: TableProps<T>) => {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+  const [orderedColumns, setOrderedColumns] =
+    useState<TableColumn<T>[]>(columns);
+
+  // Sync orderedColumns is columns prop changes (optional but good practice)
+  useEffect(() => {
+    setOrderedColumns(columns);
+  }, [columns]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setOrderedColumns((items) => {
+        const oldIndex = items.findIndex((col) => col.key === active.id);
+        const newIndex = items.findIndex((col) => col.key === over.id);
+
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
 
   const toggleRowSelection = (id: string) => {
     const newSelected = new Set(selectedRows);
@@ -82,16 +205,6 @@ const Table = <T extends Record<string, any>>({
     return row[column.key] ?? "";
   };
 
-  const defaultRowActions = (row: T) => (
-    <>
-      <DropdownMenuItem>View Details</DropdownMenuItem>
-      <DropdownMenuItem>Edit</DropdownMenuItem>
-      <DropdownMenuItem className="text-red-500 focus:text-red-500">
-        Delete
-      </DropdownMenuItem>
-    </>
-  );
-
   const resultsPerPage = pagination?.resultsPerPage || 10;
   const currentPage = pagination?.currentPage || 1;
   const totalResults = pagination?.totalResults || data.length;
@@ -104,7 +217,7 @@ const Table = <T extends Record<string, any>>({
   const getPageNumbers = () => {
     const pages: number[] = [];
     const maxVisible = 3;
-    
+
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -130,118 +243,96 @@ const Table = <T extends Record<string, any>>({
   return (
     <div className={`mt-5 bg-white rounded-lg overflow-hidden  ${className}`}>
       <div className="overflow-x-auto scrollbar-thumb-primary">
-        <table className="w-full border-collapse " >
-          <thead>
-            <tr className="bg-[#F8FAFC]">
-              <th className="px-4 py-3 text-left text-sm font-semibold text-mainText">
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={selectedRows.size === data.length && data.length > 0}
-                    onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded border-stroke text-primary focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-              </th>
-              {columns.map((column) => (
-                <th
-                  key={column.key}
-                  className="px-4 py-3 text-left text-sm font-semibold text-mainText whitespace-nowrap"
-                >
-                  <div className="flex items-center gap-2">
-                    <span>{column.label}</span>
-                    {column.sortable !== false && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="h-6 w-6 flex items-center justify-center rounded hover:bg-gray-200">
-                          <Menu className="h-4 w-4 text-body" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="start"
-                          className="w-52 rounded-xl p-2 shadow-lg"
-                        >
-                          <DropdownMenuItem className="gap-3">
-                            <ArrowUp className="h-4 w-4 text-muted-foreground" />
-                            Asc
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-3">
-                            <ArrowDown className="h-4 w-4 text-muted-foreground" />
-                            Desc
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-3">
-                            <Pin className="h-4 w-4 text-muted-foreground" />
-                            Pin column
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-3">
-                            <Filter className="h-4 w-4 text-muted-foreground" />
-                            Filter by
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-3 text-red-500 focus:text-red-500">
-                            <EyeOff className="h-4 w-4" />
-                            Hide column
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <table className="w-full border-collapse ">
+            <thead>
+              <tr className="bg-[#F8FAFC]">
+                <th className="px-4 py-3 text-left text-sm font-semibold text-mainText w-[50px]">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={
+                        selectedRows.size === data.length && data.length > 0
+                      }
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 rounded border-stroke text-primary focus:ring-2 focus:ring-primary"
+                    />
                   </div>
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={columns.length + 1}
-                  className="px-4 py-8 text-center text-sm text-body"
+                <SortableContext
+                  items={orderedColumns.map((col) => col.key)}
+                  strategy={horizontalListSortingStrategy}
                 >
-                  No data available
-                </td>
+                  {orderedColumns.map((column) => (
+                    <SortableTableHead
+                      key={column.key}
+                      id={column.key}
+                      column={column}
+                    />
+                  ))}
+                </SortableContext>
               </tr>
-            ) : (
-              data.map((row) => {
-                const rowId = String(row[idKey]);
-                return (
-                  <tr
-                    key={rowId}
-                    className="border-b border-stroke hover:bg-gray-50 transition-colors"
+            </thead>
+            <tbody>
+              {data.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={orderedColumns.length + 1}
+                    className="px-4 py-8 text-center text-sm text-body"
                   >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        {rowActions && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger className="h-6 w-6 flex items-center justify-center rounded hover:bg-gray-100">
-                              <MoreVertical className="h-4 w-4 text-body" />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              align="start"
-                              className="w-52 rounded-xl p-2 shadow-lg"
-                            >
-                              {rowActions(row)}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
-                        <input
-                          type="checkbox"
-                          checked={selectedRows.has(rowId)}
-                          onChange={() => toggleRowSelection(rowId)}
-                          className="w-4 h-4 rounded border-stroke text-primary focus:ring-2 focus:ring-primary"
-                        />
-                      </div>
-                    </td>
-                    {columns.map((column) => (
-                      <td
-                        key={column.key}
-                        className="px-4 py-3 text-sm text-mainText whitespace-nowrap"
-                      >
-                        {getCellValue(row, column)}
+                    No data available
+                  </td>
+                </tr>
+              ) : (
+                data.map((row) => {
+                  const rowId = String(row[idKey]);
+                  return (
+                    <tr
+                      key={rowId}
+                      className="border-b border-stroke hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          {rowActions && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger className="h-6 w-6 flex items-center justify-center rounded hover:bg-gray-100">
+                                <MoreVertical className="h-4 w-4 text-body" />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent
+                                align="start"
+                                className="w-52 rounded-xl p-2 shadow-lg"
+                              >
+                                {rowActions(row)}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
+                          <input
+                            type="checkbox"
+                            checked={selectedRows.has(rowId)}
+                            onChange={() => toggleRowSelection(rowId)}
+                            className="w-4 h-4 rounded border-stroke text-primary focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
                       </td>
-                    ))}
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                      {orderedColumns.map((column) => (
+                        <td
+                          key={column.key}
+                          className="px-4 py-3 text-sm text-mainText whitespace-nowrap"
+                        >
+                          {getCellValue(row, column)}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </DndContext>
       </div>
 
       {/* Pagination Footer */}
@@ -252,7 +343,9 @@ const Table = <T extends Record<string, any>>({
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => pagination.onPageChange(Math.max(1, currentPage - 1))}
+              onClick={() =>
+                pagination.onPageChange(Math.max(1, currentPage - 1))
+              }
               disabled={currentPage === 1}
               className="px-3 py-2 rounded border border-stroke text-body hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >

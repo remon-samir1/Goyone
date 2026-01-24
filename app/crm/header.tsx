@@ -33,7 +33,10 @@ import Image from "next/image";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { cn } from "@/lib/utils";
 import NotificationSidebar from "@/components/crm/NotificationSidebar";
-const Header = () => {
+interface HeaderProps {
+  Links :  boolean
+}
+const Header = ({Links} : HeaderProps ) => {
   const pathname = usePathname();
 
   const [date, setDate] = useState("");
@@ -105,6 +108,10 @@ const Header = () => {
     {
       name: "Calender",
       link: "/crm/calender",
+    },
+    {
+      name: "Activities",
+      link: "/crm/activities",
     },
   ];
   return (
@@ -281,6 +288,8 @@ const Header = () => {
         </div>
       </div>
 
+{
+  Links  &&
       <div className="mt-7 bg-primary p-4 flex items-center gap-1 rounded-full">
         {links.map((data, index) => {
           const isActive = pathname === data.link;
@@ -302,6 +311,7 @@ const Header = () => {
           );
         })}
       </div>
+    }
       <NotificationSidebar
         isOpen={isNotificationOpen}
         onClose={() => setIsNotificationOpen(false)}
