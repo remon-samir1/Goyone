@@ -1,0 +1,292 @@
+"use client";
+
+import React, { useState } from "react";
+import { Plus, Trash2, ChevronDown } from "lucide-react";
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaTiktok,
+  FaLinkedinIn,
+  FaTwitter,
+} from "react-icons/fa";
+
+interface SocialMedia {
+  id: number;
+  value: string;
+  type: string;
+}
+
+const SocialMediaItem = ({
+  item,
+  onDelete,
+  onUpdate,
+}: {
+  item: SocialMedia;
+  onDelete: (id: number) => void;
+  onUpdate: (id: number, field: keyof SocialMedia, value: string) => void;
+}) => {
+  const platforms = [
+    {
+      id: "facebook",
+      name: "Facebook",
+      icon: FaFacebookF,
+      placeholder: "https://facebook.com/yourpage",
+    },
+    {
+      id: "instagram",
+      name: "Instagram",
+      icon: FaInstagram,
+      placeholder: "https://instagram.com/yourpage",
+    },
+    {
+      id: "tiktok",
+      name: "TikTok",
+      icon: FaTiktok,
+      placeholder: "https://tiktok.com/@yourpage",
+    },
+    {
+      id: "linkedin",
+      name: "LinkedIn",
+      icon: FaLinkedinIn,
+      placeholder: "https://linkedin.com/in/yourpage",
+    },
+    {
+      id: "twitter",
+      name: "Twitter",
+      icon: FaTwitter,
+      placeholder: "https://twitter.com/yourpage",
+    },
+  ];
+
+  const platform = platforms.find((p) => p.id === item.type);
+  const SelectedIcon = platform?.icon || FaInstagram;
+
+  return (
+    <div className="pt-8 border-t border-stroke mt-8 animate-in fade-in slide-in-from-top-4 duration-300">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-bold text-primary italic">
+          Client&apos;s Social Media
+        </h3>
+        <button
+          onClick={() => onDelete(item.id)}
+          className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
+        >
+          <Trash2 className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="space-y-6">
+        <div className=" ">
+          <label className="text-xs font-bold py-4 inline-block text-mainText italic">
+            Social Type <span className="text-red-500">*</span>
+          </label>
+          <div className="space-y-4 bg-white py-3 px-4 border-b rounded-t-lg border-stroke">
+            <div className="text-[10px] text-body italic">Select platforms</div>
+            <div className="flex items-center gap-4">
+              {platforms.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => onUpdate(item.id, "type", p.id)}
+                  className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 border ${
+                    item.type === p.id
+                      ? "bg-primary text-white border-primary shadow-lg shadow-primary/30"
+                      : "bg-blue-50 text-blue-500 border-transparent hover:bg-blue-100"
+                  }`}
+                >
+                  <p.icon className="w-5 h-5" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Detailed Input Box */}
+          <div
+            className={` border  border-[#F1F5F9] rounded-b-lg p-8 md:p-12 flex flex-col bg-white transition-all duration-300 ${item.type ? "items-start" : "items-center justify-center text-center"}`}
+          >
+            {!item.type ? (
+              <>
+                <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-4">
+                  <FaInstagram className="w-6 h-6 text-blue-400" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-bold text-[#94A3B8] italic">
+                    No social media links added yet
+                  </p>
+                  <p className="text-[10px] text-body italic opacity-70">
+                    Click on a platform icon above to get started
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="w-full space-y-6 ">
+                <div className="flex flex-col items-start space-y-3">
+                  <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                    <SelectedIcon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-mainText italic">
+                      {platform?.name}
+                    </h4>
+                    <p className="text-[10px] text-body italic opacity-70">
+                      Enter your profile URL
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <input
+                    type="text"
+                    value={item.value}
+                    onChange={(e) => onUpdate(item.id, "value", e.target.value)}
+                    placeholder={platform?.placeholder}
+                    className="w-full border border-stroke rounded-xl px-4 py-3 text-[13px] text-body italic focus:outline-none focus:border-primary placeholder:text-placeholder/40 bg-white"
+                  />
+
+                  <div className="flex items-center gap-3">
+                    <button className="px-8 py-2.5 rounded-xl bg-primary text-white text-[13px] font-bold italic flex items-center gap-2 hover:bg-primary/90 transition-all shadow-md shadow-primary/20">
+                      <Plus className="w-4 h-4" />
+                      Add
+                    </button>
+                    <button
+                      onClick={() => onDelete(item.id)}
+                      className="px-8 py-2.5 rounded-xl border border-primary text-primary text-[13px] font-bold italic hover:bg-blue-50 transition-all"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MarketingInfoTab = () => {
+  const [socialMediaLinks, setSocialMediaLinks] = useState<SocialMedia[]>([]);
+
+  const handleAddSocialMedia = () => {
+    setSocialMediaLinks([
+      ...socialMediaLinks,
+      { id: Date.now(), value: "", type: "" },
+    ]);
+  };
+
+  const handleDeleteSocialMedia = (id: number) => {
+    setSocialMediaLinks(socialMediaLinks.filter((link) => link.id !== id));
+  };
+
+  const handleUpdateSocialMedia = (
+    id: number,
+    field: keyof SocialMedia,
+    value: string,
+  ) => {
+    setSocialMediaLinks(
+      socialMediaLinks.map((link) =>
+        link.id === id ? { ...link, [field]: value } : link,
+      ),
+    );
+  };
+
+  return (
+    <div className="space-y-10">
+      <h3 className="text-xl font-bold text-primary italic mb-6">
+        Marketing Information
+      </h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-mainText italic mb-1 block">
+            Lead Source <span className="text-red-500">*</span>
+          </label>
+          <div className="flex gap-2 bg-white rounded-xl py-0.5">
+            <div className="relative flex-1">
+              <select className="w-full rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer ">
+                <option value="" disabled selected>
+                  Select an option
+                </option>
+                <option value="google">Google</option>
+                <option value="facebook">Facebook</option>
+                <option value="referral">Referral</option>
+              </select>
+              <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-primary pointer-events-none" />
+            </div>
+            <button className="w-11 h-11 flex items-center justify-center text-blue-500 transition-colors border-l border-stroke font-bold text-lg">
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-mainText italic mb-1 block">
+            Channels
+          </label>
+          <div className="flex gap-2 bg-white rounded-xl py-0.5">
+            <div className="relative flex-1">
+              <select className="w-full rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer ">
+                <option value="" disabled selected>
+                  Select an option
+                </option>
+                <option value="email">Email</option>
+                <option value="phone">Phone</option>
+                <option value="sms">SMS</option>
+              </select>
+              <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-primary pointer-events-none" />
+            </div>
+            <button className="w-11 h-11 flex items-center justify-center text-blue-500 transition-colors border-l border-stroke font-bold text-lg">
+              <Plus className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-mainText italic mb-1 block">
+            Ad Id
+          </label>
+          <input
+            type="text"
+            placeholder="Ad identification number or code"
+            className="w-full border border-stroke rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary placeholder:text-placeholder/50"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-xs font-bold text-mainText italic mb-1 block">
+            Ad URL
+          </label>
+          <input
+            type="text"
+            placeholder="Ad or landing page link"
+            className="w-full border border-stroke rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary placeholder:text-placeholder/50"
+          />
+        </div>
+      </div>
+
+      {/* Dynamic Social Media Section */}
+      <div className="">
+        {socialMediaLinks.map((item) => (
+          <SocialMediaItem
+            key={item.id}
+            item={item}
+            onDelete={handleDeleteSocialMedia}
+            onUpdate={handleUpdateSocialMedia}
+          />
+        ))}
+      </div>
+
+      <div className="pt-4">
+        <button
+          onClick={handleAddSocialMedia}
+          className="px-6 py-4   rounded-xl border border-dashed border-primary text-primary font-bold italic hover:bg-blue-50 transition-colors w-max flex items-center justify-center gap-2"
+        >
+          <Plus className="w-5 h-5" />
+          Add to Client&apos;s Social Media
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default MarketingInfoTab;
