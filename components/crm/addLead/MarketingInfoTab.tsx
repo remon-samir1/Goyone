@@ -144,7 +144,7 @@ const SocialMediaItem = ({
 
                   <div className="flex items-center gap-3">
                     <button className="px-8 py-2.5 rounded-xl bg-primary text-white text-[13px] font-bold italic flex items-center gap-2 hover:bg-primary/90 transition-all shadow-md shadow-primary/20">
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-4 h-4 text-primary" />
                       Add
                     </button>
                     <button
@@ -214,7 +214,7 @@ const MarketingInfoTab = () => {
               <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-primary pointer-events-none" />
             </div>
             <button className="w-11 h-11 flex items-center justify-center text-blue-500 transition-colors border-l border-stroke font-bold text-lg">
-              <Plus className="w-5 h-5" />
+              <Plus className="w-5 h-5 text-primary" />
             </button>
           </div>
         </div>
@@ -236,7 +236,7 @@ const MarketingInfoTab = () => {
               <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-primary pointer-events-none" />
             </div>
             <button className="w-11 h-11 flex items-center justify-center text-blue-500 transition-colors border-l border-stroke font-bold text-lg">
-              <Plus className="w-5 h-5" />
+              <Plus className="w-5 h-5 text-primary" />
             </button>
           </div>
         </div>
@@ -281,7 +281,7 @@ const MarketingInfoTab = () => {
           onClick={handleAddSocialMedia}
           className="px-6 py-4   rounded-xl border border-dashed border-primary text-primary font-bold italic hover:bg-blue-50 transition-colors w-max flex items-center justify-center gap-2"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-5 h-5 text-primary" />
           Add to Client&apos;s Social Media
         </button>
       </div>

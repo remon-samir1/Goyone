@@ -30,7 +30,10 @@ const Stepper = () => {
 
         {/* Contact Stage */}
         <div className="flex flex-col items-center gap-4 relative z-10 w-1/4">
-          <div className="flex items-center justify-center p-2  bg-[linear-gradient(90deg,rgba(54,114,234,0.47)_0%,rgba(140,229,83,0.47)_147.93%)] rounded-full">
+          <div
+            className="flex items-center justify-center p-2  bg-[linear-gradient(90deg,hsl(var(--primary)/0.47)_0%,rgba(140,229,83,0.47)_147.93%)]
+ rounded-full"
+          >
             <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center  relative">
               <div className="absolute inset-[-4px] rounded-full  " />
               <Phone className="w-6 h-6 text-white z-10" />

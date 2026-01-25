@@ -179,7 +179,7 @@ const FeedbacksTab = () => {
           onClick={handleAddFeedback}
           className="px-6 py-3 rounded-lg border border-dashed border-primary text-primary font-bold italic hover:bg-blue-50 transition-colors w-auto flex items-center gap-2"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4 text-primary"  />
           Add new feedback
         </button>
       </div>

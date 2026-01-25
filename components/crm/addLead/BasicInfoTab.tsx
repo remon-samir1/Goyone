@@ -74,7 +74,7 @@ const BasicInfoTab = () => {
                   onClick={() => setIsPositionModalOpen(true)}
                   className="w-11 h-11 flex items-center justify-center   text-blue-500  transition-colors border-l border-stroke font-bold text-lg"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-5 h-5 text-primary" />
                 </button>
               </div>
             </div>
@@ -119,7 +119,7 @@ const BasicInfoTab = () => {
                   onClick={() => setIsCategoryModalOpen(true)}
                   className="w-10 h-10 flex items-center justify-center  text-blue-500   transition-colors border-l border-stroke font-bold text-lg"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-5 h-5 text-primary" />
                 </button>
               </div>
             </div>
@@ -196,7 +196,7 @@ const BasicInfoTab = () => {
                   onClick={() => setIsServiceModalOpen(true)}
                   className="w-11 h-11 flex items-center justify-center text-primary  hover:text-white transition-colors border-l border-stroke font-bold text-lg"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-5 h-5 text-primary" />
                 </button>
               </div>
             </div>
