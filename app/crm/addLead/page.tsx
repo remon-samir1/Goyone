@@ -24,7 +24,7 @@ const Stepper = () => {
       <div className="relative flex items-center justify-between w-full mx-auto">
         {/* Connecting Line */}
         <div className="absolute left-0 top-[34px] transform z-[0] -translate-y-1/4 w-full h-[2px] flex px-10">
-          <div className="w-1/5 h-full bg-primary" />
+          <div className="w-1/4 h-full bg-primary" />
           <div className="w-full h-full bg-[#F1F5F9]" />
         </div>
 
