@@ -142,7 +142,7 @@ const NotificationsPage = () => {
   ];
 
   return (
-    <div className="p-4 min-h-screen font-sans">
+    <div className="p-4 pb-20  min-h-screen font-sans">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           <Logo width={160} />
