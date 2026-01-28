@@ -152,7 +152,7 @@ const Header = ({ Links }: HeaderProps) => {
               <div className="flex items-center gap-2 cursor-pointer">
                 <div className="relative w-10 h-10 rounded-full overflow-hidden border border-stroke">
                   <Image
-                    src="/images/user-avatar.png"
+                    src="/images/user.png"
                     alt="User Avatar"
                     layout="fill"
                     objectFit="cover"
@@ -169,7 +169,7 @@ const Header = ({ Links }: HeaderProps) => {
               <div className="flex items-center gap-3 p-3">
                 <div className="relative w-12 h-12 rounded-full overflow-hidden border border-stroke shrink-0">
                   <Image
-                    src="/images/user-avatar.png"
+                    src="/images/user.png"
                     alt="User"
                     layout="fill"
                     objectFit="cover"
