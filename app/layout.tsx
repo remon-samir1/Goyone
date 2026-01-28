@@ -60,7 +60,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={ginoraSans.className}>
+      <body className={ginoraSans.className } >
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
