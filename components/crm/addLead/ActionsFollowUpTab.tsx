@@ -12,11 +12,15 @@ import {
 } from "lucide-react";
 import AddTaskModal from "@/components/modals/AddTaskModal";
 import ScheduleMeetingModal from "@/components/modals/ScheduleMeetingModal";
+import LogCallModal from "@/components/modals/LogCallModal";
+import SendEmailModal from "@/components/modals/SendEmailModal";
 
 const ActionsFollowUpTab = () => {
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = React.useState(false);
   const [isScheduleMeetingModalOpen, setIsScheduleMeetingModalOpen] =
     React.useState(false);
+  const [isLogCallModalOpen, setIsLogCallModalOpen] = React.useState(false);
+  const [isSendEmailModalOpen, setIsSendEmailModalOpen] = React.useState(false);
 
   return (
     <div className="space-y-10">
@@ -90,7 +94,10 @@ const ActionsFollowUpTab = () => {
               </div>
             </div>
 
-            <div className="bg-white border-2 border-[#F1F5F9] rounded-[24px] p-8 flex items-start flex-col gap-6 cursor-pointer hover:border-[#2FBF71] transition-all group">
+            <div
+              onClick={() => setIsLogCallModalOpen(true)}
+              className="bg-white border-2 border-[#F1F5F9] rounded-[24px] p-8 flex items-start flex-col gap-6 cursor-pointer hover:border-[#2FBF71] transition-all group"
+            >
               <div className="w-14 h-14 rounded-full bg-[#EAF8F1] flex items-center justify-center group-hover:bg-[#2FBF71] transition-all">
                 <Phone className="w-6 h-6 text-[#2FBF71] group-hover:text-white" />
               </div>
@@ -104,7 +111,10 @@ const ActionsFollowUpTab = () => {
               </div>
             </div>
 
-            <div className="bg-white border-2 border-[#F1F5F9] rounded-[24px] p-8 flex items-start flex-col gap-6 cursor-pointer hover:border-[#EDDA2E] transition-all group">
+            <div
+              onClick={() => setIsSendEmailModalOpen(true)}
+              className="bg-white border-2 border-[#F1F5F9] rounded-[24px] p-8 flex items-start flex-col gap-6 cursor-pointer hover:border-[#EDDA2E] transition-all group"
+            >
               <div className="w-14 h-14 rounded-full bg-[#FFFBEB] flex items-center justify-center group-hover:bg-[#EDDA2E] transition-all">
                 <Mail className="w-6 h-6 text-[#EDDA2E] group-hover:text-white" />
               </div>
@@ -194,6 +204,16 @@ const ActionsFollowUpTab = () => {
       <ScheduleMeetingModal
         isOpen={isScheduleMeetingModalOpen}
         onClose={() => setIsScheduleMeetingModalOpen(false)}
+      />
+
+      <LogCallModal
+        isOpen={isLogCallModalOpen}
+        onClose={() => setIsLogCallModalOpen(false)}
+      />
+
+      <SendEmailModal
+        isOpen={isSendEmailModalOpen}
+        onClose={() => setIsSendEmailModalOpen(false)}
       />
     </div>
   );
