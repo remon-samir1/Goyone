@@ -34,9 +34,9 @@ import { useTheme } from "@/components/providers/ThemeProvider";
 import { cn } from "@/lib/utils";
 import NotificationSidebar from "@/components/crm/NotificationSidebar";
 interface HeaderProps {
-  Links :  boolean
+  Links: boolean;
 }
-const Header = ({Links} : HeaderProps ) => {
+const Header = ({ Links }: HeaderProps) => {
   const pathname = usePathname();
 
   const [date, setDate] = useState("");
@@ -288,30 +288,29 @@ const Header = ({Links} : HeaderProps ) => {
         </div>
       </div>
 
-{
-  Links  &&
-      <div className="mt-7 bg-primary p-4 flex items-center gap-1 rounded-full">
-        {links.map((data, index) => {
-          const isActive = pathname === data.link;
+      {Links && (
+        <div className="mt-7 bg-gradient-to-r from-primary via-primary to-[#3CB9A8] p-4 flex items-center gap-1 rounded-full">
+          {links.map((data, index) => {
+            const isActive = pathname === data.link;
 
-          return (
-            <Link
-              key={index}
-              href={data.link}
-              className={`text-base font-semibold px-6 py-2 rounded-3xl duration-300
+            return (
+              <Link
+                key={index}
+                href={data.link}
+                className={`text-base font-semibold px-6 py-2 rounded-3xl duration-300
               ${
                 isActive
                   ? "bg-white text-[#111827]"
                   : "text-white hover:bg-white hover:text-[#111827]"
               }
             `}
-            >
-              {data.name}
-            </Link>
-          );
-        })}
-      </div>
-    }
+              >
+                {data.name}
+              </Link>
+            );
+          })}
+        </div>
+      )}
       <NotificationSidebar
         isOpen={isNotificationOpen}
         onClose={() => setIsNotificationOpen(false)}

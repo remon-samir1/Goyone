@@ -13,6 +13,7 @@ import Header from "../header";
 import BasicInfoTab from "@/components/crm/addLead/BasicInfoTab";
 import FeedbacksTab from "@/components/crm/addLead/FeedbacksTab";
 import MarketingInfoTab from "@/components/crm/addLead/MarketingInfoTab";
+import ActionsFollowUpTab from "@/components/crm/addLead/ActionsFollowUpTab";
 
 // Stepper Component
 const Stepper = () => {
@@ -184,6 +185,7 @@ const AddLeadPage = () => {
             {activeTab === "Basic Info" && <BasicInfoTab />}
             {activeTab === "Feed Backs" && <FeedbacksTab />}
             {activeTab === "Marketing Information" && <MarketingInfoTab />}
+            {activeTab === "Actions & Follow-up" && <ActionsFollowUpTab />}
 
             <div className="flex items-center justify-between mt-12 pt-8">
               <div className="flex gap-4">
