@@ -297,7 +297,7 @@ const Header = ({ Links }: HeaderProps) => {
               <Link
                 key={index}
                 href={data.link}
-                className={`text-base font-semibold px-6 py-2 rounded-3xl duration-300
+                className={`text-sm font-semibold px-6 py-2 rounded-3xl duration-300
               ${
                 isActive
                   ? "bg-white text-[#111827]"
