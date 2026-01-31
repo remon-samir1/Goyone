@@ -17,6 +17,7 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import {
@@ -57,6 +58,7 @@ export interface TableProps<T = any> {
   rowActions?: (row: T) => React.ReactNode; // Optional custom row actions
   onRowSelect?: (selectedIds: string[]) => void; // Callback when rows are selected
   className?: string;
+  loading?: boolean;
 }
 
 // Sortable Table Head Component
@@ -142,6 +144,7 @@ const Table = <T extends Record<string, any>>({
   rowActions,
   onRowSelect,
   className = "",
+  loading = false,
 }: TableProps<T>) => {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [orderedColumns, setOrderedColumns] =
@@ -278,7 +281,18 @@ const Table = <T extends Record<string, any>>({
               </tr>
             </thead>
             <tbody>
-              {data.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan={orderedColumns.length + 1}
+                    className="px-4 py-8 text-center"
+                  >
+                    <div className="flex items-center justify-center w-full">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  </td>
+                </tr>
+              ) : data.length === 0 ? (
                 <tr>
                   <td
                     colSpan={orderedColumns.length + 1}
