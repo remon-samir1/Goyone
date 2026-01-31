@@ -291,8 +291,46 @@ const Page = () => {
           isOpen={isFiltersModalOpen}
           onClose={() => setIsFiltersModalOpen(false)}
         />
-        <h3 className="text-mainText text-[1.5rem] font-bold italic">Leads</h3>
+        <div className="flex items-center justify-between">
 
+        <h3 className="text-mainText text-[1.5rem] font-bold italic">Leads</h3>
+        <div className="flex mt-5 w-[40%] items-center gap-3">
+          <div className="flex items-center border border-stroke p-3 bg-white gap-2 rounded-3xl flex-1">
+            <Search className="text-placeholder w-[18px] h-[18px]" />
+            <input
+              type="text"
+              className="flex-1 border-none outline-none text-placeholder h-full"
+              placeholder="Serach"
+            />
+          </div>
+          <button
+            onClick={() => setIsFiltersModalOpen(true)}
+            className="flex items-center text-white rounded-3xl bg-[#8CE553] py-2 px-5  gap-2 bg"
+          >
+            <ListFilter className="text-white w-[1.5rem] h-[1.5rem] font-semibold" />
+            Filters
+          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="outline-none">
+                <HiViewColumns className="text-body text-[2rem] cursor-pointer" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[200px] p-2">
+              {columns.map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.key}
+                  className="capitalize text-body"
+                  checked={visibleColumns.has(column.key)}
+                  onCheckedChange={() => toggleColumnVisibility(column.key)}
+                >
+                  {column.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        </div>
         <div className="mt-7 bg-white flex items-center rounded py-3 px-4 justify-between">
           <div className="flex items-center gap-2">
             <p className="text-mainText italic text-base font-bold flex items-center gap-2  p-3 bg-background/5 rounded">
@@ -339,42 +377,7 @@ const Page = () => {
             </Link>
           </div>
         </div>
-        <div className="flex mt-5 max-w-[50%] items-center gap-3">
-          <div className="flex items-center border border-stroke p-3 bg-white gap-2 rounded-3xl flex-1">
-            <Search className="text-placeholder w-[18px] h-[18px]" />
-            <input
-              type="text"
-              className="flex-1 border-none outline-none text-placeholder h-full"
-              placeholder="Serach"
-            />
-          </div>
-          <button
-            onClick={() => setIsFiltersModalOpen(true)}
-            className="flex items-center text-white rounded-3xl bg-[#8CE553] py-2 px-5  gap-2 bg"
-          >
-            <ListFilter className="text-white w-[1.5rem] h-[1.5rem] font-semibold" />
-            Filters
-          </button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="outline-none">
-                <HiViewColumns className="text-body text-[2rem] cursor-pointer" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[200px] p-2">
-              {columns.map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.key}
-                  className="capitalize text-body"
-                  checked={visibleColumns.has(column.key)}
-                  onCheckedChange={() => toggleColumnVisibility(column.key)}
-                >
-                  {column.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+
         <Table
           data={leadsData}
           columns={visibleColumnsList}
