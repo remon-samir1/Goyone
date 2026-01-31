@@ -2,23 +2,83 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
+type ThemeMode = "light" | "dark" | "system";
+
 type ThemeContextType = {
   primaryColor: string;
   setPrimaryColor: (color: string) => void;
+  themeMode: ThemeMode;
+  setThemeMode: (mode: ThemeMode) => void;
+  resolvedTheme: "light" | "dark";
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [primaryColor, setPrimaryColorState] = useState("#3672EA");
+  const [themeMode, setThemeModeState] = useState<ThemeMode>("light");
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
+  // Initialize from localStorage and listen for system preference changes
   useEffect(() => {
-    // Load from local storage
+    // Load saved preferences
     const savedColor = localStorage.getItem("primary-color");
+    const savedMode = localStorage.getItem("theme-mode") as ThemeMode | null;
+
     if (savedColor) {
       setPrimaryColor(savedColor);
     }
+
+    if (savedMode) {
+      setThemeModeState(savedMode);
+      applyTheme(savedMode);
+    } else {
+      applyTheme("light");
+    }
+
+    // Listen for system theme changes
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => {
+      if (themeMode === "system") {
+        applyTheme("system");
+      }
+    };
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
+
+  // Re-apply theme when mode changes
+  useEffect(() => {
+    applyTheme(themeMode);
+  }, [themeMode]);
+
+  const applyTheme = (mode: ThemeMode) => {
+    const root = document.documentElement;
+    let effectiveTheme: "light" | "dark";
+
+    if (mode === "system") {
+      effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    } else {
+      effectiveTheme = mode;
+    }
+
+    setResolvedTheme(effectiveTheme);
+
+    if (effectiveTheme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  };
+
+  const setThemeMode = (mode: ThemeMode) => {
+    setThemeModeState(mode);
+    localStorage.setItem("theme-mode", mode);
+    applyTheme(mode);
+  };
 
   const setPrimaryColor = (hex: string) => {
     setPrimaryColorState(hex);
@@ -32,7 +92,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ primaryColor, setPrimaryColor }}>
+    <ThemeContext.Provider
+      value={{
+        primaryColor,
+        setPrimaryColor,
+        themeMode,
+        setThemeMode,
+        resolvedTheme,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

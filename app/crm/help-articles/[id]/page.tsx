@@ -21,7 +21,7 @@ import Logo from "@/components/logo/logo";
 
 const ArticleDetailsPage = () => {
   return (
-    <div className="px-[%] pb-[80px] mx-auto min-h-screen">
+    <div className="px-[3%] pb-[80px] mx-auto min-h-screen">
       {/* Header Search */}
       <div className="flex justify-between mb-10">
       <div className="flex items-center gap-1">

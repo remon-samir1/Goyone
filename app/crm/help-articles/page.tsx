@@ -22,7 +22,7 @@ import Link from "next/link";
 
 const HelpArticlesPage = () => {
   return (
-    <div className="px-[%] pb-[50px] mx-auto min-h-[calc(100vh-100px)]">
+    <div className="px-[3%] pb-[50px] mx-auto min-h-[calc(100vh-100px)]">
       {/* Header Title Section - Aligned with content */}
       <div className="flex justify-between items-end mb-8 ">
         <div>

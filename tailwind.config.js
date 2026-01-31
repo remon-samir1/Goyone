@@ -14,11 +14,26 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
-        background: "#3672EA0D",
-        stroke: "#E6E8EC",
-        body: "#576680",
-        mainText: "#111827",
-        placeholder: "#9CA3AF",
+        background: {
+          DEFAULT: "#3672EA0D",
+          dark: "hsl(222 47% 11%)",
+        },
+        stroke: {
+          DEFAULT: "#E6E8EC",
+          dark: "#2D3748",
+        },
+        body: {
+          DEFAULT: "#576680",
+          dark: "#A0AEC0",
+        },
+        mainText: {
+          DEFAULT: "#111827",
+          dark: "#F7FAFC",
+        },
+        placeholder: {
+          DEFAULT: "#9CA3AF",
+          dark: "#718096",
+        },
         foreground: "hsl(var(--foreground))",
         card: {
           DEFAULT: "hsl(var(--card))",

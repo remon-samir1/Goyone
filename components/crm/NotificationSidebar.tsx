@@ -137,7 +137,7 @@ const NotificationSidebar = ({ isOpen, onClose }: NotificationSidebarProps) => {
       <div
         ref={sidebarRef}
         className={cn(
-          "fixed top-0 right-0 h-full rounded-l-lg w-[400px] bg-white z-50 shadow-2xl transition-transform duration-300 transform flex flex-col",
+          "fixed top-0 right-0 h-full rounded-l-lg w-[400px] bg-white z-[60] shadow-2xl transition-transform duration-300 transform flex flex-col",
           isOpen ? "translate-x-0" : "translate-x-full",
         )}
       >

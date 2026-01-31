@@ -20,7 +20,7 @@ const ContactPage = () => {
   const [isCallModalOpen, setIsCallModalOpen] = useState(false);
 
   return (
-    <div className="px-[%] pb-[50px] mx-auto min-h-[calc(100vh-100px)]">
+    <div className="px-[3%] pb-[50px] mx-auto min-h-[calc(100vh-100px)]">
       {/* Header Title Section */}
       <div className="flex justify-between items-end mb-8 ">
         <div>

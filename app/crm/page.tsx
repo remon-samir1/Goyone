@@ -274,8 +274,9 @@ const Page = () => {
   };
 
   return (
-    <div className="pb-12">
+    <>
       <Header Links={true}/>
+    <div className="pb-12 px-[3%]">
 
       <div className="mt-7">
         <ExportModal
@@ -389,6 +390,8 @@ const Page = () => {
         />
       </div>
     </div>
+    </>
+
   );
 };
 

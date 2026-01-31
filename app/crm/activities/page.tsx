@@ -192,7 +192,7 @@ const Page = () => {
   };
 
   return (
-    <div className="pb-14">
+    <div className="pb-14 px-[3%]">
       {/* Custom Header Extension - Mark all as read and Search */}
       <div className="z-10 justify-between flex items-center gap-4">
         <div className="flex items-center gap-1">

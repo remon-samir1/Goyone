@@ -54,7 +54,7 @@ const Stepper = () => {
 
         {/* Qualification Stage */}
         <div className="flex flex-col items-center gap-4 relative z-10 w-1/4 ">
-          <div className="w-14 h-14 rounded-full bg-primary/5 border  border-[#F1F5F9] flex items-center justify-center shadow-sm">
+          <div className="w-14 h-14 rounded-full bg-[#F5F8FE] border   border-[#F1F5F9] flex items-center justify-center shadow-sm">
             <Target className="w-6 h-6 text-[#94A3B8]" />
           </div>
           <div className="text-center">
@@ -64,7 +64,7 @@ const Stepper = () => {
               </p>
               <ChevronDown className="w-4 h-4 text-[#94A3B8]" />
             </div>
-            <div className="px-10 py-2 bg-primary/5 rounded-full  shadow-sm inline-block">
+            <div className="px-10 py-2 bg-[#F5F8FE] rounded-full  shadow-sm inline-block">
               <span className="text-[13px] font-bold text-mainText italic">
                 Qualified
               </span>
@@ -74,7 +74,7 @@ const Stepper = () => {
 
         {/* Proposal Stage */}
         <div className="flex flex-col items-center gap-4 relative z-10 w-1/4">
-          <div className="w-14 h-14 rounded-full bg-primary/5 border border-[#F1F5F9] flex items-center justify-center shadow-sm">
+          <div className="w-14 h-14 rounded-full bg-[#F5F8FE] border border-[#F1F5F9] flex items-center justify-center shadow-sm">
             <ScrollText className="w-6 h-6 text-[#94A3B8]" />
           </div>
           <div className="text-center">
@@ -94,7 +94,7 @@ const Stepper = () => {
 
         {/* Closing Stage */}
         <div className="flex flex-col items-center gap-4 relative z-10 w-1/4">
-          <div className="w-14 h-14 rounded-full bg-primary/5 border border-[#F1F5F9] flex items-center justify-center shadow-sm">
+          <div className="w-14 h-14 rounded-full bg-[#F5F8FE] border border-[#F1F5F9] flex items-center justify-center shadow-sm">
             <CheckSquare className="w-6 h-6 text-[#94A3B8]" />
           </div>
           <div className="text-center">
