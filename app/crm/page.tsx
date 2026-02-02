@@ -32,6 +32,9 @@ import FiltersModal from "@/components/modals/FiltersModal";
 import Header from "./header";
 import Link from "next/link";
 import { Axios } from "@/components/Helpers/Axios";
+import DeleteLeadModal from "@/components/modals/DeleteLeadModal";
+import { deleteLead } from "@/lib/api";
+import { toast } from "react-hot-toast";
 
 // Define your data type
 interface LeadData {
@@ -40,7 +43,7 @@ interface LeadData {
   date: string;
   time: string;
   fullName: string;
-  status: string; // Relaxed type for API flexibility
+  status: string;
   companyName: string;
   leadSource: string;
   adId: string;
@@ -57,6 +60,9 @@ const Page = () => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [leadToDelete, setLeadToDelete] = useState<LeadData | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // State for fetched data
   const [leads, setLeads] = useState<LeadData[]>([]);
@@ -72,9 +78,7 @@ const Page = () => {
 
       const data = response.data.data;
       const meta = response.data.meta;
-      // console.log("Data:", data);
 
-      // Map API data to LeadData interface
       const mappedData: LeadData[] = data.map((item: any) => ({
         id: item.id.toString(),
         serialNumber: item.id.toString(),
@@ -84,8 +88,8 @@ const Page = () => {
         time: item.lead_source_type.created_at
           ? item.lead_source_type.created_at.split("T")[1].split(".")[0]
           : "",
-        fullName: item.full_name || item.name || "N/A",
-        status: item.status?.name || item.status || "Potentiel",
+        fullName: item.full_name || "N/A",
+        status: item.status?.name || "Potentiel",
         companyName: item.company_name || "",
         leadSource: item.lead_source_value || "",
         adId: item.ad_id || "",
@@ -136,7 +140,7 @@ const Page = () => {
               return "text-red-500";
             case "Not Qualified":
               return "text-[#F59E0B]";
-            case "Potential":
+            case "Potentiel":
               return "text-blue-500";
             default:
               return "text-body";
@@ -295,7 +299,13 @@ const Page = () => {
         <Link2 className="h-4 w-4" />
         Copy URL
       </DropdownMenuItem>
-      <DropdownMenuItem className="gap-3 text-red-500 focus:text-red-500 font-medium">
+      <DropdownMenuItem
+        className="gap-3 text-red-500 focus:text-red-500 font-medium cursor-pointer"
+        onClick={() => {
+          setLeadToDelete(row);
+          setIsDeleteModalOpen(true);
+        }}
+      >
         <Trash2 className="h-4 w-4" />
         Delete
       </DropdownMenuItem>
@@ -304,6 +314,25 @@ const Page = () => {
       </DropdownMenuItem>
     </>
   );
+
+  const handleDeleteConfirm = async () => {
+    if (!leadToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteLead(leadToDelete.id);
+      toast.success("Lead deleted successfully");
+      setIsDeleteModalOpen(false);
+      setLeadToDelete(null);
+      // Refresh the list
+      fetchLeads(currentPage);
+    } catch (error) {
+      console.error("Error deleting lead:", error);
+      toast.error("Failed to delete lead");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Handle row selection
   const handleRowSelect = (selectedIds: string[]) => {
@@ -334,6 +363,13 @@ const Page = () => {
           <FiltersModal
             isOpen={isFiltersModalOpen}
             onClose={() => setIsFiltersModalOpen(false)}
+          />
+          <DeleteLeadModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => setIsDeleteModalOpen(false)}
+            onConfirm={handleDeleteConfirm}
+            leadName={leadToDelete?.fullName || ""}
+            isLoading={isDeleting}
           />
           <div className="flex items-center justify-between">
             <h3 className="text-mainText text-[1.5rem] font-bold italic">

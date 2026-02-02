@@ -11,22 +11,18 @@ import {
 } from "react-icons/fa";
 import CreateLeadSourceModal from "@/components/modals/CreateLeadSourceModal";
 import CreateChannelModal from "@/components/modals/CreateChannelModal";
+import { LeadFormData, SocialMedia } from "@/types/leadTypes";
 
-interface SocialMedia {
-  id: number;
-  value: string;
-  type: string;
-  isSaved?: boolean;
-}
-
-const SocialMediaItem = ({
-  item,
-  onDelete,
-  onUpdate,
-}: {
+interface SocialMediaItemProps {
   item: SocialMedia;
   onDelete: (id: number) => void;
   onUpdate: (id: number, field: keyof SocialMedia, value: any) => void;
+}
+
+const SocialMediaItem: React.FC<SocialMediaItemProps> = ({
+  item,
+  onDelete,
+  onUpdate,
 }) => {
   const platforms = [
     {
@@ -219,10 +215,45 @@ const SocialMediaItem = ({
   );
 };
 
-const MarketingInfoTab = () => {
-  const [socialMediaLinks, setSocialMediaLinks] = useState<SocialMedia[]>([]);
+interface MarketingInfoTabProps {
+  formData: LeadFormData;
+  updateFormData: (updates: Partial<LeadFormData>) => void;
+  socialMediaLinks: SocialMedia[];
+  setSocialMediaLinks: React.Dispatch<React.SetStateAction<SocialMedia[]>>;
+}
+
+const MarketingInfoTab: React.FC<MarketingInfoTabProps> = ({
+  formData,
+  updateFormData,
+  socialMediaLinks,
+  setSocialMediaLinks,
+}) => {
   const [isLeadSourceModalOpen, setIsLeadSourceModalOpen] = useState(false);
   const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
+
+  // Dynamic Options State
+  const [leadSourceOptions, setLeadSourceOptions] = useState([
+    { id: 1, name: "Google" },
+    { id: 2, name: "Facebook" },
+    { id: 3, name: "Referral" },
+  ]);
+
+  const [channelOptions, setChannelOptions] = useState([
+    { id: 1, name: "Email" },
+    { id: 2, name: "Phone" },
+    { id: 3, name: "SMS" },
+  ]);
+
+  // Handlers for creating new items
+  const handleCreateLeadSource = (newSource: { id: number; name: string }) => {
+    setLeadSourceOptions((prev) => [...prev, newSource]);
+    updateFormData({ lead_source_type_id: newSource.id });
+  };
+
+  const handleCreateChannel = (newChannel: { id: number; name: string }) => {
+    setChannelOptions((prev) => [...prev, newChannel]);
+    updateFormData({ channels_id: newChannel.id });
+  };
 
   const handleAddSocialMedia = () => {
     setSocialMediaLinks([
@@ -260,13 +291,23 @@ const MarketingInfoTab = () => {
           </label>
           <div className="flex gap-2 bg-white rounded-xl py-0.5">
             <div className="relative flex-1">
-              <select className="w-full rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer ">
-                <option value="" disabled selected>
+              <select
+                value={formData.lead_source_type_id || ""}
+                onChange={(e) =>
+                  updateFormData({
+                    lead_source_type_id: Number(e.target.value),
+                  })
+                }
+                className="w-full rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer "
+              >
+                <option value="" disabled>
                   Select an option
                 </option>
-                <option value="google">Google</option>
-                <option value="facebook">Facebook</option>
-                <option value="referral">Referral</option>
+                {leadSourceOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
+                ))}
               </select>
               <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-primary pointer-events-none" />
             </div>
@@ -285,13 +326,21 @@ const MarketingInfoTab = () => {
           </label>
           <div className="flex gap-2 bg-white rounded-xl py-0.5">
             <div className="relative flex-1">
-              <select className="w-full rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer ">
-                <option value="" disabled selected>
+              <select
+                value={formData.channels_id || ""}
+                onChange={(e) =>
+                  updateFormData({ channels_id: Number(e.target.value) })
+                }
+                className="w-full rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer "
+              >
+                <option value="" disabled>
                   Select an option
                 </option>
-                <option value="email">Email</option>
-                <option value="phone">Phone</option>
-                <option value="sms">SMS</option>
+                {channelOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name}
+                  </option>
+                ))}
               </select>
               <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-primary pointer-events-none" />
             </div>
@@ -310,6 +359,8 @@ const MarketingInfoTab = () => {
           </label>
           <input
             type="text"
+            value={formData.ad_id || ""}
+            onChange={(e) => updateFormData({ ad_id: e.target.value })}
             placeholder="Ad identification number or code"
             className="w-full border border-stroke rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary placeholder:text-placeholder/50"
           />
@@ -317,10 +368,14 @@ const MarketingInfoTab = () => {
 
         <div className="space-y-2">
           <label className="text-xs font-bold text-mainText italic mb-1 block">
-            Ad URL
+            Lead Source Value
           </label>
           <input
             type="text"
+            value={formData.lead_source_value || ""}
+            onChange={(e) =>
+              updateFormData({ lead_source_value: e.target.value })
+            }
             placeholder="Ad or landing page link"
             className="w-full border border-stroke rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary placeholder:text-placeholder/50"
           />
@@ -359,10 +414,12 @@ const MarketingInfoTab = () => {
       <CreateLeadSourceModal
         isOpen={isLeadSourceModalOpen}
         onClose={() => setIsLeadSourceModalOpen(false)}
+        onSuccess={handleCreateLeadSource}
       />
       <CreateChannelModal
         isOpen={isChannelModalOpen}
         onClose={() => setIsChannelModalOpen(false)}
+        onSuccess={handleCreateChannel}
       />
     </div>
   );

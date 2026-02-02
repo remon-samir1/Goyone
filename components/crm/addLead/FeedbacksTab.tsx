@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import {
   Target,
   CheckSquare,
@@ -9,21 +9,18 @@ import {
   Calendar,
   Plus,
 } from "lucide-react";
+import { LeadFormData, Feedback } from "@/types/leadTypes";
 
-interface Feedback {
-  id: number;
-  content: string;
-  time: string;
-}
-
-const FeedbackItem = ({
-  feedback,
-  onDelete,
-  onUpdate,
-}: {
+interface FeedbackItemProps {
   feedback: Feedback;
   onDelete: (id: number) => void;
   onUpdate: (id: number, field: keyof Feedback, value: string) => void;
+}
+
+const FeedbackItem: React.FC<FeedbackItemProps> = ({
+  feedback,
+  onDelete,
+  onUpdate,
 }) => {
   const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -33,7 +30,6 @@ const FeedbackItem = ({
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const date = new Date(e.target.value);
-    // Format: "Dec 31, 2025, 03:27 PM"
     const formattedDate = date.toLocaleString("en-US", {
       month: "short",
       day: "numeric",
@@ -48,7 +44,9 @@ const FeedbackItem = ({
   return (
     <div className="pt-4 animate-in fade-in slide-in-from-top-4 duration-300">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-bold text-primary italic">MoreFeedbacks</h3>
+        <h3 className="text-lg font-bold text-primary italic">
+          More Feedbacks
+        </h3>
         <button
           onClick={() => onDelete(feedback.id)}
           className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
@@ -97,9 +95,19 @@ const FeedbackItem = ({
   );
 };
 
-const FeedbacksTab = () => {
-  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+interface FeedbacksTabProps {
+  formData: LeadFormData;
+  updateFormData: (updates: Partial<LeadFormData>) => void;
+  feedbacks: Feedback[];
+  setFeedbacks: React.Dispatch<React.SetStateAction<Feedback[]>>;
+}
 
+const FeedbacksTab: React.FC<FeedbacksTabProps> = ({
+  formData,
+  updateFormData,
+  feedbacks,
+  setFeedbacks,
+}) => {
   const handleAddFeedback = () => {
     setFeedbacks([...feedbacks, { id: Date.now(), content: "", time: "" }]);
   };
@@ -131,6 +139,10 @@ const FeedbacksTab = () => {
             Customer Inquiry <span className="text-red-500">*</span>
           </label>
           <textarea
+            value={formData.customer_inquiry || ""}
+            onChange={(e) =>
+              updateFormData({ customer_inquiry: e.target.value })
+            }
             placeholder="Brief overview of the customer's question or request"
             className="w-full h-32 border border-stroke rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary placeholder:text-placeholder/50 resize-none bg-white"
           />
@@ -141,6 +153,8 @@ const FeedbacksTab = () => {
             Exact request
           </label>
           <textarea
+            value={formData.exact_request || ""}
+            onChange={(e) => updateFormData({ exact_request: e.target.value })}
             placeholder="Verbatim details of what the customer asked"
             className="w-full h-32 border border-stroke rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary placeholder:text-placeholder/50 resize-none bg-white"
           />
@@ -159,6 +173,10 @@ const FeedbacksTab = () => {
           </div>
         </div>
         <textarea
+          value={formData.moderation_feedback || ""}
+          onChange={(e) =>
+            updateFormData({ moderation_feedback: e.target.value })
+          }
           placeholder="Notes or feedback from the moderation"
           className="w-full h-24 border border-stroke rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary placeholder:text-placeholder/50 resize-none bg-white"
         />
@@ -179,7 +197,7 @@ const FeedbacksTab = () => {
           onClick={handleAddFeedback}
           className="px-6 py-3 rounded-lg border border-dashed border-primary text-primary font-bold italic hover:bg-blue-50 transition-colors w-auto flex items-center gap-2"
         >
-          <Plus className="w-4 h-4 text-primary"  />
+          <Plus className="w-4 h-4 text-primary" />
           Add new feedback
         </button>
       </div>

@@ -5,14 +5,17 @@ import { cn } from "@/lib/utils";
 interface CreateLeadSourceModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: (source: { id: number; name: string }) => void;
 }
 
 const CreateLeadSourceModal: React.FC<CreateLeadSourceModalProps> = ({
   isOpen,
   onClose,
+  onSuccess,
 }) => {
   const [shouldRender, setShouldRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [name, setName] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -24,6 +27,14 @@ const CreateLeadSourceModal: React.FC<CreateLeadSourceModalProps> = ({
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  const handleCreate = () => {
+    if (name.trim()) {
+      onSuccess({ id: Date.now(), name });
+      setName("");
+      onClose();
+    }
+  };
 
   if (!shouldRender) return null;
 
@@ -59,13 +70,18 @@ const CreateLeadSourceModal: React.FC<CreateLeadSourceModalProps> = ({
               </label>
               <input
                 type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="w-full border border-stroke rounded-xl px-4 py-3 focus:outline-none focus:border-primary text-body italic"
                 placeholder="Enter lead source name"
               />
             </div>
 
             <div className="flex items-center gap-3 pt-2">
-              <button className="px-8 py-2.5 rounded-full bg-primary text-white text-sm font-bold italic hover:bg-primary/90 transition-colors shadow-lg shadow-primary/30">
+              <button
+                onClick={handleCreate}
+                className="px-8 py-2.5 rounded-full bg-primary text-white text-sm font-bold italic hover:bg-primary/90 transition-colors shadow-lg shadow-primary/30"
+              >
                 Create
               </button>
               <button

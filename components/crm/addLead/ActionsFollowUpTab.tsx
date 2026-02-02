@@ -14,8 +14,18 @@ import AddTaskModal from "@/components/modals/AddTaskModal";
 import ScheduleMeetingModal from "@/components/modals/ScheduleMeetingModal";
 import LogCallModal from "@/components/modals/LogCallModal";
 import SendEmailModal from "@/components/modals/SendEmailModal";
+import ImageUpload from "@/components/ui/ImageUpload";
+import { LeadFormData } from "@/types/leadTypes";
 
-const ActionsFollowUpTab = () => {
+interface ActionsFollowUpTabProps {
+  formData: LeadFormData;
+  updateFormData: (updates: Partial<LeadFormData>) => void;
+}
+
+const ActionsFollowUpTab: React.FC<ActionsFollowUpTabProps> = ({
+  formData,
+  updateFormData,
+}) => {
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = React.useState(false);
   const [isScheduleMeetingModalOpen, setIsScheduleMeetingModalOpen] =
     React.useState(false);
@@ -29,9 +39,10 @@ const ActionsFollowUpTab = () => {
         <h3 className="text-lg font-bold text-mainText italic mb-4">
           Load Image
         </h3>
-        <div className="w-24 h-24 rounded-full bg-[#CCCCCC] flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
-          <User className="w-12 h-12 text-white" />
-        </div>
+        <ImageUpload
+          value={formData.avatar}
+          onChange={(file) => updateFormData({ avatar: file })}
+        />
       </div>
 
       {/* Actions & Follow-up Section */}
@@ -47,12 +58,16 @@ const ActionsFollowUpTab = () => {
               Select sellers <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <select className="w-full border border-stroke rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer">
-                <option value="" disabled selected>
+              <select
+                value={formData.to || ""}
+                onChange={(e) => updateFormData({ to: Number(e.target.value) })}
+                className="w-full border border-stroke rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer"
+              >
+                <option value="" disabled>
                   Select an option
                 </option>
-                <option value="seller1">Seller 1</option>
-                <option value="seller2">Seller 2</option>
+                <option value="1">Seller 1</option>
+                <option value="2">Seller 2</option>
               </select>
               <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
             </div>
