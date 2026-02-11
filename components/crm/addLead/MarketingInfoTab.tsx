@@ -220,6 +220,10 @@ interface MarketingInfoTabProps {
   updateFormData: (updates: Partial<LeadFormData>) => void;
   socialMediaLinks: SocialMedia[];
   setSocialMediaLinks: React.Dispatch<React.SetStateAction<SocialMedia[]>>;
+  leadSourceOptions: any[];
+  channelOptions: any[];
+  onAddLeadSource: (option: { id: number; name: string }) => void;
+  onAddChannel: (option: { id: number; name: string }) => void;
 }
 
 const MarketingInfoTab: React.FC<MarketingInfoTabProps> = ({
@@ -227,31 +231,22 @@ const MarketingInfoTab: React.FC<MarketingInfoTabProps> = ({
   updateFormData,
   socialMediaLinks,
   setSocialMediaLinks,
+  leadSourceOptions,
+  channelOptions,
+  onAddLeadSource,
+  onAddChannel,
 }) => {
   const [isLeadSourceModalOpen, setIsLeadSourceModalOpen] = useState(false);
   const [isChannelModalOpen, setIsChannelModalOpen] = useState(false);
 
-  // Dynamic Options State
-  const [leadSourceOptions, setLeadSourceOptions] = useState([
-    { id: 1, name: "Google" },
-    { id: 2, name: "Facebook" },
-    { id: 3, name: "Referral" },
-  ]);
-
-  const [channelOptions, setChannelOptions] = useState([
-    { id: 1, name: "Email" },
-    { id: 2, name: "Phone" },
-    { id: 3, name: "SMS" },
-  ]);
-
   // Handlers for creating new items
   const handleCreateLeadSource = (newSource: { id: number; name: string }) => {
-    setLeadSourceOptions((prev) => [...prev, newSource]);
+    onAddLeadSource(newSource);
     updateFormData({ lead_source_type_id: newSource.id });
   };
 
   const handleCreateChannel = (newChannel: { id: number; name: string }) => {
-    setChannelOptions((prev) => [...prev, newChannel]);
+    onAddChannel(newChannel);
     updateFormData({ channels_id: newChannel.id });
   };
 

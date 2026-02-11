@@ -49,6 +49,7 @@ export interface LeadFormData {
   converted?: boolean;
   communicationed?: boolean;
   is_active?: boolean;
+  social_media?: SocialMedia[];
 }
 
 export interface Feedback {

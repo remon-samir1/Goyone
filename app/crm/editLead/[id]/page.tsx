@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Phone,
   CheckSquare,
@@ -9,7 +9,7 @@ import {
   Target,
   ScrollText,
 } from "lucide-react";
-import Header from "../header";
+import Header from "../../header";
 import BasicInfoTab from "@/components/crm/addLead/BasicInfoTab";
 import FeedbacksTab from "@/components/crm/addLead/FeedbacksTab";
 import MarketingInfoTab from "@/components/crm/addLead/MarketingInfoTab";
@@ -23,7 +23,8 @@ import {
   SocialMedia,
 } from "@/types/leadTypes";
 import {
-  createLead,
+  getLead,
+  updateLead,
   getPositions,
   getServices,
   getCategories,
@@ -31,59 +32,125 @@ import {
   getChannels,
   getStatuses,
 } from "@/lib/api";
+import { useParams, useRouter } from "next/navigation";
 
 // Stepper Component
-interface StepperProps {
-  statuses: any[];
-  currentStatusId: number | undefined;
-  onStatusSelect: (statusId: number) => void;
-}
-
-const Stepper: React.FC<StepperProps> = ({
-  statuses,
-  currentStatusId,
-  onStatusSelect,
+const Stepper = ({
+  currentStep,
+  setCurrentStep,
+}: {
+  currentStep: number;
+  setCurrentStep: (step: number) => void;
 }) => {
   const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(
     null,
   );
+  const [stageSelections, setStageSelections] = useState<{
+    [key: number]: string;
+  }>({});
 
-  // Group statuses by stage
-  const stagesData = [
-    { label: "Contact Stage", icon: Phone, stageNum: 1 },
-    { label: "Qualification Stage", icon: Target, stageNum: 2 },
-    { label: "Proposal Stage", icon: ScrollText, stageNum: 3 },
-    { label: "Closing Stage", icon: CheckSquare, stageNum: 4 },
+  const stages = [
+    {
+      label: "Contact Stage",
+      subLabel: "Contact Stage",
+      description: "Lead replied to the initial outreach.",
+      icon: Phone,
+      options: [
+        {
+          label: "Answered",
+          description: "Lead replied to the initial outreach.",
+          value: "answered",
+        },
+        {
+          label: "No Answered",
+          description: "No reply after outreach attempts.",
+          value: "no_answered",
+        },
+      ],
+    },
+    {
+      label: "Qualification Stage",
+      subLabel: "Qualified",
+      description: "Lead meets the criteria.",
+      icon: Target,
+      options: [
+        {
+          label: "Potential",
+          description: "Early interest; needs further assessment.",
+          value: "potential",
+        },
+        {
+          label: "Qualified",
+          description: "Has budget, need, and decision authority.",
+          value: "qualified",
+        },
+        {
+          label: "High Qualified",
+          description: "Strong fit and ready for proposal.",
+          value: "high_qualified",
+        },
+        {
+          label: "Not Qualified",
+          description: "Does not meet key criteria.",
+          value: "not_qualified",
+        },
+      ],
+    },
+    {
+      label: "Proposal Stage",
+      subLabel: "Negotiation",
+      description: "Proposal sent to lead.",
+      icon: ScrollText,
+      options: [
+        {
+          label: "Negotiation",
+          description: "Discussing terms, pricing, and details.",
+          value: "negotiation",
+        },
+        {
+          label: "Accepted",
+          description: "Proposal approved by the lead.",
+          value: "accepted",
+        },
+        {
+          label: "Rejected",
+          description: "Proposal declined or stopped.",
+          value: "rejected",
+        },
+      ],
+    },
+    {
+      label: "Closing Stage",
+      subLabel: "Deal Won",
+      description: "Deal successfully closed.",
+      icon: CheckSquare,
+      options: [
+        {
+          label: "Deal Won",
+          description: "Agreement signed and project started.",
+          value: "deal_won",
+        },
+        {
+          label: "Deal Lost",
+          description: "Opportunity closed without a sale.",
+          value: "deal_lost",
+        },
+      ],
+    },
   ];
-
-  const stages = stagesData.map((s) => {
-    const stageStatuses = statuses.filter((st) => st.stage === s.stageNum);
-    const selectedInStage = stageStatuses.find(
-      (st) => st.id === currentStatusId,
-    );
-
-    return {
-      ...s,
-      subLabel: selectedInStage ? selectedInStage.name : s.label,
-      options: stageStatuses.map((st) => ({
-        id: st.id,
-        label: st.name,
-        description: st.description,
-      })),
-      isSelected: !!selectedInStage,
-    };
-  });
-
-  // Calculate current step based on the highest stage with a selection
-  const currentStep =
-    statuses.find((st) => st.id === currentStatusId)?.stage || 0;
 
   const handleStageClick = (index: number) => {
     setOpenDropdownIndex(openDropdownIndex === index ? null : index);
   };
 
-  const handleOptionSelect = (optionId: number) => {
-    onStatusSelect(optionId);
+  const handleOptionSelect = (index: number, value: string) => {
+    setStageSelections((prev) => ({ ...prev, [index]: value }));
+
+    if (index < stages.length - 1) {
+      setCurrentStep(index + 1);
+    } else {
+      setCurrentStep(stages.length);
+    }
     setOpenDropdownIndex(null);
   };
 
@@ -99,14 +166,17 @@ const Stepper: React.FC<StepperProps> = ({
           <div
             className="absolute top-0 left-0 h-full bg-primary transition-all duration-500 ease-in-out"
             style={{
-              width: `${Math.max(0, Math.min(100, ((currentStep - 1) / (stages.length - 1)) * 100))}%`,
+              width: `${Math.min(
+                100,
+                (currentStep / (stages.length - 1)) * 100,
+              )}%`,
             }}
           />
         </div>
 
         {stages.map((stage, index) => {
-          const isActive = stage.stageNum <= currentStep;
-          const isCompleted = stage.stageNum < currentStep;
+          const isActive = index <= currentStep;
+          const isCompleted = index < currentStep;
 
           return (
             <div
@@ -124,12 +194,15 @@ const Stepper: React.FC<StepperProps> = ({
               >
                 <div
                   className={`w-14 h-14 rounded-full flex items-center justify-center relative transition-colors duration-300 ${
-                    isActive ? "bg-primary" : "bg-[#F5F8FE]"
+                    isActive || isCompleted ? "bg-primary" : "bg-[#F5F8FE]"
                   }`}
                 >
+                  {isActive || isCompleted ? (
+                    <div className="absolute inset-[-4px] rounded-full" />
+                  ) : null}
                   <stage.icon
                     className={`w-6 h-6 z-10 ${
-                      isActive ? "text-white" : "text-[#94A3B8]"
+                      isActive || isCompleted ? "text-white" : "text-[#94A3B8]"
                     }`}
                   />
                 </div>
@@ -140,24 +213,32 @@ const Stepper: React.FC<StepperProps> = ({
                 <div className="flex items-center gap-1 justify-center mb-1">
                   <p
                     className={`text-[15px] font-bold italic ${
-                      isActive ? "text-mainText" : "text-[#94A3B8]"
+                      isActive || isCompleted
+                        ? "text-mainText"
+                        : "text-[#94A3B8]"
                     }`}
                   >
                     {stage.label}
                   </p>
                   <ChevronDown
                     className={`w-4 h-4 ${
-                      isActive ? "text-mainText" : "text-[#94A3B8]"
+                      isActive || isCompleted
+                        ? "text-mainText"
+                        : "text-[#94A3B8]"
                     }`}
                   />
                 </div>
                 <div
                   className={`px-10 py-2 rounded-full shadow-sm inline-block ${
-                    isActive ? "bg-primary/5" : "bg-[#F5F8FE]"
+                    isActive || isCompleted ? "bg-primary/5" : "bg-[#F5F8FE]"
                   }`}
                 >
                   <span
-                    className={`text-[13px] font-bold italic text-mainText`}
+                    className={`text-[13px] font-bold italic ${
+                      isActive || isCompleted
+                        ? "text-mainText"
+                        : "text-mainText"
+                    }`}
                   >
                     {stage.subLabel}
                   </span>
@@ -167,7 +248,8 @@ const Stepper: React.FC<StepperProps> = ({
                 {openDropdownIndex === index && (
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 p-2 z-[9999]">
                     {stage.options?.map((option, optIndex) => {
-                      const isSelected = currentStatusId === option.id;
+                      const isSelected =
+                        stageSelections[index] === option.value;
                       return (
                         <div
                           key={optIndex}
@@ -176,7 +258,7 @@ const Stepper: React.FC<StepperProps> = ({
                           }`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleOptionSelect(option.id);
+                            handleOptionSelect(index, option.value);
                           }}
                         >
                           <div
@@ -217,9 +299,14 @@ const TABS = [
   "Actions & Follow-up",
 ];
 
-const AddLeadPage = () => {
+const EditLeadPage = () => {
+  const params = useParams();
+  const router = useRouter();
+  const id = params?.id as string;
+
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
 
   // Dropdown options state
   const [options, setOptions] = useState({
@@ -243,53 +330,115 @@ const AddLeadPage = () => {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [socialMediaLinks, setSocialMediaLinks] = useState<SocialMedia[]>([]);
 
-  // Fetch dropdown options on mount
-  React.useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        const [
-          positionsData,
-          servicesData,
-          categoriesData,
-          leadSourcesData,
-          channelsData,
-          statusesData,
-        ] = await Promise.all([
-          getPositions(),
-          getServices(),
-          getCategories(),
-          getLeadSources(),
-          getChannels(),
-          getStatuses(),
-        ]);
-
-        console.log("Fetched options:", {
-          positions: positionsData,
-          services: servicesData,
-          categories: categoriesData,
-          leadSources: leadSourcesData,
-          channels: channelsData,
-          statuses: statusesData,
-        });
-
-        setOptions({
-          positions: positionsData,
-          services: servicesData,
-          categories: categoriesData,
-          leadSources: leadSourcesData,
-          channels: channelsData,
-          statuses: statusesData,
-        });
-      } catch (error) {
-        console.error("Error fetching dropdown options:", error);
-        toast.error("Failed to load some form options");
-      }
-    };
-
-    fetchOptions();
-  }, []);
-
   const activeTab = TABS[activeTabIndex];
+
+  // Fetch lead data
+  useEffect(() => {
+    if (id) {
+      const fetchLeadData = async () => {
+        setIsLoading(true);
+        try {
+          const response = await getLead(id);
+          const lead = response.data;
+
+          // Map API data to LeadFormData
+          setFormData({
+            ...initialFormData,
+            ...lead,
+            // Ensure first name and last name are set if they came as full_name
+            first_name: lead.first_name || lead.full_name?.split(" ")[0] || "",
+            last_name:
+              lead.last_name ||
+              lead.full_name?.split(" ").slice(1).join(" ") ||
+              "",
+            phone_number: lead.phone_number || lead.phone || "",
+
+            // Map nested objects to IDs for select inputs
+            position:
+              lead.position ||
+              lead.position?.id ||
+              lead.position?.name?.toLowerCase().replace(/\s+/g, "_") ||
+              "",
+            category_id:
+              lead.category_id ||
+              (lead.category?.id ? Number(lead.category.id) : ""),
+            service_id:
+              lead.service_id ||
+              (lead.service?.id ? Number(lead.service.id) : ""),
+            lead_source_type_id:
+              lead.lead_source_type_id ||
+              (lead.lead_source_type?.id
+                ? Number(lead.lead_source_type.id)
+                : ""),
+            channels_id:
+              lead.channels_id ||
+              (lead.channels?.id ? Number(lead.channels.id) : ""),
+            status_id:
+              lead.status_id || (lead.status?.id ? Number(lead.status.id) : ""),
+
+            business_category_id: formData.business_category_id || 1, // Default to 1
+            // lead_source_type_id: formData.lead_source_type_id || 1, // Default to 1 (Google)
+            lead_source_value: formData.lead_source_value || "Direct", // Default value
+          });
+
+          if (lead.feedbacks) {
+            setFeedbacks(lead.feedbacks);
+          }
+
+          if (lead.social_media) {
+            setSocialMediaLinks(
+              lead.social_media.map((sm: any) => ({
+                id: sm.id,
+                type: sm.type,
+                value: sm.value,
+                isSaved: true,
+              })),
+            );
+          }
+        } catch (error) {
+          console.error("Error fetching lead:", error);
+          toast.error("Failed to load lead data");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchLeadData();
+
+      // Fetch dropdown options
+      const fetchOptions = async () => {
+        try {
+          const [
+            positionsData,
+            servicesData,
+            categoriesData,
+            leadSourcesData,
+            channelsData,
+            statusesData,
+          ] = await Promise.all([
+            getPositions(),
+            getServices(),
+            getCategories(),
+            getLeadSources(),
+            getChannels(),
+            getStatuses(),
+          ]);
+
+          setOptions({
+            positions: positionsData,
+            services: servicesData,
+            categories: categoriesData,
+            leadSources: leadSourcesData,
+            channels: channelsData,
+            statuses: statusesData,
+          });
+        } catch (error) {
+          console.error("Error fetching dropdown options:", error);
+        }
+      };
+
+      fetchOptions();
+    }
+  }, [id]);
 
   // Update form data helper
   const updateFormData = (updates: Partial<LeadFormData>) => {
@@ -329,37 +478,30 @@ const AddLeadPage = () => {
   };
 
   // Handle form submission
-  const handleSubmit = async (createAnother: boolean = false) => {
+  const handleSubmit = async () => {
     if (!validateForm()) return;
 
     setIsLoading(true);
 
     try {
-      // Auto-generate UUID
-      const generatedUuid = crypto.randomUUID();
-
       // Prepare data for API with defaults for required fields
       const submitData: LeadFormData = {
         ...formData,
-        uuid: generatedUuid,
         full_name: `${formData.first_name} ${formData.last_name}`.trim(),
         customer_inquiry:
           feedbacks.length > 0
             ? feedbacks[0].content
             : formData.customer_inquiry || "",
-
-        // Handle defaults for required fields if missing
-        business_category_id: formData.business_category_id || 1, // Default to 1
-        lead_source_type_id: formData.lead_source_type_id || 1, // Default to 1 (Google)
-        lead_source_value: formData.lead_source_value || "Direct", // Default value
+        // Add social media if your API expects them in this format
+        social_media: socialMediaLinks.filter((l) => l.isSaved),
       };
 
-      await createLead(submitData);
+      await updateLead(id, submitData);
 
       toast.success(
         <div className="flex items-center gap-2">
           <CheckSquare className="w-5 h-5 text-green-600" />
-          <span className="font-bold">Lead created successfully!</span>
+          <span className="font-bold">Lead updated successfully!</span>
         </div>,
         {
           duration: 3000,
@@ -371,36 +513,18 @@ const AddLeadPage = () => {
         },
       );
 
-      if (createAnother) {
-        // Reset form for new entry
-        setFormData(initialFormData);
-        setFeedbacks([]);
-        setSocialMediaLinks([]);
-        setActiveTabIndex(0);
-      } else {
-        // Optionally redirect or show success state
-      }
+      // Redirect back to CRM list
+      router.push("/crm");
     } catch (error: any) {
       if (error?.response?.status !== 500) {
         console.error("Submission error:", error);
       }
       toast.error(
         <div>
-          <p className="font-bold">Failed to create lead</p>
+          <p className="font-bold">Failed to update lead</p>
           <p className="text-sm">
             {error?.response?.data?.message || "Please try again later."}
           </p>
-          {error?.response?.data?.errors && (
-            <ul className="text-xs mt-1 list-disc pl-4">
-              {Object.values(error.response.data.errors)
-                .flat()
-                .map((err: any, i) => (
-                  <li key={i}>
-                    {typeof err === "string" ? err : JSON.stringify(err)}
-                  </li>
-                ))}
-            </ul>
-          )}
         </div>,
         {
           duration: 5000,
@@ -430,15 +554,7 @@ const AddLeadPage = () => {
   };
 
   const handleCancel = () => {
-    // Reset form
-    setFormData(initialFormData);
-    setFeedbacks([]);
-    setSocialMediaLinks([]);
-    setActiveTabIndex(0);
-    toast("Form has been reset", {
-      icon: "🔄",
-      duration: 2000,
-    });
+    router.push("/crm");
   };
 
   return (
@@ -463,18 +579,17 @@ const AddLeadPage = () => {
         <Header Links={false} />
         <div className="px-8 mt-6">
           <h1 className="text-2xl font-bold text-mainText italic mb-1">
-            Create lead
+            Update lead
           </h1>
           <p className="text-sm text-body italic mb-8">
-            Fill in the information below to create a new lead in your CRM
+            Edit the information below to update the lead in your CRM
           </p>
 
           {/* White Card Container */}
           <div className="rounded-[32px]">
             <Stepper
-              statuses={options.statuses}
-              currentStatusId={formData.status_id}
-              onStatusSelect={(id) => updateFormData({ status_id: id })}
+              currentStep={currentStep}
+              setCurrentStep={setCurrentStep}
             />
 
             {/* Tabs */}
@@ -533,7 +648,7 @@ const AddLeadPage = () => {
               <ActionsFollowUpTab
                 formData={formData}
                 updateFormData={updateFormData}
-                mode="add"
+                mode="edit"
               />
             )}
 
@@ -541,18 +656,11 @@ const AddLeadPage = () => {
             <div className="flex items-center justify-between mt-12 pt-8">
               <div className="flex gap-4">
                 <button
-                  onClick={() => handleSubmit(false)}
+                  onClick={handleSubmit}
                   disabled={isLoading}
                   className="px-10 py-3 rounded-full bg-primary text-white font-bold italic shadow-lg shadow-primary/30 hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
-                  Create
-                </button>
-                <button
-                  onClick={() => handleSubmit(true)}
-                  disabled={isLoading}
-                  className="px-6 py-3 rounded-full border border-primary text-primary font-bold italic hover:bg-blue-50 transition-colors disabled:opacity-50"
-                >
-                  Create & Create Another
+                  Update
                 </button>
                 <button
                   onClick={handleCancel}
@@ -590,4 +698,4 @@ const AddLeadPage = () => {
   );
 };
 
-export default AddLeadPage;
+export default EditLeadPage;

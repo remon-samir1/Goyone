@@ -11,18 +11,51 @@ import React, { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { getSellers, getStatuses } from "@/lib/api";
 
 interface FiltersModalProps {
   isOpen: boolean;
   onClose: () => void;
+  filters: any;
+  onApply: (filters: any) => void;
 }
 
-const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
+const FiltersModal = ({
+  isOpen,
+  onClose,
+  filters,
+  onApply,
+}: FiltersModalProps) => {
   const [isFeedbackDateOpen, setIsFeedbackDateOpen] = useState(true);
   const [render, setRender] = useState(isOpen);
   const modalRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Filter state
+  const [localFilters, setLocalFilters] = useState(filters);
+  const [sellers, setSellers] = useState<any[]>([]);
+  const [statuses, setStatuses] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setLocalFilters(filters);
+      fetchSellersAndStatuses();
+    }
+  }, [isOpen, filters]);
+
+  const fetchSellersAndStatuses = async () => {
+    try {
+      const [sellersData, statusesData] = await Promise.all([
+        getSellers(),
+        getStatuses(),
+      ]);
+      setSellers(sellersData);
+      setStatuses(statusesData);
+    } catch (error) {
+      console.error("Error fetching filters data:", error);
+    }
+  };
 
   // Handle mounting/unmounting for animations
   useEffect(() => {
@@ -79,6 +112,18 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
     { dependencies: [isOpen, render], scope: modalRef },
   );
 
+  const handleReset = () => {
+    setLocalFilters({
+      seller_id: "",
+      status_id: "",
+      communicationed: "",
+      created_from: "",
+      created_to: "",
+      feedback_from: "",
+      feedback_to: "",
+    });
+  };
+
   if (!render) return null;
 
   return (
@@ -120,7 +165,10 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
         </div>
 
         <div className="px-6 py-2 border-b border-gray-50">
-          <button className="flex items-center gap-1.5 text-primary text-xs font-medium hover:text-primary transition-colors">
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-1.5 text-primary text-xs font-medium hover:text-primary transition-colors"
+          >
             <RotateCcw className="w-3.5 h-3.5" />
             Reset all filters
           </button>
@@ -134,10 +182,22 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
               Seller Name
             </label>
             <div className="relative">
-              <select className="w-full p-3 bg-gray-50 border-none rounded-xl text-sm text-gray-500 appearance-none outline-none focus:ring-1 focus:ring-primary">
-                <option>Select a seller...</option>
-                <option>Remon Samir</option>
-                <option>John Doe</option>
+              <select
+                className="w-full p-3 bg-gray-50 border-none rounded-xl text-sm text-gray-500 appearance-none outline-none focus:ring-1 focus:ring-primary"
+                value={localFilters.seller_id}
+                onChange={(e) =>
+                  setLocalFilters({
+                    ...localFilters,
+                    seller_id: e.target.value,
+                  })
+                }
+              >
+                <option value="">Select a seller...</option>
+                {sellers.map((seller: any) => (
+                  <option key={seller.id} value={seller.id}>
+                    {seller.name}
+                  </option>
+                ))}
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
@@ -149,25 +209,26 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
               Status
             </label>
             <div className="flex flex-wrap gap-2">
-              {[
-                "New",
-                "Contacted",
-                "Qualified",
-                "Proposal",
-                "Negotiation",
-                "Closed",
-                "Lost",
-              ].map((status) => (
+              {statuses.map((status: any) => (
                 <button
-                  key={status}
+                  key={status.id}
+                  onClick={() =>
+                    setLocalFilters({
+                      ...localFilters,
+                      status_id:
+                        localFilters.status_id === status.id.toString()
+                          ? ""
+                          : status.id.toString(),
+                    })
+                  }
                   className={cn(
                     "px-4 py-1.5 rounded-full text-xs font-medium border transition-colors italic",
-                    status === "New"
+                    localFilters.status_id === status.id.toString()
                       ? "border-primary text-primary bg-primary/10"
                       : "border-gray-200 text-gray-500 hover:border-primary/50 hover:text-primary",
                   )}
                 >
-                  {status}
+                  {status.name}
                 </button>
               ))}
             </div>
@@ -179,16 +240,51 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
               Create Date
             </label>
             <div className="flex gap-2">
-              {["Today", "Last 7 Days", "This Month", "Last Month"].map(
-                (range) => (
-                  <button
-                    key={range}
-                    className="bg-gray-50 px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-100 transition-colors italic"
-                  >
-                    {range}
-                  </button>
-                ),
-              )}
+              {[
+                {
+                  label: "Today",
+                  value: () => {
+                    const today = new Date().toISOString().split("T")[0];
+                    return { from: today, to: today };
+                  },
+                },
+                {
+                  label: "Last 7 Days",
+                  value: () => {
+                    const to = new Date().toISOString().split("T")[0];
+                    const from = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+                      .toISOString()
+                      .split("T")[0];
+                    return { from, to };
+                  },
+                },
+                {
+                  label: "This Month",
+                  value: () => {
+                    const now = new Date();
+                    const from = new Date(now.getFullYear(), now.getMonth(), 1)
+                      .toISOString()
+                      .split("T")[0];
+                    const to = now.toISOString().split("T")[0];
+                    return { from, to };
+                  },
+                },
+              ].map((range) => (
+                <button
+                  key={range.label}
+                  onClick={() => {
+                    const { from, to } = range.value();
+                    setLocalFilters({
+                      ...localFilters,
+                      created_from: from,
+                      created_to: to,
+                    });
+                  }}
+                  className="bg-gray-50 px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-100 transition-colors italic"
+                >
+                  {range.label}
+                </button>
+              ))}
             </div>
             <div className="grid grid-cols-2 gap-4 pt-1">
               <div className="space-y-1.5">
@@ -197,11 +293,16 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
                 </label>
                 <div className="relative">
                   <input
-                    type="text"
-                    placeholder="12/22/2025"
-                    className="w-full pl-3 pr-9 py-2.5 bg-blue-50/50 border border-blue-100 rounded-lg text-xs text-gray-600 placeholder:text-gray-400 focus:outline-none focus:border-blue-300"
+                    type="date"
+                    className="w-full pl-3 pr-3 py-2.5 bg-blue-50/50 border border-blue-100 rounded-lg text-xs text-gray-600 focus:outline-none focus:border-blue-300"
+                    value={localFilters.created_from}
+                    onChange={(e) =>
+                      setLocalFilters({
+                        ...localFilters,
+                        created_from: e.target.value,
+                      })
+                    }
                   />
-                  <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                 </div>
               </div>
               <div className="space-y-1.5">
@@ -210,11 +311,16 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
                 </label>
                 <div className="relative">
                   <input
-                    type="text"
-                    placeholder="12/22/2025"
-                    className="w-full pl-3 pr-9 py-2.5 bg-blue-50/50 border border-blue-100 rounded-lg text-xs text-gray-600 placeholder:text-gray-400 focus:outline-none focus:border-blue-300"
+                    type="date"
+                    className="w-full pl-3 pr-3 py-2.5 bg-blue-50/50 border border-blue-100 rounded-lg text-xs text-gray-600 focus:outline-none focus:border-blue-300"
+                    value={localFilters.created_to}
+                    onChange={(e) =>
+                      setLocalFilters({
+                        ...localFilters,
+                        created_to: e.target.value,
+                      })
+                    }
                   />
-                  <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                 </div>
               </div>
             </div>
@@ -240,16 +346,45 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
             {isFeedbackDateOpen && (
               <div className="space-y-3 animate-in slide-in-from-top-2 duration-200">
                 <div className="flex gap-2">
-                  {["Today", "Last 7 Days", "This Month", "Last Month"].map(
-                    (range) => (
-                      <button
-                        key={range}
-                        className="bg-gray-50 px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-100 transition-colors italic"
-                      >
-                        {range}
-                      </button>
-                    ),
-                  )}
+                  {[
+                    {
+                      label: "Today",
+                      value: () => {
+                        const today = new Date().toISOString().split("T")[0];
+                        return { from: today, to: today };
+                      },
+                    },
+                    {
+                      label: "This Month",
+                      value: () => {
+                        const now = new Date();
+                        const from = new Date(
+                          now.getFullYear(),
+                          now.getMonth(),
+                          1,
+                        )
+                          .toISOString()
+                          .split("T")[0];
+                        const to = now.toISOString().split("T")[0];
+                        return { from, to };
+                      },
+                    },
+                  ].map((range) => (
+                    <button
+                      key={range.label}
+                      onClick={() => {
+                        const { from, to } = range.value();
+                        setLocalFilters({
+                          ...localFilters,
+                          feedback_from: from,
+                          feedback_to: to,
+                        });
+                      }}
+                      className="bg-gray-50 px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:bg-gray-100 transition-colors italic"
+                    >
+                      {range.label}
+                    </button>
+                  ))}
                 </div>
                 <div className="grid grid-cols-2 gap-4 pt-1">
                   <div className="space-y-1.5">
@@ -258,11 +393,16 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
                     </label>
                     <div className="relative">
                       <input
-                        type="text"
-                        placeholder="12/22/2025"
-                        className="w-full pl-3 pr-9 py-2.5 bg-primary/5 border border-primary/20 rounded-lg text-xs text-gray-600 placeholder:text-gray-400 focus:outline-none focus:border-primary/50"
+                        type="date"
+                        className="w-full pl-3 pr-3 py-2.5 bg-primary/5 border border-primary/20 rounded-lg text-xs text-gray-600 focus:outline-none focus:border-primary/50"
+                        value={localFilters.feedback_from}
+                        onChange={(e) =>
+                          setLocalFilters({
+                            ...localFilters,
+                            feedback_from: e.target.value,
+                          })
+                        }
                       />
-                      <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     </div>
                   </div>
                   <div className="space-y-1.5">
@@ -271,11 +411,16 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
                     </label>
                     <div className="relative">
                       <input
-                        type="text"
-                        placeholder="12/22/2025"
-                        className="w-full pl-3 pr-9 py-2.5 bg-primary/5 border border-primary/20 rounded-lg text-xs text-gray-600 placeholder:text-gray-400 focus:outline-none focus:border-primary/50"
+                        type="date"
+                        className="w-full pl-3 pr-3 py-2.5 bg-primary/5 border border-primary/20 rounded-lg text-xs text-gray-600 focus:outline-none focus:border-primary/50"
+                        value={localFilters.feedback_to}
+                        onChange={(e) =>
+                          setLocalFilters({
+                            ...localFilters,
+                            feedback_to: e.target.value,
+                          })
+                        }
                       />
-                      <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     </div>
                   </div>
                 </div>
@@ -290,11 +435,11 @@ const FiltersModal = ({ isOpen, onClose }: FiltersModalProps) => {
             onClick={onClose}
             className="flex-1 py-2.5 rounded-full border border-primary text-primary text-sm font-medium hover:bg-blue-50 transition-colors italic"
           >
-            Clear
+            Cancel
           </button>
           <button
-            onClick={onClose}
-            className="flex-1 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bgprimary/70 shadow-lg shadow-blue-200 transition-all italic"
+            onClick={() => onApply(localFilters)}
+            className="flex-1 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bg-primary/90 shadow-lg shadow-blue-200 transition-all italic"
           >
             Apply Filters
           </button>

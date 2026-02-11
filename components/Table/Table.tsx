@@ -57,6 +57,10 @@ export interface TableProps<T = any> {
   };
   rowActions?: (row: T) => React.ReactNode; // Optional custom row actions
   onRowSelect?: (selectedIds: string[]) => void; // Callback when rows are selected
+  onSort?: (key: string, direction: "asc" | "desc") => void;
+  onPin?: (key: string) => void;
+  onFilter?: (key: string) => void;
+  onHide?: (key: string) => void;
   className?: string;
   loading?: boolean;
 }
@@ -65,9 +69,17 @@ export interface TableProps<T = any> {
 const SortableTableHead = ({
   column,
   id,
+  onSort,
+  onPin,
+  onFilter,
+  onHide,
 }: {
   column: TableColumn;
   id: string;
+  onSort?: (key: string, direction: "asc" | "desc") => void;
+  onPin?: (key: string) => void;
+  onFilter?: (key: string) => void;
+  onHide?: (key: string) => void;
 }) => {
   const {
     attributes,
@@ -108,23 +120,38 @@ const SortableTableHead = ({
               align="start"
               className="w-52 rounded-xl p-2 shadow-lg"
             >
-              <DropdownMenuItem className="gap-3">
+              <DropdownMenuItem
+                className="gap-3"
+                onClick={() => onSort?.(column.key, "asc")}
+              >
                 <ArrowUp className="h-4 w-4 text-muted-foreground" />
                 Asc
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-3">
+              <DropdownMenuItem
+                className="gap-3"
+                onClick={() => onSort?.(column.key, "desc")}
+              >
                 <ArrowDown className="h-4 w-4 text-muted-foreground" />
                 Desc
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-3">
+              <DropdownMenuItem
+                className="gap-3"
+                onClick={() => onPin?.(column.key)}
+              >
                 <Pin className="h-4 w-4 text-muted-foreground" />
                 Pin column
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-3">
+              <DropdownMenuItem
+                className="gap-3"
+                onClick={() => onFilter?.(column.key)}
+              >
                 <Filter className="h-4 w-4 text-muted-foreground" />
                 Filter by
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-3 text-red-500 focus:text-red-500">
+              <DropdownMenuItem
+                className="gap-3 text-red-500 focus:text-red-500"
+                onClick={() => onHide?.(column.key)}
+              >
                 <EyeOff className="h-4 w-4" />
                 Hide column
               </DropdownMenuItem>
@@ -143,6 +170,10 @@ const Table = <T extends Record<string, any>>({
   pagination,
   rowActions,
   onRowSelect,
+  onSort,
+  onPin,
+  onFilter,
+  onHide,
   className = "",
   loading = false,
 }: TableProps<T>) => {
@@ -150,9 +181,13 @@ const Table = <T extends Record<string, any>>({
   const [orderedColumns, setOrderedColumns] =
     useState<TableColumn<T>[]>(columns);
 
-  // Sync orderedColumns is columns prop changes (optional but good practice)
+  // Sync orderedColumns if columns prop *keys* change
   useEffect(() => {
-    setOrderedColumns(columns);
+    const currentKeys = orderedColumns.map((c) => c.key).join(",");
+    const newKeys = columns.map((c) => c.key).join(",");
+    if (currentKeys !== newKeys) {
+      setOrderedColumns(columns);
+    }
   }, [columns]);
 
   const sensors = useSensors(
@@ -178,7 +213,6 @@ const Table = <T extends Record<string, any>>({
       });
     }
   };
-
   const toggleRowSelection = (id: string) => {
     const newSelected = new Set(selectedRows);
     if (newSelected.has(id)) {
@@ -188,6 +222,18 @@ const Table = <T extends Record<string, any>>({
     }
     setSelectedRows(newSelected);
     onRowSelect?.(Array.from(newSelected));
+  };
+
+  const handlePinInternal = (key: string) => {
+    setOrderedColumns((prev) => {
+      const columnIndex = prev.findIndex((col) => col.key === key);
+      if (columnIndex <= 0) return prev;
+      const newItems = [...prev];
+      const [item] = newItems.splice(columnIndex, 1);
+      newItems.unshift(item);
+      return newItems;
+    });
+    onPin?.(key);
   };
 
   const toggleSelectAll = () => {
@@ -275,6 +321,10 @@ const Table = <T extends Record<string, any>>({
                       key={column.key}
                       id={column.key}
                       column={column}
+                      onSort={onSort}
+                      onPin={handlePinInternal}
+                      onFilter={onFilter}
+                      onHide={onHide}
                     />
                   ))}
                 </SortableContext>

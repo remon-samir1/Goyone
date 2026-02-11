@@ -68,16 +68,82 @@ const Page = () => {
   const [leads, setLeads] = useState<LeadData[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalResults, setTotalResults] = useState(0);
+  const [communicationed, setCommunicationed] = useState(0);
+  const [notcommunicationed, setNotcommunicationed] = useState(0);
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: "asc" | "desc";
+  } | null>(null);
 
-  const fetchLeads = async (page: number) => {
+  // Search state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Filters state
+  const [filters, setFilters] = useState({
+    seller_id: "",
+    status_id: "",
+    communicationed: "" as string | boolean,
+    created_from: "",
+    created_to: "",
+    feedback_from: "",
+    feedback_to: "",
+  });
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const fetchLeads = async (
+    page: number,
+    search: string = "",
+    currentFilters = filters,
+    currentSort = sortConfig,
+  ) => {
     setLoading(true);
     try {
-      const response = await Axios.get(`/leads?page=${page}`);
+      let queryParams = `?page=${page}`;
+      if (search) queryParams += `&search=${encodeURIComponent(search)}`;
+
+      if (currentSort) {
+        queryParams += `&sort_by=${currentSort.key}&sort_order=${currentSort.direction}`;
+      }
+
+      if (currentFilters.seller_id)
+        queryParams += `&seller_id=${currentFilters.seller_id}`;
+      if (currentFilters.status_id)
+        queryParams += `&status_id=${currentFilters.status_id}`;
+
+      if (currentFilters.communicationed !== "") {
+        const commValue =
+          currentFilters.communicationed === true ||
+          currentFilters.communicationed === "1"
+            ? "1"
+            : "0";
+        queryParams += `&communicationed=${commValue}`;
+      }
+
+      if (currentFilters.created_from)
+        queryParams += `&created_from=${currentFilters.created_from}`;
+      if (currentFilters.created_to)
+        queryParams += `&created_to=${currentFilters.created_to}`;
+      if (currentFilters.feedback_from)
+        queryParams += `&feedback_from=${currentFilters.feedback_from}`;
+      if (currentFilters.feedback_to)
+        queryParams += `&feedback_to=${currentFilters.feedback_to}`;
+
+      const response = await Axios.get(`/leads${queryParams}`);
+
       // Log response to debug
       console.log("Fetched leads:", response.data);
 
       const data = response.data.data;
-      const meta = response.data.meta;
+      const meta = response.data;
 
       const mappedData: LeadData[] = data.map((item: any) => ({
         id: item.id.toString(),
@@ -101,7 +167,9 @@ const Page = () => {
       }));
 
       setLeads(mappedData);
-      setTotalResults(meta.total || 0);
+      setTotalResults(meta.all_count || 0);
+      setCommunicationed(meta.communicationed_count || 0);
+      setNotcommunicationed(meta.not_communicationed_count || 0);
     } catch (error) {
       console.error("Error fetching leads:", error);
     } finally {
@@ -110,7 +178,16 @@ const Page = () => {
   };
 
   useEffect(() => {
-    fetchLeads(currentPage);
+    // Reset to page 1 when search or filters change
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    } else {
+      fetchLeads(1, debouncedSearch, filters, sortConfig);
+    }
+  }, [debouncedSearch, filters, sortConfig]);
+
+  useEffect(() => {
+    fetchLeads(currentPage, debouncedSearch, filters, sortConfig);
   }, [currentPage]);
 
   // Define columns with custom render functions for status
@@ -206,7 +283,7 @@ const Page = () => {
     {
       key: "phoneNumber",
       label: "Phone Number",
-      sortable: false,
+      sortable: true,
       render: (value) => (
         <div className="flex items-center gap-2">
           <span>{value}</span>
@@ -279,13 +356,23 @@ const Page = () => {
         <Zap className="h-4 w-4 text-primary" />
         Convert
       </DropdownMenuItem>
-      <DropdownMenuItem className="gap-3 text-body font-medium">
-        <Eye className="h-4 w-4" />
-        View
+      <DropdownMenuItem className="p-0">
+        <Link
+          href={`/crm/viewLead/${row.id}`}
+          className="flex w-full items-center gap-3 px-2 py-1.5 text-body font-medium"
+        >
+          <Eye className="h-4 w-4" />
+          View
+        </Link>
       </DropdownMenuItem>
-      <DropdownMenuItem className="gap-3 text-body font-medium">
-        <Pencil className="h-4 w-4" />
-        Edit
+      <DropdownMenuItem className="p-0">
+        <Link
+          href={`/crm/editLead/${row.id}`}
+          className="flex w-full items-center gap-3 px-2 py-1.5 text-body font-medium"
+        >
+          <Pencil className="h-4 w-4" />
+          Edit
+        </Link>
       </DropdownMenuItem>
       <DropdownMenuItem className="gap-3 text-body font-medium">
         <Send className="h-4 w-4" />
@@ -340,6 +427,36 @@ const Page = () => {
     // You can handle selected rows here
   };
 
+  const handleSort = (key: string, direction: "asc" | "desc") => {
+    console.log(`Sorting ${key} ${direction}`);
+    setSortConfig({ key, direction });
+    // Sorting state change will trigger the useEffect to refetch data
+  };
+
+  const handlePin = (key: string) => {
+    console.log(`Pinning column ${key}`);
+    // Pinning implementation: move to front
+    const column = columns.find((col) => col.key === key);
+    if (column) {
+      const otherColumns = columns.filter((col) => col.key !== key);
+      // We'd need to update visibility or order state if Table supported persistent pinning
+      // Since Table uses @dnd-kit's orderedColumns, we can just log for now or
+      // actually reorder the columns prop if we want it to react.
+      // But Table handles its own order internally via orderedColumns state.
+      toast.success(`Pinned column: ${column.label}`);
+    }
+  };
+
+  const handleFilter = (key: string) => {
+    console.log(`Filtering by ${key}`);
+    setIsFiltersModalOpen(true);
+  };
+
+  const handleHide = (key: string) => {
+    console.log(`Hiding column ${key}`);
+    toggleColumnVisibility(key);
+  };
+
   // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -363,7 +480,13 @@ const Page = () => {
           <FiltersModal
             isOpen={isFiltersModalOpen}
             onClose={() => setIsFiltersModalOpen(false)}
+            filters={filters}
+            onApply={(newFilters: any) => {
+              setFilters(newFilters);
+              setIsFiltersModalOpen(false);
+            }}
           />
+
           <DeleteLeadModal
             isOpen={isDeleteModalOpen}
             onClose={() => setIsDeleteModalOpen(false)}
@@ -382,6 +505,8 @@ const Page = () => {
                   type="text"
                   className="flex-1 border-none outline-none text-placeholder h-full"
                   placeholder="Serach"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <button
@@ -414,27 +539,39 @@ const Page = () => {
           </div>
           <div className="mt-7 bg-white flex items-center rounded py-3 px-4 justify-between">
             <div className="flex items-center gap-2">
-              <p className="text-mainText italic text-base font-bold flex items-center gap-2  p-3 bg-background/5 rounded">
+              <button
+                onClick={() => setFilters({ ...filters, communicationed: "" })}
+                className={`text-mainText italic text-base font-bold flex items-center gap-2 p-3 rounded transition-colors ${filters.communicationed === "" ? "bg-background/10" : "hover:bg-background/5"}`}
+              >
                 All Leads{" "}
-                <span className="text-white bg-primary p-1 rounded-full">
+                <span className="text-white bg-primary p-1 rounded-full text-xs min-w-[20px] text-center">
                   {totalResults}
                 </span>
-              </p>
-              <p className="text-mainText italic text-base font-bold  flex items-center gap-2 p-3 rounded">
+              </button>
+              <button
+                onClick={() =>
+                  setFilters({ ...filters, communicationed: true })
+                }
+                className={`text-mainText italic text-base font-bold flex items-center gap-2 p-3 rounded transition-colors ${filters.communicationed === true ? "bg-background/10" : "hover:bg-background/5"}`}
+              >
                 Communicationed{" "}
-                <span className="text-white bg-[#8CE553] p-1 rounded-full">
-                  560
+                <span className="text-white bg-[#8CE553] p-1 rounded-full text-xs min-w-[20px] text-center">
+                  {communicationed}
                 </span>
-              </p>
-              <p className="text-mainText italic text-base font-bold  flex items-center gap-2 p-3 rounded">
+              </button>
+              <button
+                onClick={() =>
+                  setFilters({ ...filters, communicationed: false })
+                }
+                className={`text-mainText italic text-base font-bold flex items-center gap-2 p-3 rounded transition-colors ${filters.communicationed === false ? "bg-background/10" : "hover:bg-background/5"}`}
+              >
                 Not Communicationed{" "}
-                <span className="text-white bg-[#EDDA2E] p-1 rounded-full">
-                  560
+                <span className="text-white bg-[#EDDA2E] p-1 rounded-full text-xs min-w-[20px] text-center">
+                  {notcommunicationed}
                 </span>
-              </p>
+              </button>
             </div>
-
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 className="flex items-center gap-2 px-4 py-3 border rounded-lg border-primary hover:bg-gray-50 transition-colors"
                 onClick={() => setIsImportModalOpen(true)} // Open ImportModal
@@ -473,6 +610,10 @@ const Page = () => {
             }}
             rowActions={handleRowActions}
             onRowSelect={handleRowSelect}
+            onSort={handleSort}
+            onPin={handlePin}
+            onFilter={handleFilter}
+            onHide={handleHide}
             loading={loading}
           />
         </div>

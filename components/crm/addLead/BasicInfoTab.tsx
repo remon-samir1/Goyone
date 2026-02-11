@@ -13,35 +13,28 @@ import { LeadFormData } from "@/types/leadTypes";
 interface BasicInfoTabProps {
   formData: LeadFormData;
   updateFormData: (updates: Partial<LeadFormData>) => void;
+  positionOptions: any[];
+  serviceOptions: any[];
+  categoryOptions: any[];
+  onAddPosition: (option: { id: string | number; name: string }) => void;
+  onAddService: (option: { id: number; name: string }) => void;
+  onAddCategory: (option: { id: number; name: string }) => void;
 }
 
 const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
   formData,
   updateFormData,
+  positionOptions,
+  serviceOptions,
+  categoryOptions,
+  onAddPosition,
+  onAddService,
+  onAddCategory,
 }) => {
   const [isPositionModalOpen, setIsPositionModalOpen] = useState(false);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-
-  // Dynamic Options State
-  const [positionOptions, setPositionOptions] = useState([
-    { id: "ceo", name: "CEO" },
-    { id: "manager", name: "Manager" },
-    { id: "developer", name: "Developer" },
-  ]);
-
-  const [serviceOptions, setServiceOptions] = useState([
-    { id: 1, name: "Development" },
-    { id: 2, name: "Marketing" },
-    { id: 3, name: "Design" },
-  ]);
-
-  const [categoryOptions, setCategoryOptions] = useState([
-    { id: 1, name: "VIP" },
-    { id: 2, name: "Partner" },
-    { id: 3, name: "Distributor" },
-  ]);
 
   // Handlers for creating new items
   const handleCreatePosition = (newPositionName: string) => {
@@ -49,17 +42,17 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
     const newId = newPositionName.toLowerCase().replace(/\s+/g, "_");
     const newOption = { id: newId, name: newPositionName };
 
-    setPositionOptions((prev) => [...prev, newOption]);
+    onAddPosition(newOption);
     updateFormData({ position: newId });
   };
 
   const handleCreateService = (newService: { id: number; name: string }) => {
-    setServiceOptions((prev) => [...prev, newService]);
+    onAddService(newService);
     updateFormData({ service_id: newService.id });
   };
 
   const handleCreateCategory = (newCategory: { id: number; name: string }) => {
-    setCategoryOptions((prev) => [...prev, newCategory]);
+    onAddCategory(newCategory);
     updateFormData({ category_id: newCategory.id });
   };
 
@@ -143,7 +136,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                     <option value="" disabled>
                       Select an option
                     </option>
-                    {positionOptions.map((option) => (
+                    {positionOptions?.map((option) => (
                       <option key={option.id} value={option.id}>
                         {option.name}
                       </option>
