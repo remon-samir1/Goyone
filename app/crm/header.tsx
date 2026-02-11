@@ -142,7 +142,7 @@ const Header = ({ Links }: HeaderProps) => {
           <div className="flex items-center gap-1">
             <Logo />
             <ChevronsRight className="text-[#8CE553] w-[18px] h-[18px]" />
-            <p className="text-primary text-sm font-semibold">CRM</p>
+            <Link href={'/crm'} className="text-primary text-sm font-semibold">CRM </Link>
           </div>
 
           <div className="flex items-center gap-2 px-4 py-2 bg-white border border-stroke rounded-3xl ">
