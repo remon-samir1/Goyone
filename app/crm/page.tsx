@@ -33,6 +33,7 @@ import Header from "./header";
 import Link from "next/link";
 import { Axios } from "@/components/Helpers/Axios";
 import DeleteLeadModal from "@/components/modals/DeleteLeadModal";
+import ConvertLeadModal from "@/components/modals/ConvertLeadModal";
 import { deleteLead } from "@/lib/api";
 import { toast } from "react-hot-toast";
 
@@ -60,6 +61,9 @@ const Page = () => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
+  const [selectedLeadForConversion, setSelectedLeadForConversion] =
+    useState<LeadData | null>(null);
+  const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<LeadData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -352,7 +356,13 @@ const Page = () => {
   // Handle row actions
   const handleRowActions = (row: LeadData) => (
     <>
-      <DropdownMenuItem className="gap-3 text-body font-medium">
+      <DropdownMenuItem
+        className="gap-3 text-body font-medium cursor-pointer"
+        onClick={() => {
+          setSelectedLeadForConversion(row);
+          setIsConvertModalOpen(true);
+        }}
+      >
         <Zap className="h-4 w-4 text-primary" />
         Convert
       </DropdownMenuItem>
@@ -615,6 +625,12 @@ const Page = () => {
             onFilter={handleFilter}
             onHide={handleHide}
             loading={loading}
+          />
+          <ConvertLeadModal
+            isOpen={isConvertModalOpen}
+            onClose={() => setIsConvertModalOpen(false)}
+            leadId={selectedLeadForConversion?.id || null}
+            onSuccess={() => fetchLeads(currentPage)}
           />
         </div>
       </div>

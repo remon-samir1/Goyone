@@ -125,4 +125,11 @@ export const getSellers = async (): Promise<any[]> => {
 };
 
 
+export const convertLead = async (id: string | number, convertTo: 'contacts' | 'companyAccounts'): Promise<any> => {
+  const response = await api.post(`/leads/${id}/convert`, {
+    convert_to: convertTo,
+  });
+  return response.data;
+};
+
 export default api;

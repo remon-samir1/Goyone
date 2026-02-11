@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { Toaster } from "react-hot-toast";
 import localFont from "next/font/local";
 
 export const metadata: Metadata = {
@@ -60,7 +61,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={ginoraSans.className } >
+      <body className={ginoraSans.className}>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
