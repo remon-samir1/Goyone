@@ -49,6 +49,7 @@ export const deleteLead = async (id: string | number): Promise<any> => {
 
 export const getLead = async (id: string | number): Promise<any> => {
   const response = await api.get(`/leads/${id}`);
+  console.log(response);
   return response.data;
 };
 

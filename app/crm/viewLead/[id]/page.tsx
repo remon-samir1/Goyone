@@ -101,10 +101,10 @@ const ViewLeadPage = () => {
         <div className="flex justify-between items-center mb-10">
           <div>
             <h1 className="text-3xl font-bold text-mainText italic mb-1">
-              {lead.full_name}
+              {lead.full_name || "Empty"}
             </h1>
             <p className="text-body italic text-base">
-              {lead.company_name || "Independent Account"}
+              {lead.company_name || "Empty"}
             </p>
           </div>
           <div className="flex gap-4">
@@ -159,7 +159,7 @@ const ViewLeadPage = () => {
                           Email
                         </p>
                         <p className="text-sm font-bold text-mainText italic break-all">
-                          {lead.email || "N/A"}
+                          {lead.email || "Empty"}
                         </p>
                       </div>
                     </div>
@@ -172,7 +172,7 @@ const ViewLeadPage = () => {
                           Phone
                         </p>
                         <p className="text-sm font-bold text-mainText italic">
-                          {lead.phone || "N/A"}
+                          {lead.phone || "Empty"}
                         </p>
                       </div>
                     </div>
@@ -185,7 +185,7 @@ const ViewLeadPage = () => {
                           Company
                         </p>
                         <p className="text-sm font-bold text-mainText italic">
-                          {lead.company_name || "Independent"}
+                          {lead.company_name || "Empty"}
                         </p>
                       </div>
                     </div>
@@ -207,12 +207,12 @@ const ViewLeadPage = () => {
                               { label: "Email", value: lead.email },
                               {
                                 label: "Position",
-                                value: lead.position || "CEO",
+                                value: lead.position,
                               },
                               { label: "Phone number", value: lead.phone },
                               {
                                 label: "Category",
-                                value: lead.category?.name || "Partner",
+                                value: lead.category?.name,
                               },
                               {
                                 label: "Date",
@@ -226,9 +226,9 @@ const ViewLeadPage = () => {
                               },
                               {
                                 label: "Status",
-                                value: lead.status?.name || "Open",
+                                value: lead.status?.name,
                               },
-                              { label: "Ad Id", value: lead.ad_id || "444" },
+                              { label: "Ad Id", value: lead.ad_id },
                             ].map((item, idx) => (
                               <div
                                 key={idx}
@@ -238,7 +238,7 @@ const ViewLeadPage = () => {
                                   {item.label}:
                                 </span>
                                 <span className="text-sm font-bold text-mainText italic">
-                                  {item.value || "N/A"}
+                                  {item.value || "Empty"}
                                 </span>
                               </div>
                             ))}
@@ -254,25 +254,23 @@ const ViewLeadPage = () => {
                             {[
                               {
                                 label: "Company name",
-                                value: lead.company_name || "TechCorp Inc.",
+                                value: lead.company_name,
                               },
                               {
                                 label: "Company field",
-                                value: lead.company_field || "Lorem Ipsum",
+                                value: lead.company_field,
                               },
                               {
                                 label: "Company phone",
-                                value: lead.company_phone || "01018883449",
+                                value: lead.company_phone,
                               },
                               {
                                 label: "Company email",
-                                value:
-                                  lead.company_email || "nadaasaalah@gmail.com",
+                                value: lead.company_email,
                               },
                               {
                                 label: "Service",
-                                value:
-                                  lead.service?.name || "Branding & Design",
+                                value: lead.service?.name,
                               },
                             ].map((item, idx) => (
                               <div
@@ -283,7 +281,7 @@ const ViewLeadPage = () => {
                                   {item.label}:
                                 </span>
                                 <span className="text-sm font-bold text-mainText italic">
-                                  {item.value || "N/A"}
+                                  {item.value || "Empty"}
                                 </span>
                               </div>
                             ))}
@@ -303,7 +301,7 @@ const ViewLeadPage = () => {
                               lead source:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              Facebook ads
+                              {lead.lead_source?.name || "Empty"}
                             </span>
                           </p>
                           <p className="text-sm">
@@ -311,7 +309,7 @@ const ViewLeadPage = () => {
                               Channels:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              Instagram
+                              {lead.channel?.name || "Empty"}
                             </span>
                           </p>
                           <p className="text-sm">
@@ -319,26 +317,23 @@ const ViewLeadPage = () => {
                               Ad Id:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              232343546565576
+                              {lead.ad_id || "Empty"}
                             </span>
                           </p>
                           <p className="text-sm">
                             <span className="text-body italic font-medium">
                               Ad URL:
                             </span>{" "}
-                            <a
-                              href="#"
-                              className="text-mainText font-bold italic underline"
-                            >
-                              https://dev-crm.sunmedagency.com/leads/create?step=
-                            </a>
+                            <span className="text-mainText font-bold italic">
+                              {lead.ad_url || "Empty"}
+                            </span>
                           </p>
                           <p className="text-sm">
                             <span className="text-body italic font-medium">
                               socials:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              Facebook, Instagram
+                              {lead.socials || "Empty"}
                             </span>
                           </p>
                         </div>
@@ -356,7 +351,7 @@ const ViewLeadPage = () => {
                               Customer Inquiry:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              Lorem ipsum
+                              {lead.customer_inquiry || "Empty"}
                             </span>
                           </p>
                           <p className="text-sm">
@@ -364,7 +359,7 @@ const ViewLeadPage = () => {
                               Exact request:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              Lorem ipsum
+                              {lead.exact_request || "Empty"}
                             </span>
                           </p>
                           <p className="text-sm">
@@ -372,7 +367,7 @@ const ViewLeadPage = () => {
                               Moderation feedback:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              Lorem ipsum
+                              {lead.moderation_feedback || "Empty"}
                             </span>
                           </p>
                         </div>
@@ -397,7 +392,7 @@ const ViewLeadPage = () => {
                                   Title:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  Lurem
+                                  {lead.meeting_title || "Empty"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -405,7 +400,7 @@ const ViewLeadPage = () => {
                                   From:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  Lurem ipsum
+                                  {lead.meeting_from || "Empty"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -413,7 +408,7 @@ const ViewLeadPage = () => {
                                   Value:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  In office
+                                  {lead.meeting_value || "Empty"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -421,7 +416,7 @@ const ViewLeadPage = () => {
                                   To:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  13/9/2025 8:43:20 PM
+                                  {lead.meeting_to || "Empty"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -429,7 +424,7 @@ const ViewLeadPage = () => {
                                   Location:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  Lurem
+                                  {lead.meeting_location || "Empty"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -437,7 +432,7 @@ const ViewLeadPage = () => {
                                   Host:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  Lurem
+                                  {lead.meeting_host || "Empty"}
                                 </span>
                               </div>
                               <div className="col-span-1 md:col-span-2 flex items-start gap-2">
@@ -445,7 +440,7 @@ const ViewLeadPage = () => {
                                   Description:
                                 </span>
                                 <span className="text-sm text-body italic">
-                                  Lurem
+                                  {lead.meeting_description || "Empty"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-4">
@@ -470,7 +465,7 @@ const ViewLeadPage = () => {
                                   Subject:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  Lurem
+                                  {lead.call_subject || "Empty"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -478,7 +473,7 @@ const ViewLeadPage = () => {
                                   Call Status :
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  Lurem
+                                  {lead.call_status || "Empty"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -486,7 +481,7 @@ const ViewLeadPage = () => {
                                   Contact:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  Lurem
+                                  {lead.call_contact || "Empty"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -494,7 +489,7 @@ const ViewLeadPage = () => {
                                   Phone Number:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  01018883449
+                                  {lead.call_phone || "Empty"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -502,7 +497,7 @@ const ViewLeadPage = () => {
                                   Start time:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  Lurem
+                                  {lead.call_start_time || "Empty"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -510,7 +505,7 @@ const ViewLeadPage = () => {
                                   Host:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  Lurem
+                                  {lead.call_host || "Empty"}
                                 </span>
                               </div>
                             </div>
@@ -523,26 +518,26 @@ const ViewLeadPage = () => {
                             </h3>
                             <div className="flex items-center gap-2">
                               <span className="text-sm text-mainText font-bold italic">
-                                Lurem:
+                                Subject:
                               </span>{" "}
                               <span className="text-sm text-body italic">
-                                Lurem
+                                {lead.mail_subject || "Empty"}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-sm text-mainText font-bold italic">
-                                Lurem:
+                                To:
                               </span>{" "}
                               <span className="text-sm text-body italic">
-                                Lurem
+                                {lead.mail_to || "Empty"}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-sm text-mainText font-bold italic">
-                                Lurem:
+                                Date:
                               </span>{" "}
                               <span className="text-sm text-body italic">
-                                Lurem
+                                {lead.mail_date || "Empty"}
                               </span>
                             </div>
                           </div>
@@ -587,48 +582,26 @@ const ViewLeadPage = () => {
                   <h2 className="text-xl font-bold text-mainText italic mb-10">
                     Recent Activity
                   </h2>
-                  <div className="space-y-10 relative">
-                    <div className="flex gap-4 group">
-                      <div className="relative">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 z-10 relative"></div>
-                        {/* <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[1px] h-12 bg-stroke"></div> */}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-mainText italic">
-                          Email sent
-                        </p>
-                        <p className="text-xs text-body italic mt-1">
-                          2 hours ago
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-4 group">
-                      <div className="relative">
-                        <div className="w-2 h-2 rounded-full bg-green-500 mt-2 z-10 relative"></div>
-                        {/* <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[1px] h-12 bg-stroke"></div> */}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-mainText italic">
-                          Phone call completed
-                        </p>
-                        <p className="text-xs text-body italic mt-1">
-                          1 day ago
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-4 group">
-                      <div className="relative">
-                        <div className="w-2 h-2 rounded-full bg-yellow-400 mt-2 z-10 relative"></div>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-mainText italic">
-                          Lead created
-                        </p>
-                        <p className="text-xs text-body italic mt-1">
-                          3 days ago
-                        </p>
-                      </div>
-                    </div>
+                  <div className="space-y-6 relative">
+                    {lead.activities && lead.activities.length > 0 ? (
+                      lead.activities.map((activity: any, idx: number) => (
+                        <div key={idx} className="flex gap-4 group">
+                          <div className="relative">
+                            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 z-10 relative"></div>
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-mainText italic">
+                              {activity.title || "Empty"}
+                            </p>
+                            <p className="text-xs text-body italic mt-1">
+                              {activity.time || "Empty"}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm italic text-body">Empty</p>
+                    )}
                   </div>
                 </div>
 
@@ -638,8 +611,7 @@ const ViewLeadPage = () => {
                     Notes
                   </h2>
                   <p className="text-sm text-body italic leading-relaxed">
-                    Interested in enterprise plan. Follow up next week regarding
-                    pricing. CEO approved budget for Q1.
+                    {lead.notes || "Empty"}
                   </p>
                 </div>
               </>
