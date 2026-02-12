@@ -35,122 +35,57 @@ import {
 import { useParams, useRouter } from "next/navigation";
 
 // Stepper Component
-const Stepper = ({
-  currentStep,
-  setCurrentStep,
-}: {
-  currentStep: number;
-  setCurrentStep: (step: number) => void;
+interface StepperProps {
+  statuses: any[];
+  currentStatusId: number | undefined;
+  onStatusSelect: (statusId: number) => void;
+}
+
+const Stepper: React.FC<StepperProps> = ({
+  statuses,
+  currentStatusId,
+  onStatusSelect,
 }) => {
   const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(
     null,
   );
-  const [stageSelections, setStageSelections] = useState<{
-    [key: number]: string;
-  }>({});
 
-  const stages = [
-    {
-      label: "Contact Stage",
-      subLabel: "Contact Stage",
-      description: "Lead replied to the initial outreach.",
-      icon: Phone,
-      options: [
-        {
-          label: "Answered",
-          description: "Lead replied to the initial outreach.",
-          value: "answered",
-        },
-        {
-          label: "No Answered",
-          description: "No reply after outreach attempts.",
-          value: "no_answered",
-        },
-      ],
-    },
-    {
-      label: "Qualification Stage",
-      subLabel: "Qualified",
-      description: "Lead meets the criteria.",
-      icon: Target,
-      options: [
-        {
-          label: "Potential",
-          description: "Early interest; needs further assessment.",
-          value: "potential",
-        },
-        {
-          label: "Qualified",
-          description: "Has budget, need, and decision authority.",
-          value: "qualified",
-        },
-        {
-          label: "High Qualified",
-          description: "Strong fit and ready for proposal.",
-          value: "high_qualified",
-        },
-        {
-          label: "Not Qualified",
-          description: "Does not meet key criteria.",
-          value: "not_qualified",
-        },
-      ],
-    },
-    {
-      label: "Proposal Stage",
-      subLabel: "Negotiation",
-      description: "Proposal sent to lead.",
-      icon: ScrollText,
-      options: [
-        {
-          label: "Negotiation",
-          description: "Discussing terms, pricing, and details.",
-          value: "negotiation",
-        },
-        {
-          label: "Accepted",
-          description: "Proposal approved by the lead.",
-          value: "accepted",
-        },
-        {
-          label: "Rejected",
-          description: "Proposal declined or stopped.",
-          value: "rejected",
-        },
-      ],
-    },
-    {
-      label: "Closing Stage",
-      subLabel: "Deal Won",
-      description: "Deal successfully closed.",
-      icon: CheckSquare,
-      options: [
-        {
-          label: "Deal Won",
-          description: "Agreement signed and project started.",
-          value: "deal_won",
-        },
-        {
-          label: "Deal Lost",
-          description: "Opportunity closed without a sale.",
-          value: "deal_lost",
-        },
-      ],
-    },
+  // Group statuses by stage
+  const stagesData = [
+    { label: "Contact Stage", icon: Phone, stageNum: 1 },
+    { label: "Qualification Stage", icon: Target, stageNum: 2 },
+    { label: "Proposal Stage", icon: ScrollText, stageNum: 3 },
+    { label: "Closing Stage", icon: CheckSquare, stageNum: 4 },
   ];
+
+  const stages = stagesData.map((s) => {
+    const stageStatuses = statuses.filter((st) => st.stage === s.stageNum);
+    const selectedInStage = stageStatuses.find(
+      (st) => st.id === currentStatusId,
+    );
+
+    return {
+      ...s,
+      subLabel: selectedInStage ? selectedInStage.name : s.label,
+      options: stageStatuses.map((st) => ({
+        id: st.id,
+        label: st.name,
+        description: st.description,
+      })),
+      isSelected: !!selectedInStage,
+    };
+  });
+
+  // Calculate current step based on the highest stage with a selection
+  const currentStep =
+    statuses.find((st) => st.id === currentStatusId)?.stage || 0;
 
   const handleStageClick = (index: number) => {
     setOpenDropdownIndex(openDropdownIndex === index ? null : index);
   };
 
-  const handleOptionSelect = (index: number, value: string) => {
-    setStageSelections((prev) => ({ ...prev, [index]: value }));
-
-    if (index < stages.length - 1) {
-      setCurrentStep(index + 1);
-    } else {
-      setCurrentStep(stages.length);
-    }
+  const handleOptionSelect = (optionId: number) => {
+    onStatusSelect(optionId);
     setOpenDropdownIndex(null);
   };
 
@@ -166,17 +101,14 @@ const Stepper = ({
           <div
             className="absolute top-0 left-0 h-full bg-primary transition-all duration-500 ease-in-out"
             style={{
-              width: `${Math.min(
-                100,
-                (currentStep / (stages.length - 1)) * 100,
-              )}%`,
+              width: `${Math.max(0, Math.min(100, ((currentStep - 1) / (stages.length - 1)) * 100))}%`,
             }}
           />
         </div>
 
         {stages.map((stage, index) => {
-          const isActive = index <= currentStep;
-          const isCompleted = index < currentStep;
+          const isActive = stage.stageNum <= currentStep;
+          const isCompleted = stage.stageNum < currentStep;
 
           return (
             <div
@@ -194,15 +126,12 @@ const Stepper = ({
               >
                 <div
                   className={`w-14 h-14 rounded-full flex items-center justify-center relative transition-colors duration-300 ${
-                    isActive || isCompleted ? "bg-primary" : "bg-[#F5F8FE]"
+                    isActive ? "bg-primary" : "bg-[#F5F8FE]"
                   }`}
                 >
-                  {isActive || isCompleted ? (
-                    <div className="absolute inset-[-4px] rounded-full" />
-                  ) : null}
                   <stage.icon
                     className={`w-6 h-6 z-10 ${
-                      isActive || isCompleted ? "text-white" : "text-[#94A3B8]"
+                      isActive ? "text-white" : "text-[#94A3B8]"
                     }`}
                   />
                 </div>
@@ -213,32 +142,24 @@ const Stepper = ({
                 <div className="flex items-center gap-1 justify-center mb-1">
                   <p
                     className={`text-[15px] font-bold italic ${
-                      isActive || isCompleted
-                        ? "text-mainText"
-                        : "text-[#94A3B8]"
+                      isActive ? "text-mainText" : "text-[#94A3B8]"
                     }`}
                   >
                     {stage.label}
                   </p>
                   <ChevronDown
                     className={`w-4 h-4 ${
-                      isActive || isCompleted
-                        ? "text-mainText"
-                        : "text-[#94A3B8]"
+                      isActive ? "text-mainText" : "text-[#94A3B8]"
                     }`}
                   />
                 </div>
                 <div
                   className={`px-10 py-2 rounded-full shadow-sm inline-block ${
-                    isActive || isCompleted ? "bg-primary/5" : "bg-[#F5F8FE]"
+                    isActive ? "bg-primary/5" : "bg-[#F5F8FE]"
                   }`}
                 >
                   <span
-                    className={`text-[13px] font-bold italic ${
-                      isActive || isCompleted
-                        ? "text-mainText"
-                        : "text-mainText"
-                    }`}
+                    className={`text-[13px] font-bold italic text-mainText`}
                   >
                     {stage.subLabel}
                   </span>
@@ -248,8 +169,7 @@ const Stepper = ({
                 {openDropdownIndex === index && (
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 p-2 z-[9999]">
                     {stage.options?.map((option, optIndex) => {
-                      const isSelected =
-                        stageSelections[index] === option.value;
+                      const isSelected = currentStatusId === option.id;
                       return (
                         <div
                           key={optIndex}
@@ -258,7 +178,7 @@ const Stepper = ({
                           }`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleOptionSelect(index, option.value);
+                            handleOptionSelect(option.id);
                           }}
                         >
                           <div
@@ -306,7 +226,6 @@ const EditLeadPage = () => {
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
 
   // Dropdown options state
   const [options, setOptions] = useState({
@@ -376,9 +295,8 @@ const EditLeadPage = () => {
             status_id:
               lead.status_id || (lead.status?.id ? Number(lead.status.id) : ""),
 
-            business_category_id: formData.business_category_id || 1, // Default to 1
-            // lead_source_type_id: formData.lead_source_type_id || 1, // Default to 1 (Google)
-            lead_source_value: formData.lead_source_value || "Direct", // Default value
+            business_category_id: lead.business_category_id || 1, // Default to 1
+            lead_source_value: lead.lead_source_value || "Direct", // Default value
           });
 
           if (lead.feedbacks) {
@@ -588,8 +506,9 @@ const EditLeadPage = () => {
           {/* White Card Container */}
           <div className="rounded-[32px]">
             <Stepper
-              currentStep={currentStep}
-              setCurrentStep={setCurrentStep}
+              statuses={options.statuses}
+              currentStatusId={formData.status_id}
+              onStatusSelect={(id) => updateFormData({ status_id: id })}
             />
 
             {/* Tabs */}

@@ -23,6 +23,11 @@ import {
   ChevronLeft,
   ChevronRight,
   History as HistoryIcon,
+  PhoneCall,
+  ListTodo,
+  RefreshCw,
+  Inbox,
+  CalendarClock,
 } from "lucide-react";
 import { getLead } from "@/lib/api";
 import { toast } from "react-hot-toast";
@@ -31,6 +36,134 @@ import Link from "next/link";
 const Skeleton = ({ className }: { className: string }) => (
   <div className={`animate-pulse bg-white rounded ${className}`} />
 );
+
+// Helper: compute relative time string
+const getRelativeTime = (dateStr: string) => {
+  if (!dateStr) return "";
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins} min ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+  const diffMonths = Math.floor(diffDays / 30);
+  return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
+};
+
+// Helper: format date for display
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return (
+    date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }) +
+    " · " +
+    date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+  );
+};
+
+// Build unified timeline items from activities and tasks
+const buildTimelineItems = (lead: any) => {
+  const items: any[] = [];
+
+  // Calls
+  if (lead.activities?.calls?.length) {
+    lead.activities.calls.forEach((call: any) => {
+      items.push({
+        type: "call",
+        title: "Activity Logged",
+        subtitle: call.subject || call.description || "Phone call completed",
+        detail: "Phone Call",
+        detailIcon: "phone",
+        date: call.created_at || call.start_time,
+        user: call.user?.name || call.host,
+        iconBg: "bg-green-50",
+        iconBorder: "border-green-200",
+        iconColor: "text-green-500",
+        accentColor: "bg-green-500",
+      });
+    });
+  }
+
+  // Mails
+  if (lead.activities?.mails?.length) {
+    lead.activities.mails.forEach((mail: any) => {
+      items.push({
+        type: "mail",
+        title: "Activity Logged",
+        subtitle: mail.subject || "Email sent",
+        detail: "Email",
+        detailIcon: "mail",
+        date: mail.created_at || mail.date,
+        user: mail.user?.name || mail.from,
+        iconBg: "bg-blue-50",
+        iconBorder: "border-blue-200",
+        iconColor: "text-blue-500",
+        accentColor: "bg-blue-500",
+      });
+    });
+  }
+
+  // Meetings
+  if (lead.activities?.meetings?.length) {
+    lead.activities.meetings.forEach((meeting: any) => {
+      items.push({
+        type: "meeting",
+        title: "Meeting Scheduled",
+        subtitle: meeting.title || meeting.description || "Meeting with client",
+        detail: meeting.location || "Meeting",
+        detailIcon: "calendar",
+        date: meeting.created_at || meeting.started_at,
+        user: meeting.user?.name || meeting.host,
+        iconBg: "bg-purple-50",
+        iconBorder: "border-purple-200",
+        iconColor: "text-purple-500",
+        accentColor: "bg-purple-500",
+      });
+    });
+  }
+
+  // Tasks
+  if (lead.activities?.tasks?.length) {
+    lead.activities.tasks.forEach((task: any) => {
+      items.push({
+        type: "task",
+        title: "Task Created",
+        subtitle: task.description || "New task assigned",
+        detail: task.title,
+        detailIcon: "task",
+        date: task.created_at,
+        user: task.user?.name,
+        iconBg: "bg-amber-50",
+        iconBorder: "border-amber-200",
+        iconColor: "text-amber-500",
+        accentColor: "bg-amber-500",
+        startedAt: task.started_at,
+        endedAt: task.ended_at,
+      });
+    });
+  }
+
+  // Sort by date descending (most recent first)
+  items.sort((a, b) => {
+    const dateA = a.date ? new Date(a.date).getTime() : 0;
+    const dateB = b.date ? new Date(b.date).getTime() : 0;
+    return dateB - dateA;
+  });
+
+  return items;
+};
 
 const ViewLeadPage = () => {
   const { id } = useParams();
@@ -101,10 +234,10 @@ const ViewLeadPage = () => {
         <div className="flex justify-between items-center mb-10">
           <div>
             <h1 className="text-3xl font-bold text-mainText italic mb-1">
-              {lead.full_name || "Empty"}
+              {lead.full_name || "N/A"}
             </h1>
             <p className="text-body italic text-base">
-              {lead.company_name || "Empty"}
+              {lead.company_name || "N/A"}
             </p>
           </div>
           <div className="flex gap-4">
@@ -159,7 +292,7 @@ const ViewLeadPage = () => {
                           Email
                         </p>
                         <p className="text-sm font-bold text-mainText italic break-all">
-                          {lead.email || "Empty"}
+                          {lead.email || "N/A"}
                         </p>
                       </div>
                     </div>
@@ -172,7 +305,7 @@ const ViewLeadPage = () => {
                           Phone
                         </p>
                         <p className="text-sm font-bold text-mainText italic">
-                          {lead.phone || "Empty"}
+                          {lead.phone || "N/A"}
                         </p>
                       </div>
                     </div>
@@ -185,7 +318,7 @@ const ViewLeadPage = () => {
                           Company
                         </p>
                         <p className="text-sm font-bold text-mainText italic">
-                          {lead.company_name || "Empty"}
+                          {lead.company_name || "N/A"}
                         </p>
                       </div>
                     </div>
@@ -238,7 +371,7 @@ const ViewLeadPage = () => {
                                   {item.label}:
                                 </span>
                                 <span className="text-sm font-bold text-mainText italic">
-                                  {item.value || "Empty"}
+                                  {item.value || "N/A"}
                                 </span>
                               </div>
                             ))}
@@ -281,7 +414,7 @@ const ViewLeadPage = () => {
                                   {item.label}:
                                 </span>
                                 <span className="text-sm font-bold text-mainText italic">
-                                  {item.value || "Empty"}
+                                  {item.value || "N/A"}
                                 </span>
                               </div>
                             ))}
@@ -301,7 +434,7 @@ const ViewLeadPage = () => {
                               lead source:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              {lead.lead_source?.name || "Empty"}
+                              {lead.lead_source_type?.name || "N/A"}
                             </span>
                           </p>
                           <p className="text-sm">
@@ -309,7 +442,7 @@ const ViewLeadPage = () => {
                               Channels:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              {lead.channel?.name || "Empty"}
+                              {lead.channels?.name || "N/A"}
                             </span>
                           </p>
                           <p className="text-sm">
@@ -317,7 +450,7 @@ const ViewLeadPage = () => {
                               Ad Id:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              {lead.ad_id || "Empty"}
+                              {lead.ad_id || "N/A"}
                             </span>
                           </p>
                           <p className="text-sm">
@@ -325,7 +458,7 @@ const ViewLeadPage = () => {
                               Ad URL:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              {lead.ad_url || "Empty"}
+                              {lead.ad_url || "N/A"}
                             </span>
                           </p>
                           <p className="text-sm">
@@ -333,7 +466,7 @@ const ViewLeadPage = () => {
                               socials:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              {lead.socials || "Empty"}
+                              {lead.socials || "N/A"}
                             </span>
                           </p>
                         </div>
@@ -351,7 +484,7 @@ const ViewLeadPage = () => {
                               Customer Inquiry:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              {lead.customer_inquiry || "Empty"}
+                              {lead.customer_inquiry || "N/A"}
                             </span>
                           </p>
                           <p className="text-sm">
@@ -359,7 +492,7 @@ const ViewLeadPage = () => {
                               Exact request:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              {lead.exact_request || "Empty"}
+                              {lead.exact_request || "N/A"}
                             </span>
                           </p>
                           <p className="text-sm">
@@ -367,7 +500,7 @@ const ViewLeadPage = () => {
                               Moderation feedback:
                             </span>{" "}
                             <span className="text-mainText font-bold italic">
-                              {lead.moderation_feedback || "Empty"}
+                              {lead.moderation_feedback || "N/A"}
                             </span>
                           </p>
                         </div>
@@ -392,7 +525,7 @@ const ViewLeadPage = () => {
                                   Title:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  {lead.meeting_title || "Empty"}
+                                  {lead.meeting_title || "N/A"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -400,7 +533,7 @@ const ViewLeadPage = () => {
                                   From:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  {lead.meeting_from || "Empty"}
+                                  {lead.meeting_from || "N/A"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -408,7 +541,7 @@ const ViewLeadPage = () => {
                                   Value:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  {lead.meeting_value || "Empty"}
+                                  {lead.meeting_value || "N/A"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -416,7 +549,7 @@ const ViewLeadPage = () => {
                                   To:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  {lead.meeting_to || "Empty"}
+                                  {lead.meeting_to || "N/A"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -424,7 +557,7 @@ const ViewLeadPage = () => {
                                   Location:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  {lead.meeting_location || "Empty"}
+                                  {lead.meeting_location || "N/A"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -432,7 +565,7 @@ const ViewLeadPage = () => {
                                   Host:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  {lead.meeting_host || "Empty"}
+                                  {lead.meeting_host || "N/A"}
                                 </span>
                               </div>
                               <div className="col-span-1 md:col-span-2 flex items-start gap-2">
@@ -440,7 +573,7 @@ const ViewLeadPage = () => {
                                   Description:
                                 </span>
                                 <span className="text-sm text-body italic">
-                                  {lead.meeting_description || "Empty"}
+                                  {lead.meeting_description || "N/A"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-4">
@@ -465,7 +598,7 @@ const ViewLeadPage = () => {
                                   Subject:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  {lead.call_subject || "Empty"}
+                                  {lead.call_subject || "N/A"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -473,7 +606,7 @@ const ViewLeadPage = () => {
                                   Call Status :
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  {lead.call_status || "Empty"}
+                                  {lead.call_status || "N/A"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -481,7 +614,7 @@ const ViewLeadPage = () => {
                                   Contact:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  {lead.call_contact || "Empty"}
+                                  {lead.call_contact || "N/A"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -489,7 +622,7 @@ const ViewLeadPage = () => {
                                   Phone Number:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  {lead.call_phone || "Empty"}
+                                  {lead.call_phone || "N/A"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -497,7 +630,7 @@ const ViewLeadPage = () => {
                                   Start time:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  {lead.call_start_time || "Empty"}
+                                  {lead.call_start_time || "N/A"}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
@@ -505,7 +638,7 @@ const ViewLeadPage = () => {
                                   Host:
                                 </span>{" "}
                                 <span className="text-sm text-body italic">
-                                  {lead.call_host || "Empty"}
+                                  {lead.call_host || "N/A"}
                                 </span>
                               </div>
                             </div>
@@ -521,7 +654,7 @@ const ViewLeadPage = () => {
                                 Subject:
                               </span>{" "}
                               <span className="text-sm text-body italic">
-                                {lead.mail_subject || "Empty"}
+                                {lead.mail_subject || "N/A"}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -529,7 +662,7 @@ const ViewLeadPage = () => {
                                 To:
                               </span>{" "}
                               <span className="text-sm text-body italic">
-                                {lead.mail_to || "Empty"}
+                                {lead.mail_to || "N/A"}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -537,7 +670,7 @@ const ViewLeadPage = () => {
                                 Date:
                               </span>{" "}
                               <span className="text-sm text-body italic">
-                                {lead.mail_date || "Empty"}
+                                {lead.mail_date || "N/A"}
                               </span>
                             </div>
                           </div>
@@ -583,25 +716,49 @@ const ViewLeadPage = () => {
                     Recent Activity
                   </h2>
                   <div className="space-y-6 relative">
-                    {lead.activities && lead.activities.length > 0 ? (
-                      lead.activities.map((activity: any, idx: number) => (
-                        <div key={idx} className="flex gap-4 group">
-                          <div className="relative">
-                            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 z-10 relative"></div>
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold text-mainText italic">
-                              {activity.title || "Empty"}
+                    {(() => {
+                      const timelineItems = buildTimelineItems(lead);
+                      if (timelineItems.length > 0) {
+                        return timelineItems
+                          .slice(0, 5)
+                          .map((item: any, idx: number) => (
+                            <div key={idx} className="flex gap-4 group">
+                              <div className="relative">
+                                <div
+                                  className={`w-2.5 h-2.5 rounded-full mt-1.5 z-10 relative ${item.accentColor}`}
+                                ></div>
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex justify-between items-start">
+                                  <p className="text-sm font-bold text-mainText italic">
+                                    {item.title}
+                                  </p>
+                                  <span className="text-[11px] text-body italic shrink-0 ml-2">
+                                    {getRelativeTime(item.date)}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-body italic mt-0.5">
+                                  {item.subtitle}
+                                </p>
+                              </div>
+                            </div>
+                          ));
+                      } else {
+                        return (
+                          <div className="flex flex-col items-center justify-center py-8 text-center">
+                            <div className="w-14 h-14 rounded-full bg-primary/5 flex items-center justify-center mb-4">
+                              <Inbox className="w-6 h-6 text-primary/40" />
+                            </div>
+                            <p className="text-sm font-semibold text-mainText/60 italic">
+                              No recent activity
                             </p>
-                            <p className="text-xs text-body italic mt-1">
-                              {activity.time || "Empty"}
+                            <p className="text-xs text-body/50 italic mt-1">
+                              Activities will appear here once logged
                             </p>
                           </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm italic text-body">Empty</p>
-                    )}
+                        );
+                      }
+                    })()}
                   </div>
                 </div>
 
@@ -611,7 +768,7 @@ const ViewLeadPage = () => {
                     Notes
                   </h2>
                   <p className="text-sm text-body italic leading-relaxed">
-                    {lead.notes || "Empty"}
+                    {lead.notes || "N/A"}
                   </p>
                 </div>
               </>
@@ -625,178 +782,122 @@ const ViewLeadPage = () => {
                   Activity history for {lead.full_name}
                 </p>
 
-                <div className="relative pl-16 space-y-8">
-                  {/* Timeline connecting line */}
-                  <div className="absolute left-[23px] top-4 bottom-8 w-[1px] bg-stroke/60 z-0"></div>
+                {(() => {
+                  const timelineItems = buildTimelineItems(lead);
 
-                  {[
-                    {
-                      title: "Status Changed",
-                      desc: "Lead status updated",
-                      time: "2 hours ago",
-                      icon: CheckCircle2,
-                      color: "text-[#6366F1]",
-                      bg: "bg-[#6366F115]",
-                      border: "border-[#6366F130]",
-                      type: "status",
-                    },
-                    {
-                      title: "Activity Logged",
-                      desc: "Phone call completed with client",
-                      time: "3 hours ago",
-                      icon: Phone,
-                      color: "text-[#2FBF71]",
-                      bg: "bg-[#2FBF7115]",
-                      border: "border-[#2FBF7130]",
-                      type: "call",
-                    },
-                    {
-                      title: "Task Created",
-                      desc: "New task assigned",
-                      time: "5 hours ago",
-                      icon: FileText,
-                      color: "text-[#9810FA]",
-                      bg: "bg-[#9810FA15]",
-                      border: "border-[#9810FA30]",
-                      type: "task",
-                    },
-                    {
-                      title: "Lead Updated",
-                      desc: "Lead Information was modified",
-                      time: "5 hours ago",
-                      icon: Pencil,
-                      color: "text-[#F59E0B]",
-                      bg: "bg-[#F59E0B15]",
-                      border: "border-[#F59E0B30]",
-                      type: "update",
-                    },
-                    {
-                      title: "Activity Logged",
-                      desc: "Email sent to client regarding demo",
-                      time: "6 hours ago",
-                      icon: Mail,
-                      color: "text-[#2FBF71]",
-                      bg: "bg-[#2FBF7115]",
-                      border: "border-[#2FBF7130]",
-                      type: "mail",
-                    },
-                    {
-                      title: "Status Changed",
-                      desc: "Lead status updated",
-                      time: "7 hours ago",
-                      icon: CheckCircle2,
-                      color: "text-[#6366F1]",
-                      bg: "bg-[#6366F115]",
-                      border: "border-[#6366F130]",
-                      type: "status_alt",
-                    },
-                    {
-                      title: "Activity Logged",
-                      desc: "Initial discovery call completed",
-                      time: "8 hours ago",
-                      icon: Phone,
-                      color: "text-[#2FBF71]",
-                      bg: "bg-[#2FBF7115]",
-                      border: "border-[#2FBF7130]",
-                      type: "call",
-                    },
-                    {
-                      title: "Lead Created",
-                      desc: "Lead was added to the system",
-                      time: "8 hours ago",
-                      icon: UserPlus,
-                      color: "text-[#3B82F6]",
-                      bg: "bg-[#3B82F615]",
-                      border: "border-[#3B82F630]",
-                      type: "created",
-                    },
-                  ].map((item, idx) => (
-                    <div key={idx} className="relative z-10 group">
-                      {/* Icon Indicator */}
-                      <div
-                        className={`absolute -left-[56px] top-0 w-12 h-12 rounded-full bg-white border border-stroke flex items-center justify-center z-10 group-last:after:hidden`}
-                      >
-                        <div
-                          className={`w-9 h-9 rounded-full ${item.bg} border ${item.border} flex items-center justify-center transition-transform group-hover:scale-110`}
-                        >
-                          <item.icon className={`w-4 h-4 ${item.color}`} />
+                  if (timelineItems.length === 0) {
+                    return (
+                      <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <div className="relative mb-6">
+                          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/10 to-blue-50 flex items-center justify-center animate-pulse">
+                            <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center">
+                              <Inbox className="w-8 h-8 text-primary/30" />
+                            </div>
+                          </div>
+                          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-50 border-2 border-white flex items-center justify-center">
+                            <Clock className="w-3 h-3 text-amber-400" />
+                          </div>
                         </div>
+                        <h3 className="text-lg font-bold text-mainText/70 italic mb-2">
+                          No Activities Yet
+                        </h3>
+                        <p className="text-sm text-body/50 italic max-w-sm leading-relaxed">
+                          This lead doesn't have any recorded activities. Calls,
+                          emails, meetings, and tasks will appear here as they
+                          are logged.
+                        </p>
                       </div>
+                    );
+                  }
 
-                      {/* Card Context */}
-                      <div className="bg-white border border-stroke rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <p className="text-sm font-bold text-mainText italic">
-                              {item.title}
-                            </p>
-                            <p className="text-xs text-body italic">
-                              {item.desc}
-                            </p>
-                          </div>
-                          <span className="text-xs text-body italic">
-                            {item.time}
-                          </span>
-                        </div>
+                  return (
+                    <div className="relative pl-16 space-y-6">
+                      {/* Timeline connecting line — only show when more than 1 item */}
+                      {timelineItems.length > 1 && (
+                        <div className="absolute left-[23px] top-6 bottom-8 w-[2px] bg-gradient-to-b from-primary/20 via-stroke/40 to-transparent z-0"></div>
+                      )}
 
-                        {item.type.includes("status") && (
-                          <div className="flex items-center gap-3 mt-4">
-                            <div className="bg-gray-50 border border-stroke px-4 py-1.5 rounded-full text-xs font-bold text-body italic">
-                              {item.type === "status" ? "Contacted" : "New"}
+                      {timelineItems.map((item: any, idx: number) => {
+                        // Pick the correct icon per type
+                        const IconComponent =
+                          item.type === "call"
+                            ? PhoneCall
+                            : item.type === "mail"
+                              ? Mail
+                              : item.type === "meeting"
+                                ? CalendarClock
+                                : ListTodo;
+
+                        return (
+                          <div key={idx} className="relative z-10 group">
+                            {/* Icon Indicator */}
+                            <div className="absolute -left-[56px] top-0 w-12 h-12 rounded-full bg-white border border-stroke flex items-center justify-center z-10 shadow-sm">
+                              <div
+                                className={`w-9 h-9 rounded-full ${item.iconBg} border ${item.iconBorder} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
+                              >
+                                <IconComponent
+                                  className={`w-4 h-4 ${item.iconColor}`}
+                                />
+                              </div>
                             </div>
-                            <ChevronRight
-                              size={14}
-                              className="text-placeholder"
-                            />
-                            <div className="bg-blue-50 border border-blue-200 px-4 py-1.5 rounded-full text-xs font-bold text-blue-500 italic">
-                              {item.type === "status"
-                                ? "Qualified"
-                                : "Contacted"}
+
+                            {/* Card */}
+                            <div className="bg-white border border-stroke rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300">
+                              {/* Header row */}
+                              <div className="flex justify-between items-start mb-3">
+                                <div>
+                                  <p className="text-sm font-bold text-mainText italic">
+                                    {item.title}
+                                  </p>
+                                  <p className="text-xs text-body italic mt-0.5">
+                                    {item.subtitle}
+                                  </p>
+                                </div>
+                                <span className="text-xs text-body/60 italic shrink-0 ml-4 bg-gray-50 px-2.5 py-1 rounded-full">
+                                  {getRelativeTime(item.date)}
+                                </span>
+                              </div>
+
+                              {/* Detail chip */}
+                              {item.detail && (
+                                <div className="flex items-center gap-2 mb-4">
+                                  <div
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg ${item.iconBg} border ${item.iconBorder}`}
+                                  >
+                                    <IconComponent
+                                      className={`w-3.5 h-3.5 ${item.iconColor}`}
+                                    />
+                                    <span
+                                      className={`text-xs font-semibold italic ${item.iconColor}`}
+                                    >
+                                      {item.detail}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Footer: user + date */}
+                              <div className="flex items-center gap-2 text-xs text-body/60 italic">
+                                {item.user && (
+                                  <>
+                                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
+                                      <User className="w-3 h-3 text-primary" />
+                                    </div>
+                                    <span className="font-medium text-mainText/70">
+                                      {item.user}
+                                    </span>
+                                    <span className="text-body/30">·</span>
+                                  </>
+                                )}
+                                <span>{formatDate(item.date)}</span>
+                              </div>
                             </div>
                           </div>
-                        )}
-
-                        {item.type === "call" && (
-                          <div className="flex items-center gap-2 text-mainText mt-4 font-bold italic text-sm">
-                            <Phone size={14} className="text-[#2FBF71]" />
-                            Phone Call
-                          </div>
-                        )}
-
-                        {item.type === "mail" && (
-                          <div className="flex items-center gap-2 text-mainText mt-4 font-bold italic text-sm">
-                            <Mail size={14} className="text-[#2FBF71]" />
-                            Email
-                          </div>
-                        )}
-
-                        {item.type === "task" && (
-                          <div className="text-sm font-bold italic text-mainText flex items-center gap-2 mt-4">
-                            <FileText size={14} className="text-[#9810FA]" />
-                            Follow up on pricing discussion
-                          </div>
-                        )}
-
-                        <div className="mt-6 pt-6 border-t border-stroke/50 flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-[10px] text-white">
-                              {item.type === "mail" ? "EC" : "JS"}
-                            </div>
-                            <span className="text-xs font-bold text-mainText italic">
-                              {item.type === "mail"
-                                ? "Emily Chen"
-                                : "John Smith"}
-                            </span>
-                          </div>
-                          <Dot size={12} className="text-placeholder" />
-                          <span className="text-xs text-body italic">
-                            Jan 4, 2026 - 2:30 PM
-                          </span>
-                        </div>
-                      </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
               </div>
             )}
           </div>
@@ -812,7 +913,7 @@ const ViewLeadPage = () => {
                 Status
               </h2>
               <div className="bg-purple-50 text-purple-500 px-4 py-1.5 rounded-full text-xs font-bold italic w-fit inline-block">
-                Qualified
+                {lead.status?.name || "N/A"}
               </div>
             </div>
 
@@ -829,7 +930,7 @@ const ViewLeadPage = () => {
                       Lead Owner
                     </p>
                     <p className="text-sm font-bold text-primary italic">
-                      John Smith
+                      {lead.seller?.name || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -840,7 +941,7 @@ const ViewLeadPage = () => {
                       Source
                     </p>
                     <p className="text-sm font-bold text-primary italic">
-                      Website Form
+                      {lead.lead_source?.name || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -851,7 +952,7 @@ const ViewLeadPage = () => {
                       Created
                     </p>
                     <p className="text-sm font-bold text-primary italic">
-                      Jan 15, 2026
+                      {lead.created_at?.split("T")[0] || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -862,7 +963,7 @@ const ViewLeadPage = () => {
                       Last Contact
                     </p>
                     <p className="text-sm font-bold text-primary italic">
-                      2 hours ago
+                      {lead.last_contact || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -880,7 +981,7 @@ const ViewLeadPage = () => {
                     Estimated Value
                   </p>
                   <p className="text-2xl font-bold text-primary italic">
-                    $45,000
+                    {lead.estimated_value || "N/A"}
                   </p>
                 </div>
                 <div>
@@ -888,7 +989,9 @@ const ViewLeadPage = () => {
                     <p className="text-xs text-placeholder italic">
                       Probability
                     </p>
-                    <p className="text-xs font-bold text-primary italic">75%</p>
+                    <p className="text-xs font-bold text-primary italic">
+                      {lead.probability || "Empty"}
+                    </p>
                   </div>
                   <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
