@@ -11,31 +11,123 @@ import {
   DollarSign,
   User,
   AlignLeft,
+  UploadCloud,
+  FileText,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+import { toast } from "react-hot-toast";
+import { getSellers, createMeeting, extractId } from "@/lib/api";
+import { useRef } from "react";
+import { useParams } from "next/navigation";
 
 interface ScheduleMeetingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  leadId?: string | number;
+  leadName?: string;
 }
 
 const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
   isOpen,
   onClose,
+  leadId,
+  leadName,
 }) => {
+  const params = useParams();
+  const urlId = params?.id;
+
   const [shouldRender, setShouldRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sellers, setSellers] = useState<any[]>([]);
+
+  const [formData, setFormData] = useState({
+    user_id: "",
+    title: "",
+    venue: "Online", // Assuming a default venue type
+    location: "",
+    from: "",
+    to: "",
+    description: "",
+    value: "medium",
+  });
+
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setAttachments((prev) => [...prev, ...Array.from(e.target.files!)]);
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
 
   useEffect(() => {
     if (isOpen) {
       setShouldRender(true);
       setTimeout(() => setIsAnimating(true), 10);
+      fetchSellers();
     } else {
       setIsAnimating(false);
       const timer = setTimeout(() => setShouldRender(false), 300);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  const fetchSellers = async () => {
+    try {
+      const data = await getSellers();
+      setSellers(data);
+    } catch (error) {
+      console.error("Error fetching sellers:", error);
+      toast.error("Failed to load sellers.");
+    }
+  };
+
+  const handleSchedule = async () => {
+    if (
+      !formData.title ||
+      !formData.from ||
+      !formData.to ||
+      !formData.user_id
+    ) {
+      toast.error(
+        "Please fill in all required fields (Title, From, To, and Select Seller).",
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = new FormData();
+
+      // Use URL ID (usually numeric) or extract from prop (e.g. L240004 -> 4)
+      const finalLeadId = urlId || (leadId ? extractId(leadId) : null);
+      if (finalLeadId) data.append("lead_id", String(finalLeadId));
+
+      Object.entries(formData).forEach(([key, value]) => {
+        data.append(key, String(value));
+      });
+
+      attachments.forEach((file) => {
+        data.append("attachments[]", file);
+      });
+
+      await createMeeting(data);
+      toast.success("Meeting scheduled successfully");
+      onClose();
+    } catch (error) {
+      toast.error("Failed to schedule meeting");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!shouldRender) return null;
 
@@ -66,7 +158,7 @@ const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
               Schedule Meeting
             </h2>
             <p className="text-sm text-body italic opacity-70">
-              Plan a meeting with Sarah Johnson
+              Plan a meeting with {leadName || "the lead"}
             </p>
           </div>
           <button
@@ -85,12 +177,21 @@ const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
               Select sellers <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <select className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer">
-                <option value="" disabled selected>
+              <select
+                value={formData.user_id}
+                onChange={(e) =>
+                  setFormData({ ...formData, user_id: e.target.value })
+                }
+                className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer"
+              >
+                <option value="" disabled>
                   Select an option
                 </option>
-                <option value="seller1">Seller 1</option>
-                <option value="seller2">Seller 2</option>
+                {sellers.map((seller) => (
+                  <option key={seller.id} value={seller.id}>
+                    {seller.name}
+                  </option>
+                ))}
               </select>
               <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
             </div>
@@ -106,6 +207,10 @@ const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
               <input
                 type="text"
                 placeholder="Enter meeting title"
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-gray-50"
               />
             </div>
@@ -116,10 +221,13 @@ const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
                 <DollarSign className="w-4 h-4 text-body" /> Value
               </label>
               <div className="relative">
-                <select className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-gray-50 cursor-pointer">
-                  <option value="" disabled selected>
-                    Select Value
-                  </option>
+                <select
+                  value={formData.value}
+                  onChange={(e) =>
+                    setFormData({ ...formData, value: e.target.value })
+                  }
+                  className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-gray-50 cursor-pointer"
+                >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
@@ -136,6 +244,10 @@ const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
               <input
                 type="text"
                 placeholder="Enter location or meeting link"
+                value={formData.location}
+                onChange={(e) =>
+                  setFormData({ ...formData, location: e.target.value })
+                }
                 className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-gray-50"
               />
             </div>
@@ -146,8 +258,11 @@ const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
                 <Clock className="w-4 h-4 text-body" /> From
               </label>
               <input
-                type="text"
-                placeholder="mm / dd / yy"
+                type="datetime-local"
+                value={formData.from}
+                onChange={(e) =>
+                  setFormData({ ...formData, from: e.target.value })
+                }
                 className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-gray-50"
               />
             </div>
@@ -158,27 +273,19 @@ const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
                 <Clock className="w-4 h-4 text-body" /> To
               </label>
               <input
-                type="text"
-                placeholder="mm / dd / yy"
+                type="datetime-local"
+                value={formData.to}
+                onChange={(e) =>
+                  setFormData({ ...formData, to: e.target.value })
+                }
                 className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-gray-50"
               />
             </div>
 
-            {/* Host */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-mainText italic flex items-center gap-2">
-                <User className="w-4 h-4 text-body" /> Host
-              </label>
-              <div className="relative">
-                <select className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-gray-50 cursor-pointer">
-                  <option value="" disabled selected>
-                    mm / dd / yy
-                  </option>
-                  <option value="host1">Host 1</option>
-                </select>
-                <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
-              </div>
-            </div>
+            {/* Host - Using Host from API might be different, but UI shows Host. 
+                For now we use the selected seller as user_id.
+            */}
+            {/* The original "Host" select is replaced by "Select sellers" at the top */}
           </div>
 
           {/* Description */}
@@ -188,9 +295,75 @@ const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
             </label>
             <textarea
               placeholder="Add agenda or notes for this meeting..."
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               rows={4}
               className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary resize-none bg-white"
             />
+          </div>
+
+          {/* Attachments Section */}
+          <div className="space-y-4 pt-4">
+            <div className="flex items-center gap-2 text-sm font-bold text-mainText italic">
+              <UploadCloud className="w-4 h-4 text-body" /> Attachments
+            </div>
+
+            {attachments.length > 0 && (
+              <div className="space-y-3">
+                {attachments.map((file, index) => (
+                  <div
+                    key={`attachment-${index}`}
+                    className="flex items-center justify-between p-4 bg-[#F8FAFC] border border-stroke rounded-xl"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-body" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-mainText truncate max-w-[200px]">
+                          {file.name}
+                        </p>
+                        <p className="text-[10px] text-body opacity-50">
+                          {(file.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeAttachment(index)}
+                      className="p-2 hover:bg-red-50 rounded-full transition-colors group"
+                      type="button"
+                    >
+                      <Trash2 className="w-4 h-4 text-body group-hover:text-red-500" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              multiple
+              className="hidden"
+            />
+
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-[#F1F5F9] rounded-[24px] p-6 flex flex-col items-center justify-center gap-3 group hover:border-primary transition-all cursor-pointer bg-white"
+            >
+              <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center group-hover:bg-primary transition-all">
+                <UploadCloud className="w-4 h-4 text-primary group-hover:text-white" />
+              </div>
+              <div className="text-center">
+                <p className="text-[12px] italic font-bold text-mainText">
+                  <span className="text-primary">Click to upload</span> or drag
+                  and drop
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -198,12 +371,17 @@ const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
         <div className="p-8 pt-4 flex items-center justify-center gap-4 border-t border-[#F1F5F9]">
           <button
             onClick={onClose}
-            className="flex-1 py-3 px-8 rounded-full border border-primary text-primary font-bold italic text-[15px] hover:bg-gray-50 transition-colors"
+            disabled={loading}
+            className="flex-1 py-3 px-8 rounded-full border border-primary text-primary font-bold italic text-[15px] hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
-          <button className="flex-1 py-3 px-8 rounded-full bg-primary text-white font-bold italic text-[15px] hover:bg-primary/90 transition-all shadow-lg shadow-primary/30">
-            Schedule Meeting
+          <button
+            onClick={handleSchedule}
+            disabled={loading}
+            className="flex-1 py-3 px-8 rounded-full bg-primary text-white font-bold italic text-[15px] hover:bg-primary/90 transition-all shadow-lg shadow-primary/30 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {loading ? "Scheduling..." : "Schedule Meeting"}
           </button>
         </div>
       </div>

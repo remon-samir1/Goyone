@@ -29,7 +29,7 @@ import { Switch } from "@/components/ui/switch";
 import ExportModal from "@/components/modals/ExportModal";
 import ImportModal from "@/components/modals/ImportModal";
 import FiltersModal from "@/components/modals/FiltersModal";
-import Header from "./header";
+import Header from "../header";
 import Link from "next/link";
 import { Axios } from "@/components/Helpers/Axios";
 import DeleteLeadModal from "@/components/modals/DeleteLeadModal";
@@ -57,7 +57,7 @@ interface LeadData {
   communicated: boolean;
 }
 
-const Page = () => {
+const CompanyAccountsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -112,7 +112,7 @@ const Page = () => {
   ) => {
     setLoading(true);
     try {
-      let queryParams = `?page=${page}`;
+      let queryParams = `?page=${page}&get_converted=companyAccounts`;
       if (search) queryParams += `&search=${encodeURIComponent(search)}`;
 
       if (currentSort) {
@@ -438,13 +438,11 @@ const Page = () => {
     try {
       // 1. Fetch full lead data to satisfy update API
       const response = await getLead(row.id);
-      console.log("Full Lead Response:", response);
       if (!response) {
         throw new Error("Failed to fetch lead data");
       }
 
       const lead = response.data || response;
-      console.log("Extracted Lead Object:", lead);
       // 2. Prepare update data - Mirroring EditLeadPage mapping logic
       const updateData: LeadFormData = {
         first_name: lead.first_name || lead.full_name?.split(" ")[0] || "",
@@ -558,10 +556,6 @@ const Page = () => {
     const column = columns.find((col) => col.key === key);
     if (column) {
       const otherColumns = columns.filter((col) => col.key !== key);
-      // We'd need to update visibility or order state if Table supported persistent pinning
-      // Since Table uses @dnd-kit's orderedColumns, we can just log for now or
-      // actually reorder the columns prop if we want it to react.
-      // But Table handles its own order internally via orderedColumns state.
       toast.success(`Pinned column: ${column.label}`);
     }
   };
@@ -579,8 +573,6 @@ const Page = () => {
   // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Fetch data for the new page from your API
-    // Example: fetchLeads(page);
   };
 
   return (
@@ -628,7 +620,7 @@ const Page = () => {
           />
           <div className="flex items-center justify-between">
             <h3 className="text-mainText text-[1.5rem] font-bold italic">
-              Leads
+              Company Accounts
             </h3>
             <div className="flex mt-5 w-[40%] items-center gap-3">
               <div className="flex items-center border border-stroke p-3 bg-white gap-2 rounded-3xl flex-1">
@@ -675,7 +667,7 @@ const Page = () => {
                 onClick={() => setFilters({ ...filters, communicationed: "" })}
                 className={`text-mainText italic text-base font-bold flex items-center gap-2 p-3 rounded transition-colors ${filters.communicationed === "" ? "bg-background/10" : "hover:bg-background/5"}`}
               >
-                All Leads{" "}
+                All Accounts{" "}
                 <span className="text-white bg-primary p-1 rounded-full text-xs min-w-[20px] text-center">
                   {totalResults}
                 </span>
@@ -738,7 +730,7 @@ const Page = () => {
             pagination={{
               currentPage,
               totalResults: totalResults,
-              resultsPerPage: 10, // Adjust per results per page or dynamic from API if provided
+              resultsPerPage: 10,
               onPageChange: handlePageChange,
             }}
             rowActions={handleRowActions}
@@ -761,4 +753,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default CompanyAccountsPage;

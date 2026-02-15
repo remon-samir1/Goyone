@@ -50,6 +50,12 @@ export interface LeadFormData {
   communicationed?: boolean;
   is_active?: boolean;
   social_media?: SocialMedia[];
+  activities?: {
+    calls: any[];
+    mails: any[];
+    meetings: any[];
+    tasks: any[];
+  };
 }
 
 export interface Feedback {

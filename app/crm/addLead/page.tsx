@@ -446,6 +446,9 @@ const AddLeadPage = () => {
       {/* Toast Container with custom styling */}
       <Toaster
         position="top-right"
+        containerStyle={{
+          zIndex: 100000,
+        }}
         toastOptions={{
           className: "font-sans",
           style: {

@@ -47,6 +47,13 @@ export const deleteLead = async (id: string | number): Promise<any> => {
   return response.data;
 };
 
+export function extractId(id: string | number | undefined): string {
+  if (!id) return "";
+  const strId = String(id);
+  const match = strId.match(/\d+$/);
+  return match ? String(parseInt(match[0], 10)) : strId;
+}
+
 export const getLead = async (id: string | number): Promise<any> => {
   const response = await api.get(`/leads/${id}`);
   console.log(response);
@@ -129,6 +136,47 @@ export const getSellers = async (): Promise<any[]> => {
 export const convertLead = async (id: string | number, convertTo: 'contacts' | 'companyAccounts'): Promise<any> => {
   const response = await api.post(`/leads/${id}/convert`, {
     convert_to: convertTo,
+  });
+  return response.data;
+};
+
+export const getTaskStages = async (): Promise<any[]> => {
+  const response = await api.get("/task_stages");
+  return response.data.data || response.data;
+};
+
+// Activity API Functions
+
+export const createTask = async (data: FormData): Promise<any> => {
+  const response = await api.post("/tasks", data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+export const createMeeting = async (data: FormData | any): Promise<any> => {
+  const isFormData = data instanceof FormData;
+  const response = await api.post("/meetings", data, {
+    headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
+  });
+  return response.data;
+};
+
+export const createCall = async (data: FormData | any): Promise<any> => {
+  const isFormData = data instanceof FormData;
+  const response = await api.post("/calls", data, {
+    headers: isFormData ? { "Content-Type": "multipart/form-data" } : {},
+  });
+  return response.data;
+};
+
+export const sendEmail = async (data: FormData): Promise<any> => {
+  const response = await api.post("/mails", data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
   return response.data;
 };

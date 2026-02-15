@@ -3,39 +3,162 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
+  Trash2,
+  UploadCloud,
   X,
-  User,
-  ChevronDown,
-  Calendar,
+  Plus,
+  FileText,
   Type,
   Link2,
-  FileText,
-  Plus,
-  UploadCloud,
+  Calendar,
+  User,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AddNewBriefModal from "./AddNewBriefModal";
 
+import { toast } from "react-hot-toast";
+import { getSellers, createTask, getTaskStages, extractId } from "@/lib/api";
+import { useRef } from "react";
+import { useParams } from "next/navigation";
+
 interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
+  leadId?: any;
+  leadName?: string;
 }
 
-const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose }) => {
+const AddTaskModal: React.FC<AddTaskModalProps> = ({
+  isOpen,
+  onClose,
+  leadId,
+  leadName,
+}) => {
+  const params = useParams();
+  const urlId = params?.id;
+
   const [shouldRender, setShouldRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isBriefModalOpen, setIsBriefModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sellers, setSellers] = useState<any[]>([]);
+  const [taskStages, setTaskStages] = useState<any[]>([]);
+
+  const [formData, setFormData] = useState({
+    user_id: "",
+    task_stage_id: "",
+    title: "",
+    started_at: "",
+    ended_at: "",
+    description: "",
+    parent: "",
+  });
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [briefs, setBriefs] = useState<{ description: string; file: File }[]>(
+    [],
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       setShouldRender(true);
       setTimeout(() => setIsAnimating(true), 10);
+      fetchSellers();
+      fetchTaskStages();
     } else {
       setIsAnimating(false);
       const timer = setTimeout(() => setShouldRender(false), 300);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  const fetchSellers = async () => {
+    try {
+      const data = await getSellers();
+      setSellers(data);
+    } catch (error) {
+      console.error("Error fetching sellers:", error);
+    }
+  };
+
+  const fetchTaskStages = async () => {
+    try {
+      const data = await getTaskStages();
+      setTaskStages(data);
+    } catch (error) {
+      console.error("Error fetching task stages:", error);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setAttachments((prev) => [...prev, ...newFiles]);
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddBrief = (brief: { description: string; file: File }) => {
+    setBriefs((prev) => [...prev, brief]);
+  };
+
+  const removeBrief = (index: number) => {
+    setBriefs((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSave = async () => {
+    if (!formData.user_id || !formData.title) {
+      toast.error("Please fill in required fields");
+      return;
+    }
+    setLoading(true);
+    try {
+      const data = new FormData();
+
+      // Use URL ID (usually numeric) or extract from prop (e.g. L240004 -> 4)
+      const finalLeadId = urlId || (leadId ? extractId(leadId) : null);
+      if (finalLeadId) data.append("lead_id", String(finalLeadId));
+
+      // Select stage and user from formData
+      if (formData.task_stage_id)
+        data.append("task_stage_id", formData.task_stage_id);
+      if (formData.user_id) {
+        data.append("user_id", formData.user_id);
+        // The backend expects "to[]" for sellers
+        data.append("to[]", formData.user_id);
+      }
+
+      data.append("title", formData.title);
+      data.append("started_at", formData.started_at);
+      data.append("ended_at", formData.ended_at);
+      data.append("description", formData.description);
+
+      // Append attachments
+      attachments.forEach((file) => {
+        data.append("attachments[]", file);
+      });
+
+      // Append briefs: The error indicates briefs.0 must be a file
+      briefs.forEach((brief, index) => {
+        data.append(`briefs[${index}]`, brief.file);
+      });
+
+      // Add other fields if necessary
+
+      await createTask(data);
+      toast.success("Task created successfully");
+      onClose();
+    } catch (error) {
+      toast.error("Failed to create task");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!shouldRender) return null;
 
@@ -64,7 +187,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose }) => {
           <div>
             <h2 className="text-xl font-bold text-mainText italic">Add Task</h2>
             <p className="text-sm text-body italic opacity-70">
-              Create a new task for Sarah Johnson
+              Create a new task for {leadName || "the lead"}
             </p>
           </div>
           <button
@@ -77,20 +200,57 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose }) => {
 
         {/* Scrollable Body */}
         <div className="flex-1 overflow-y-auto p-8 pt-0 space-y-6">
-          {/* Select Sellers */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-mainText italic block">
-              Select sellers <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <select className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer">
-                <option value="" disabled selected>
-                  Select an option
-                </option>
-                <option value="seller1">Seller 1</option>
-                <option value="seller2">Seller 2</option>
-              </select>
-              <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Select Sellers */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-mainText italic block">
+                Select sellers <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  value={formData.user_id}
+                  onChange={(e) =>
+                    setFormData({ ...formData, user_id: e.target.value })
+                  }
+                  className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer"
+                >
+                  <option value="" disabled>
+                    Select an option
+                  </option>
+                  {sellers.map((seller) => (
+                    <option key={seller.id} value={seller.id}>
+                      {seller.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Task Stage */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-mainText italic block">
+                Task Stage <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  value={formData.task_stage_id}
+                  onChange={(e) =>
+                    setFormData({ ...formData, task_stage_id: e.target.value })
+                  }
+                  className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer"
+                >
+                  <option value="" disabled>
+                    Select stage
+                  </option>
+                  {taskStages.map((stage) => (
+                    <option key={stage.id} value={stage.id}>
+                      {stage.title}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
+              </div>
             </div>
           </div>
 
@@ -101,8 +261,14 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose }) => {
                 <Link2 className="w-4 h-4 text-body" /> Parent
               </label>
               <div className="relative">
-                <select className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-gray-50 cursor-pointer">
-                  <option value="" disabled selected>
+                <select
+                  value={formData.parent}
+                  onChange={(e) =>
+                    setFormData({ ...formData, parent: e.target.value })
+                  }
+                  className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-gray-50 cursor-pointer"
+                >
+                  <option value="" disabled>
                     Select parent
                   </option>
                 </select>
@@ -119,6 +285,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose }) => {
               <input
                 type="text"
                 placeholder="Enter task title"
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-gray-50"
               />
             </div>
@@ -129,8 +299,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose }) => {
                 <Calendar className="w-4 h-4 text-body" /> Started at
               </label>
               <input
-                type="text"
-                placeholder="13/9/2023 8:43:20 PM"
+                type="datetime-local"
+                value={formData.started_at}
+                onChange={(e) =>
+                  setFormData({ ...formData, started_at: e.target.value })
+                }
                 className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-gray-50"
               />
             </div>
@@ -141,28 +314,36 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose }) => {
                 <Calendar className="w-4 h-4 text-body" /> Ended at
               </label>
               <input
-                type="text"
-                placeholder="13/9/2023 8:43:20 PM"
+                type="datetime-local"
+                value={formData.ended_at}
+                onChange={(e) =>
+                  setFormData({ ...formData, ended_at: e.target.value })
+                }
                 className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-gray-50"
               />
             </div>
           </div>
 
-          {/* To */}
+          {/* Description */}
           <div className="space-y-2">
             <label className="text-sm font-bold text-mainText italic flex items-center gap-2">
-              <User className="w-4 h-4 text-body" /> To
+              <FileText className="w-4 h-4 text-body" /> Description
             </label>
-            <div className="relative">
-              <select className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-gray-50 cursor-pointer">
-                <option value="" disabled selected>
-                  Assign to
-                </option>
-                <option value="user1">User 1</option>
-              </select>
-              <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
-            </div>
+            <textarea
+              placeholder="Enter task description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              rows={3}
+              className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-gray-50 resize-none"
+            />
           </div>
+
+          {/* To - Removed as duplicate of Select sellers if it means the same, but API shows to[] array. 
+              Actually user_id is the assigning user, to[] is the target sellers. 
+              Let's keep it simple for now or match the UI if it had "Assign to".
+          */}
 
           {/* Briefs Section */}
           <div className="space-y-4">
@@ -178,14 +359,90 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose }) => {
               </button>
             </div>
 
-            <div className="bg-[#F8FAFC] border border-stroke rounded-xl p-8 text-center space-y-2">
-              <p className="text-[11px] text-body italic opacity-50">
-                No briefs added yet. Click "Add New Brief" to get started.
-              </p>
-            </div>
+            {/* Briefs List */}
+            {briefs.length > 0 && (
+              <div className="space-y-3">
+                {briefs.map((brief, index) => (
+                  <div
+                    key={`brief-${index}`}
+                    className="p-4 bg-primary/5 border border-primary/10 rounded-xl space-y-2 relative group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-mainText truncate">
+                          {brief.description}
+                        </p>
+                        <p className="text-[10px] text-body opacity-50 truncate">
+                          {brief.file.name} (
+                          {(brief.file.size / (1024 * 1024)).toFixed(2)} MB)
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => removeBrief(index)}
+                        className="p-2 hover:bg-red-50 rounded-full transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4 text-body hover:text-red-500" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {attachments.length === 0 && briefs.length === 0 ? (
+              <div className="bg-[#F8FAFC] border border-stroke rounded-xl p-8 text-center space-y-2">
+                <p className="text-[11px] text-body italic opacity-50">
+                  No briefs or attachments added yet.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {attachments.map((file, index) => (
+                  <div
+                    key={`attachment-${index}`}
+                    className="flex items-center justify-between p-4 bg-[#F8FAFC] border border-stroke rounded-xl"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-body" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-mainText truncate max-w-[200px]">
+                          {file.name}
+                        </p>
+                        <p className="text-[10px] text-body opacity-50">
+                          {(file.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeAttachment(index)}
+                      className="p-2 hover:bg-red-50 rounded-full transition-colors group"
+                    >
+                      <Trash2 className="w-4 h-4 text-body group-hover:text-red-500" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Hidden File Input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              multiple
+              className="hidden"
+            />
 
             {/* Upload Area */}
-            <div className="border-2 border-dashed border-[#F1F5F9] rounded-[24px] p-10 flex flex-col items-center justify-center gap-3 group hover:border-primary transition-all cursor-pointer bg-white">
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-[#F1F5F9] rounded-[24px] p-10 flex flex-col items-center justify-center gap-3 group hover:border-primary transition-all cursor-pointer bg-white"
+            >
               <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center group-hover:bg-primary transition-all">
                 <UploadCloud className="w-5 h-5 text-primary group-hover:text-white" />
               </div>
@@ -206,12 +463,17 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose }) => {
         <div className="p-8 pt-4 flex items-center justify-center gap-4 border-t border-[#F1F5F9]">
           <button
             onClick={onClose}
-            className="flex-1 py-3 px-8 rounded-full border border-primary text-primary font-bold italic text-[15px] hover:bg-gray-50 transition-colors"
+            disabled={loading}
+            className="flex-1 py-3 px-8 rounded-full border border-primary text-primary font-bold italic text-[15px] hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
-          <button className="flex-1 py-3 px-8 rounded-full bg-primary text-white font-bold italic text-[15px] hover:bg-primary/90 transition-all shadow-lg shadow-primary/30">
-            Save Task
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="flex-1 py-3 px-8 rounded-full bg-primary text-white font-bold italic text-[15px] hover:bg-primary/90 transition-all shadow-lg shadow-primary/30 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {loading ? "Saving..." : "Save Task"}
           </button>
         </div>
       </div>
@@ -219,6 +481,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose }) => {
       <AddNewBriefModal
         isOpen={isBriefModalOpen}
         onClose={() => setIsBriefModalOpen(false)}
+        onAdd={handleAddBrief}
       />
     </div>,
     document.body,

@@ -258,7 +258,7 @@ const EditLeadPage = () => {
         setIsLoading(true);
         try {
           const response = await getLead(id);
-          const lead = response.data;
+          const lead = response.data || response;
 
           // Map API data to LeadFormData
           setFormData({
@@ -274,29 +274,45 @@ const EditLeadPage = () => {
 
             // Map nested objects to IDs for select inputs
             position:
-              lead.position ||
-              lead.position?.id ||
-              lead.position?.name?.toLowerCase().replace(/\s+/g, "_") ||
-              "",
-            category_id:
-              lead.category_id ||
-              (lead.category?.id ? Number(lead.category.id) : ""),
-            service_id:
-              lead.service_id ||
-              (lead.service?.id ? Number(lead.service.id) : ""),
-            lead_source_type_id:
-              lead.lead_source_type_id ||
-              (lead.lead_source_type?.id
+              lead.position_id || lead.position?.id || lead.position || "",
+            category_id: lead.category_id
+              ? Number(lead.category_id)
+              : lead.category?.id
+                ? Number(lead.category.id)
+                : undefined,
+            service_id: lead.service_id
+              ? Number(lead.service_id)
+              : lead.service?.id
+                ? Number(lead.service.id)
+                : undefined,
+            lead_source_type_id: lead.lead_source_type_id
+              ? Number(lead.lead_source_type_id)
+              : lead.lead_source_type?.id
                 ? Number(lead.lead_source_type.id)
-                : ""),
-            channels_id:
-              lead.channels_id ||
-              (lead.channels?.id ? Number(lead.channels.id) : ""),
-            status_id:
-              lead.status_id || (lead.status?.id ? Number(lead.status.id) : ""),
+                : undefined,
+            channels_id: lead.channels_id
+              ? Number(lead.channels_id)
+              : lead.channels?.id
+                ? Number(lead.channels.id)
+                : undefined,
+            status_id: lead.status_id
+              ? Number(lead.status_id)
+              : lead.status?.id
+                ? Number(lead.status.id)
+                : undefined,
 
-            business_category_id: lead.business_category_id || 1, // Default to 1
-            lead_source_value: lead.lead_source_value || "Direct", // Default value
+            to: lead.to ? Number(lead.to) : undefined,
+
+            business_category_id: lead.business_category_id
+              ? Number(lead.business_category_id)
+              : 1,
+            lead_source_value: lead.lead_source_value || "Direct",
+            activities: lead.activities || {
+              calls: [],
+              mails: [],
+              meetings: [],
+              tasks: [],
+            },
           });
 
           if (lead.feedbacks) {
@@ -480,6 +496,9 @@ const EditLeadPage = () => {
       {/* Toast Container with custom styling */}
       <Toaster
         position="top-right"
+        containerStyle={{
+          zIndex: 100000,
+        }}
         toastOptions={{
           className: "font-sans",
           style: {

@@ -181,7 +181,9 @@ const ActionsFollowUpTab: React.FC<ActionsFollowUpTabProps> = ({
                         Meetings
                       </span>
                     </div>
-                    <p className="text-xl font-bold text-mainText italic">0</p>
+                    <p className="text-xl font-bold text-mainText italic">
+                      {formData.activities?.meetings?.length || 0}
+                    </p>
                   </div>
 
                   <div className="bg-white border border-stroke rounded-lg p-4 space-y-2">
@@ -191,7 +193,9 @@ const ActionsFollowUpTab: React.FC<ActionsFollowUpTabProps> = ({
                         Tasks
                       </span>
                     </div>
-                    <p className="text-xl font-bold text-mainText italic">0</p>
+                    <p className="text-xl font-bold text-mainText italic">
+                      {formData.activities?.tasks?.length || 0}
+                    </p>
                   </div>
 
                   <div className="bg-white border border-stroke rounded-lg p-4 space-y-2">
@@ -201,7 +205,9 @@ const ActionsFollowUpTab: React.FC<ActionsFollowUpTabProps> = ({
                         Calls
                       </span>
                     </div>
-                    <p className="text-xl font-bold text-mainText italic">0</p>
+                    <p className="text-xl font-bold text-mainText italic">
+                      {formData.activities?.calls?.length || 0}
+                    </p>
                   </div>
 
                   <div className="bg-white border border-stroke rounded-lg p-4 space-y-2">
@@ -211,22 +217,36 @@ const ActionsFollowUpTab: React.FC<ActionsFollowUpTabProps> = ({
                         Emails
                       </span>
                     </div>
-                    <p className="text-xl font-bold text-mainText italic">0</p>
+                    <p className="text-xl font-bold text-mainText italic">
+                      {formData.activities?.mails?.length || 0}
+                    </p>
                   </div>
                 </div>
 
                 {/* Dash buttons */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-                  <button className="w-full py-3 border border-dashed border-primary rounded-xl text-primary font-bold italic text-sm flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors">
+                  <button
+                    onClick={() => setIsScheduleMeetingModalOpen(true)}
+                    className="w-full py-3 border border-dashed border-primary rounded-xl text-primary font-bold italic text-sm flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors"
+                  >
                     <Plus className="w-4 h-4" /> New Meeting
                   </button>
-                  <button className="w-full py-3 border border-dashed border-primary rounded-xl text-primary font-bold italic text-sm flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors">
+                  <button
+                    onClick={() => setIsLogCallModalOpen(true)}
+                    className="w-full py-3 border border-dashed border-primary rounded-xl text-primary font-bold italic text-sm flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors"
+                  >
                     <Plus className="w-4 h-4" /> New Log Call
                   </button>
-                  <button className="w-full py-3 border border-dashed border-primary rounded-xl text-primary font-bold italic text-sm flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors">
+                  <button
+                    onClick={() => setIsAddTaskModalOpen(true)}
+                    className="w-full py-3 border border-dashed border-primary rounded-xl text-primary font-bold italic text-sm flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors"
+                  >
                     <Plus className="w-4 h-4" /> New Task
                   </button>
-                  <button className="w-full py-3 border border-dashed border-primary rounded-xl text-primary font-bold italic text-sm flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors">
+                  <button
+                    onClick={() => setIsSendEmailModalOpen(true)}
+                    className="w-full py-3 border border-dashed border-primary rounded-xl text-primary font-bold italic text-sm flex items-center justify-center gap-2 hover:bg-primary/5 transition-colors"
+                  >
                     <Plus className="w-4 h-4" /> New Mails
                   </button>
                 </div>
@@ -239,21 +259,30 @@ const ActionsFollowUpTab: React.FC<ActionsFollowUpTabProps> = ({
       <AddTaskModal
         isOpen={isAddTaskModalOpen}
         onClose={() => setIsAddTaskModalOpen(false)}
+        leadId={formData.uuid}
+        leadName={`${formData.first_name} ${formData.last_name}`}
       />
 
       <ScheduleMeetingModal
         isOpen={isScheduleMeetingModalOpen}
         onClose={() => setIsScheduleMeetingModalOpen(false)}
+        leadId={formData.uuid}
+        leadName={`${formData.first_name} ${formData.last_name}`}
       />
 
       <LogCallModal
         isOpen={isLogCallModalOpen}
         onClose={() => setIsLogCallModalOpen(false)}
+        leadId={formData.uuid}
+        leadName={`${formData.first_name} ${formData.last_name}`}
       />
 
       <SendEmailModal
         isOpen={isSendEmailModalOpen}
         onClose={() => setIsSendEmailModalOpen(false)}
+        leadId={formData.uuid}
+        leadName={`${formData.first_name} ${formData.last_name}`}
+        leadEmail={formData.email}
       />
     </div>
   );

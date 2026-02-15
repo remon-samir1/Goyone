@@ -20,6 +20,8 @@ import {
   Redo,
   Heading1,
   Heading2,
+  Trash2,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -28,9 +30,17 @@ import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 
+import { toast } from "react-hot-toast";
+import { sendEmail, extractId } from "@/lib/api";
+import { useRef } from "react";
+import { useParams } from "next/navigation";
+
 interface SendEmailModalProps {
   isOpen: boolean;
   onClose: () => void;
+  leadId?: string | number;
+  leadName?: string;
+  leadEmail?: string;
 }
 
 const MenuButton = ({
@@ -64,9 +74,38 @@ const MenuButton = ({
   </button>
 );
 
-const SendEmailModal: React.FC<SendEmailModalProps> = ({ isOpen, onClose }) => {
+const SendEmailModal: React.FC<SendEmailModalProps> = ({
+  isOpen,
+  onClose,
+  leadId,
+  leadName,
+  leadEmail,
+}) => {
+  const params = useParams();
+  const urlId = params?.id;
+
   const [shouldRender, setShouldRender] = useState(isOpen);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const [formData, setFormData] = useState({
+    subject: "new mail",
+    cc: "",
+    bcc: "",
+  });
+
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setAttachments((prev) => [...prev, ...Array.from(e.target.files!)]);
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const editor = useEditor({
     extensions: [
@@ -132,6 +171,41 @@ const SendEmailModal: React.FC<SendEmailModalProps> = ({ isOpen, onClose }) => {
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   }, [editor]);
 
+  const handleSend = async () => {
+    if (!editor || !editor.getText().trim()) {
+      toast.error("Please enter email content");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = new FormData();
+
+      // Use URL ID (usually numeric) or extract from prop (e.g. L240004 -> 4)
+      const finalLeadId = urlId || (leadId ? extractId(leadId) : null);
+      if (finalLeadId) data.append("lead_id", String(finalLeadId));
+
+      data.append("subject", formData.subject);
+      data.append("content", editor.getHTML());
+
+      attachments.forEach((file) => {
+        data.append("attachments[]", file);
+      });
+
+      if (formData.cc) data.append("cc", formData.cc);
+      if (formData.bcc) data.append("bcc", formData.bcc);
+
+      await sendEmail(data);
+      toast.success("Email sent successfully");
+      onClose();
+    } catch (error) {
+      toast.error("Failed to send email");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!shouldRender) return null;
 
   return createPortal(
@@ -162,7 +236,7 @@ const SendEmailModal: React.FC<SendEmailModalProps> = ({ isOpen, onClose }) => {
                 Send Email
               </h2>
               <p className="text-sm text-body italic opacity-70">
-                Compose an email to Sarah Johnson
+                Compose an email to {leadName || "the lead"}
               </p>
             </div>
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -186,7 +260,9 @@ const SendEmailModal: React.FC<SendEmailModalProps> = ({ isOpen, onClose }) => {
             </label>
             <div className="relative">
               <select className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-primary italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer">
-                <option value="amr">~Amr Kamel</option>
+                <option value={leadEmail}>
+                  {leadName || leadEmail || "Lead"}
+                </option>
               </select>
               <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
             </div>
@@ -197,17 +273,13 @@ const SendEmailModal: React.FC<SendEmailModalProps> = ({ isOpen, onClose }) => {
             <label className="text-xs font-bold text-mainText italic block">
               Cc
             </label>
-            <div className="relative">
-              <select
-                defaultValue=""
-                className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer"
-              >
-                <option value="" disabled>
-                  Select an option
-                </option>
-              </select>
-              <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
-            </div>
+            <input
+              type="email"
+              placeholder="Enter Cc"
+              value={formData.cc}
+              onChange={(e) => setFormData({ ...formData, cc: e.target.value })}
+              className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-white"
+            />
           </div>
 
           {/* Bcc */}
@@ -215,17 +287,15 @@ const SendEmailModal: React.FC<SendEmailModalProps> = ({ isOpen, onClose }) => {
             <label className="text-xs font-bold text-mainText italic block">
               Bcc
             </label>
-            <div className="relative">
-              <select
-                defaultValue=""
-                className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-primary italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer"
-              >
-                <option value="" disabled>
-                  Select an option
-                </option>
-              </select>
-              <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
-            </div>
+            <input
+              type="email"
+              placeholder="Enter Bcc"
+              value={formData.bcc}
+              onChange={(e) =>
+                setFormData({ ...formData, bcc: e.target.value })
+              }
+              className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-primary italic focus:outline-none focus:border-primary bg-white"
+            />
           </div>
 
           {/* Subject */}
@@ -236,7 +306,10 @@ const SendEmailModal: React.FC<SendEmailModalProps> = ({ isOpen, onClose }) => {
             <input
               type="text"
               placeholder="new mail"
-              defaultValue="new mail"
+              value={formData.subject}
+              onChange={(e) =>
+                setFormData({ ...formData, subject: e.target.value })
+              }
               className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-mainText italic focus:outline-none focus:border-primary bg-white"
             />
           </div>
@@ -392,7 +465,51 @@ const SendEmailModal: React.FC<SendEmailModalProps> = ({ isOpen, onClose }) => {
             <label className="text-xs font-bold text-mainText italic block">
               Attachments
             </label>
-            <div className="border-2 border-dashed border-[#F1F5F9] rounded-2xl p-8 flex flex-col items-center justify-center gap-3 group hover:border-primary transition-all cursor-pointer">
+
+            {attachments.length > 0 && (
+              <div className="space-y-3 mb-4">
+                {attachments.map((file, index) => (
+                  <div
+                    key={`attachment-${index}`}
+                    className="flex items-center justify-between p-4 bg-[#F8FAFC] border border-stroke rounded-xl"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-body" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-mainText truncate max-w-[200px]">
+                          {file.name}
+                        </p>
+                        <p className="text-[10px] text-body opacity-50">
+                          {(file.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeAttachment(index)}
+                      className="p-2 hover:bg-red-50 rounded-full transition-colors group"
+                      type="button"
+                    >
+                      <Trash2 className="w-4 h-4 text-body group-hover:text-red-500" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              multiple
+              className="hidden"
+            />
+
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-[#F1F5F9] rounded-2xl p-8 flex flex-col items-center justify-center gap-3 group hover:border-primary transition-all cursor-pointer"
+            >
               <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center group-hover:bg-primary transition-all">
                 <UploadCloud className="w-5 h-5 text-primary group-hover:text-white" />
               </div>
@@ -413,12 +530,17 @@ const SendEmailModal: React.FC<SendEmailModalProps> = ({ isOpen, onClose }) => {
         <div className="p-8 pt-4 flex items-center justify-center gap-4 border-t border-[#F1F5F9]">
           <button
             onClick={onClose}
-            className="flex-1 py-3 px-8 rounded-full border border-primary text-primary font-bold italic text-[15px] hover:bg-gray-50 transition-colors"
+            disabled={loading}
+            className="flex-1 py-3 px-8 rounded-full border border-primary text-primary font-bold italic text-[15px] hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
-          <button className="flex-1 py-3 px-8 rounded-full bg-primary text-white font-bold italic text-[15px] hover:bg-primary/90 transition-all shadow-lg shadow-primary/30">
-            Send Email
+          <button
+            onClick={handleSend}
+            disabled={loading}
+            className="flex-1 py-3 px-8 rounded-full bg-primary text-white font-bold italic text-[15px] hover:bg-primary/90 transition-all shadow-lg shadow-primary/30 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {loading ? "Sending..." : "Send Email"}
           </button>
         </div>
       </div>
