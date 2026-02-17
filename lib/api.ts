@@ -145,6 +145,57 @@ export const getTaskStages = async (): Promise<any[]> => {
   return response.data.data || response.data;
 };
 
+export const getTaskStage = async (id: string | number): Promise<any> => {
+  const response = await api.get(`/task_stages/${id}`);
+  console.log(response);
+  return response.data.data || response.data;
+};
+
+export const createTaskStage = async (data: { title: string; order?: string | number }): Promise<any> => {
+  const response = await api.post("/task_stages", data);
+  return response.data;
+};
+
+export const updateTaskStage = async (id: string | number, data: { title: string; order?: string | number }): Promise<any> => {
+  const response = await api.put(`/task_stages/${id}`, data);
+  return response.data;
+};
+
+export const deleteTaskStage = async (id: string | number): Promise<any> => {
+  const response = await api.delete(`/task_stages/${id}`);
+  return response.data;
+};
+
+export const getTasks = async (): Promise<any[]> => {
+  const response = await api.get("/tasks");
+  console.log(response)
+  return response.data.data || response.data;
+};
+
+export const getTask = async (id: string | number): Promise<any> => {
+  const response = await api.get(`/tasks/${id}`);
+  return response.data.data || response.data;
+};
+
+export const updateTask = async (id: string | number, data: any): Promise<any> => {
+  const isFormData = data instanceof FormData;
+  if (isFormData) {
+    data.append("_method", "PUT");
+    const response = await api.post(`/tasks/${id}`, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } else {
+    const response = await api.put(`/tasks/${id}`, data);
+    return response.data;
+  }
+};
+
+export const deleteTask = async (id: string | number): Promise<any> => {
+  const response = await api.delete(`/tasks/${id}`);
+  return response.data;
+};
+
 // Activity API Functions
 
 export const createTask = async (data: FormData): Promise<any> => {

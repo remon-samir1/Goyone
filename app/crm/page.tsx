@@ -636,7 +636,7 @@ const Page = () => {
                 <input
                   type="text"
                   className="flex-1 border-none outline-none text-placeholder h-full"
-                  placeholder="Serach"
+                  placeholder="Serach Lead"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />

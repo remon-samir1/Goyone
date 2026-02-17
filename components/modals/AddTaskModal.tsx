@@ -258,7 +258,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             {/* Parent */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-mainText italic flex items-center gap-2">
-                <Link2 className="w-4 h-4 text-body" /> Parent
+                <Link2 className="w-4 h-4 text-body" /> Lead
               </label>
               <div className="relative">
                 <select
@@ -269,7 +269,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                   className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-gray-50 cursor-pointer"
                 >
                   <option value="" disabled>
-                    Select parent
+                    Select Lead
                   </option>
                 </select>
                 <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
