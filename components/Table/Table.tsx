@@ -63,6 +63,11 @@ export interface TableProps<T = any> {
   onHide?: (key: string) => void;
   className?: string;
   loading?: boolean;
+  bulkActions?: (
+    selectedIds: string[],
+    clearSelection: () => void,
+  ) => React.ReactNode;
+  emptyState?: React.ReactNode;
 }
 
 // Sortable Table Head Component
@@ -176,6 +181,8 @@ const Table = <T extends Record<string, any>>({
   onHide,
   className = "",
   loading = false,
+  bulkActions,
+  emptyState,
 }: TableProps<T>) => {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [orderedColumns, setOrderedColumns] =
@@ -247,6 +254,11 @@ const Table = <T extends Record<string, any>>({
     onRowSelect?.(Array.from(newSelected));
   };
 
+  const clearSelection = () => {
+    setSelectedRows(new Set());
+    onRowSelect?.([]);
+  };
+
   const getCellValue = (row: T, column: TableColumn<T>) => {
     if (column.render) {
       return column.render(row[column.key], row);
@@ -290,7 +302,25 @@ const Table = <T extends Record<string, any>>({
   };
 
   return (
-    <div className={`mt-5 bg-white rounded-lg overflow-hidden  ${className}`}>
+    <div className={`mt-5 bg-white rounded-lg  ${className}`}>
+      {selectedRows.size > 0 && bulkActions && (
+        <div className="flex items-center justify-between px-4 py-3 bg-primary/5 border-b border-primary/10 transition-all">
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-primary italic">
+              {selectedRows.size} selected
+            </span>
+            <button
+              onClick={clearSelection}
+              className="text-xs font-semibold text-body hover:text-mainText transition-colors italic underline"
+            >
+              Clear selection
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            {bulkActions(Array.from(selectedRows), clearSelection)}
+          </div>
+        </div>
+      )}
       <div className="overflow-x-auto scrollbar-thumb-primary">
         <DndContext
           sensors={sensors}
@@ -348,7 +378,7 @@ const Table = <T extends Record<string, any>>({
                     colSpan={orderedColumns.length + 1}
                     className="px-4 py-8 text-center text-sm text-body"
                   >
-                    No data available
+                    {emptyState || "No data available"}
                   </td>
                 </tr>
               ) : (

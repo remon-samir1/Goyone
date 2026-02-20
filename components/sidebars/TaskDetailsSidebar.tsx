@@ -125,7 +125,7 @@ const TaskDetailsSidebar: React.FC<TaskDetailsSidebarProps> = ({
 
   const handleDelete = async () => {
     if (!taskId) return;
-    if (!confirm("Are you sure you want to delete this task?")) return;
+
 
     setIsDeleting(true);
     try {
@@ -234,49 +234,6 @@ const TaskDetailsSidebar: React.FC<TaskDetailsSidebarProps> = ({
                     {stages.find((s) => s.id == task?.task_stage_id)?.title ||
                       "Unknown Stage"}
                   </p>
-                )}
-              </div>
-
-              {/* Status */}
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-500 italic">
-                  Status
-                </label>
-                {isEditing ? (
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-[#F8FAFC] rounded-xl border-none focus:ring-2 focus:ring-primary/20 text-mainText font-medium appearance-none"
-                  >
-                    <option value="">Select Status</option>
-                    {statuses.length > 0 ? (
-                      statuses.map((status: any) => (
-                        <option
-                          key={status.id || status}
-                          value={status.id || status}
-                        >
-                          {status.name || status}
-                        </option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="pending">Pending</option>
-                        <option value="completed">Completed</option>
-                        <option value="received">Received</option>
-                      </>
-                    )}
-                  </select>
-                ) : (
-                  <div className="px-1">
-                    <span className="inline-block px-3 py-1 bg-[#FEF9C3] text-[#CA8A04] text-xs font-bold rounded-lg border border-[#FEF08A] italic">
-                      {statuses.find((s) => (s.id || s) == task?.status)
-                        ?.name ||
-                        task?.status?.name ||
-                        task?.status ||
-                        "Pending"}
-                    </span>
-                  </div>
                 )}
               </div>
 

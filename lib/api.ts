@@ -15,7 +15,6 @@ const api = axios.create({
 export const createLead = async (data: LeadFormData): Promise<any> => {
   const formData = new FormData();
 
-  // Append all fields to FormData
   Object.entries(data).forEach(([key, value]) => {
     // Skip undefined or null values
     if (value === undefined || value === null) return;
@@ -74,7 +73,7 @@ export const updateLead = async (id: string | number, data: LeadFormData): Promi
       formData.append(key, value ? "1" : "0");
       return;
     }
-    // Handle arrays (like social_media or feedbacks if sent as array)
+
     if (Array.isArray(value)) {
       value.forEach((item, index) => {
         if (typeof item === "object") {
@@ -136,6 +135,14 @@ export const getSellers = async (): Promise<any[]> => {
 export const convertLead = async (id: string | number, convertTo: 'contacts' | 'companyAccounts'): Promise<any> => {
   const response = await api.post(`/leads/${id}/convert`, {
     convert_to: convertTo,
+  });
+  return response.data;
+};
+
+export const changeOwner = async (leadId: string | number, sellerTo: string | number): Promise<any> => {
+  const response = await api.post("/leads/change_owners", {
+    lead_id: leadId,
+    seller_to: sellerTo,
   });
   return response.data;
 };
@@ -230,6 +237,35 @@ export const sendEmail = async (data: FormData): Promise<any> => {
     },
   });
   return response.data;
+};
+
+export const getCalls = async (params: { page?: number; search?: string; status?: string }): Promise<any> => {
+  const response = await api.get("/calls", { params });
+  return response.data;
+};
+
+export const deleteCall = async (id: string | number): Promise<any> => {
+  const response = await api.delete(`/calls/${id}`);
+  return response.data;
+};
+
+
+export const getAllLeads = async (search?: string): Promise<any[]> => {
+  const response = await api.get("/leads", {
+    params: {
+      per_page: 100,
+      search: search || undefined
+    }
+  }); 
+  return response.data.data || response.data;
+};
+
+export const exportLeads = async (params: { date_from?: string; date_to?: string; status_id?: number | string }): Promise<any> => {
+  const response = await api.get("/leads/export", {
+    params,
+    responseType: 'blob'
+  });
+  return response;
 };
 
 export default api;

@@ -7,6 +7,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 import {
   Download,
@@ -22,6 +26,7 @@ import {
   Trash2,
   Phone,
   Link2,
+  Users,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { HiViewColumns } from "react-icons/hi2";
@@ -34,6 +39,9 @@ import Link from "next/link";
 import { Axios } from "@/components/Helpers/Axios";
 import DeleteLeadModal from "@/components/modals/DeleteLeadModal";
 import ConvertLeadModal from "@/components/modals/ConvertLeadModal";
+import LogCallModal from "@/components/modals/LogCallModal";
+import ScheduleMeetingModal from "@/components/modals/ScheduleMeetingModal";
+import ChangeOwnerModal from "@/components/modals/ChangeOwnerModal";
 import { deleteLead, getLead, updateLead } from "@/lib/api";
 import { toast, Toaster } from "react-hot-toast";
 import { LeadFormData } from "@/types/leadTypes";
@@ -67,6 +75,12 @@ const CompanyAccountsPage = () => {
   const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<LeadData | null>(null);
+  const [isLogCallModalOpen, setIsLogCallModalOpen] = useState(false);
+  const [isScheduleMeetingModalOpen, setIsScheduleMeetingModalOpen] =
+    useState(false);
+  const [isChangeOwnerModalOpen, setIsChangeOwnerModalOpen] = useState(false);
+  const [selectedLeadForActions, setSelectedLeadForActions] =
+    useState<LeadData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // State for fetched data
@@ -401,7 +415,13 @@ const CompanyAccountsPage = () => {
         <Send className="h-4 w-4" />
         Send Email
       </DropdownMenuItem>
-      <DropdownMenuItem className="gap-3 text-body font-medium">
+      <DropdownMenuItem
+        className="gap-3 text-body font-medium cursor-pointer"
+        onClick={() => {
+          setSelectedLeadForActions(row);
+          setIsChangeOwnerModalOpen(true);
+        }}
+      >
         <User className="h-4 w-4" />
         Change Owner
       </DropdownMenuItem>
@@ -419,9 +439,35 @@ const CompanyAccountsPage = () => {
         <Trash2 className="h-4 w-4" />
         Delete
       </DropdownMenuItem>
-      <DropdownMenuItem className="text-body font-medium pl-9">
-        More...
-      </DropdownMenuItem>
+      <DropdownMenuSub>
+        <DropdownMenuSubTrigger className="gap-3 text-body font-medium pl-9 italic">
+          More...
+        </DropdownMenuSubTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuSubContent className="p-2 min-w-[180px]">
+            <DropdownMenuItem
+              className="gap-3 text-body font-medium cursor-pointer"
+              onClick={() => {
+                setSelectedLeadForActions(row);
+                setIsLogCallModalOpen(true);
+              }}
+            >
+              <Phone className="h-4 w-4" />
+              Create Call
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="gap-3 text-body font-medium cursor-pointer"
+              onClick={() => {
+                setSelectedLeadForActions(row);
+                setIsScheduleMeetingModalOpen(true);
+              }}
+            >
+              <Users className="h-4 w-4" />
+              Create Meeting
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuPortal>
+      </DropdownMenuSub>
     </>
   );
 
@@ -573,6 +619,26 @@ const CompanyAccountsPage = () => {
   // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleBulkDelete = async (
+    ids: string[],
+    clearSelection: () => void,
+  ) => {
+  
+
+    const toastId = toast.loading(`Deleting ${ids.length} accounts...`);
+    try {
+      await Promise.all(ids.map((id) => deleteLead(id)));
+      toast.success(`${ids.length} accounts deleted successfully`, {
+        id: toastId,
+      });
+      clearSelection();
+      fetchLeads(currentPage);
+    } catch (error) {
+      console.error("Error bulk deleting accounts:", error);
+      toast.error("Failed to delete some accounts", { id: toastId });
+    }
   };
 
   return (
@@ -740,11 +806,39 @@ const CompanyAccountsPage = () => {
             onFilter={handleFilter}
             onHide={handleHide}
             loading={loading}
+            bulkActions={(selectedIds, clearSelection) => (
+              <button
+                onClick={() => handleBulkDelete(selectedIds, clearSelection)}
+                className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-xs font-bold italic"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete Selected
+              </button>
+            )}
           />
           <ConvertLeadModal
             isOpen={isConvertModalOpen}
             onClose={() => setIsConvertModalOpen(false)}
             leadId={selectedLeadForConversion?.id || null}
+            onSuccess={() => fetchLeads(currentPage)}
+          />
+          <LogCallModal
+            isOpen={isLogCallModalOpen}
+            onClose={() => setIsLogCallModalOpen(false)}
+            leadId={selectedLeadForActions?.id}
+            leadName={selectedLeadForActions?.fullName}
+          />
+          <ScheduleMeetingModal
+            isOpen={isScheduleMeetingModalOpen}
+            onClose={() => setIsScheduleMeetingModalOpen(false)}
+            leadId={selectedLeadForActions?.id}
+            leadName={selectedLeadForActions?.fullName}
+          />
+          <ChangeOwnerModal
+            isOpen={isChangeOwnerModalOpen}
+            onClose={() => setIsChangeOwnerModalOpen(false)}
+            leadId={selectedLeadForActions?.id || null}
+            leadName={selectedLeadForActions?.fullName}
             onSuccess={() => fetchLeads(currentPage)}
           />
         </div>

@@ -18,7 +18,13 @@ import { cn } from "@/lib/utils";
 import AddNewBriefModal from "./AddNewBriefModal";
 
 import { toast } from "react-hot-toast";
-import { getSellers, createTask, getTaskStages, extractId } from "@/lib/api";
+import {
+  getSellers,
+  createTask,
+  getTaskStages,
+  extractId,
+  getAllLeads,
+} from "@/lib/api";
 import { useRef } from "react";
 import { useParams } from "next/navigation";
 
@@ -44,6 +50,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [sellers, setSellers] = useState<any[]>([]);
   const [taskStages, setTaskStages] = useState<any[]>([]);
+  const [leads, setLeads] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     user_id: "",
@@ -58,6 +65,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
   const [briefs, setBriefs] = useState<{ description: string; file: File }[]>(
     [],
   );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -66,6 +77,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       setTimeout(() => setIsAnimating(true), 10);
       fetchSellers();
       fetchTaskStages();
+      fetchLeads();
     } else {
       setIsAnimating(false);
       const timer = setTimeout(() => setShouldRender(false), 300);
@@ -90,6 +102,64 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       console.error("Error fetching task stages:", error);
     }
   };
+
+  const fetchLeads = async (search?: string) => {
+    setIsSearching(true);
+    try {
+      const data = await getAllLeads(search);
+      setLeads(data);
+    } catch (error) {
+      console.error("Error fetching leads:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Debounced search
+  useEffect(() => {
+    if (!isOpen || urlId) return;
+
+    const timer = setTimeout(() => {
+      if (searchQuery.trim() || isDropdownOpen) {
+        fetchLeads(searchQuery);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, isOpen, urlId, isDropdownOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Initialize/Update parent (lead_id) based on context
+  useEffect(() => {
+    if (urlId) {
+      // If in Lead View/Edit page (URL has ID), set parent to that ID
+      setFormData((prev) => ({ ...prev, parent: String(urlId) }));
+      if (leadName) {
+        setSearchQuery(leadName);
+      }
+    } else if (leadId) {
+      // Fallback to prop if available
+      const id = extractId(leadId);
+      setFormData((prev) => ({ ...prev, parent: id }));
+      if (leadName) {
+        setSearchQuery(leadName);
+      }
+    }
+  }, [urlId, leadId, leadName, isOpen]);
+
+  const filteredLeads = leads;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -119,8 +189,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     try {
       const data = new FormData();
 
-      // Use URL ID (usually numeric) or extract from prop (e.g. L240004 -> 4)
-      const finalLeadId = urlId || (leadId ? extractId(leadId) : null);
+      // Use URL ID (usually numeric) or form selection
+      const finalLeadId = urlId || formData.parent;
       if (finalLeadId) data.append("lead_id", String(finalLeadId));
 
       // Select stage and user from formData
@@ -260,19 +330,54 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
               <label className="text-sm font-bold text-mainText italic flex items-center gap-2">
                 <Link2 className="w-4 h-4 text-body" /> Lead
               </label>
-              <div className="relative">
-                <select
-                  value={formData.parent}
-                  onChange={(e) =>
-                    setFormData({ ...formData, parent: e.target.value })
-                  }
-                  className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-gray-50 cursor-pointer"
-                >
-                  <option value="" disabled>
-                    Select Lead
-                  </option>
-                </select>
+              <div className="relative" ref={dropdownRef}>
+                <input
+                  type="text"
+                  placeholder="Search and select lead"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setIsDropdownOpen(true);
+                  }}
+                  onFocus={() => !urlId && setIsDropdownOpen(true)}
+                  disabled={!!urlId}
+                  className={`w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary ${
+                    urlId
+                      ? "bg-gray-100 cursor-not-allowed"
+                      : "bg-white cursor-pointer"
+                  }`}
+                />
                 <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
+
+                {isDropdownOpen && !urlId && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-[#F1F5F9] rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                    {isSearching ? (
+                      <div className="px-4 py-3 flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    ) : filteredLeads.length > 0 ? (
+                      filteredLeads.map((lead) => (
+                        <div
+                          key={lead.id}
+                          className="px-4 py-2 text-sm text-body hover:bg-primary/5 cursor-pointer italic"
+                          onClick={() => {
+                            setFormData({ ...formData, parent: lead.id });
+                            setSearchQuery(
+                              lead.full_name || lead.name || `Lead #${lead.id}`,
+                            );
+                            setIsDropdownOpen(false);
+                          }}
+                        >
+                          {lead.full_name || lead.name || `Lead #${lead.id}`}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-2 text-sm text-body italic opacity-50">
+                        No leads found
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
