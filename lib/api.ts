@@ -249,6 +249,16 @@ export const deleteCall = async (id: string | number): Promise<any> => {
   return response.data;
 };
 
+export const getMeetings = async (params: { page?: number; search?: string; status?: string }): Promise<any> => {
+  const response = await api.get("/meetings", { params });
+  return response.data;
+};
+
+export const deleteMeeting = async (id: string | number): Promise<any> => {
+  const response = await api.delete(`/meetings/${id}`);
+  return response.data;
+};
+
 
 export const getAllLeads = async (search?: string): Promise<any[]> => {
   const response = await api.get("/leads", {

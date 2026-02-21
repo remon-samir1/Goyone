@@ -18,7 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { toast } from "react-hot-toast";
-import { getSellers, createMeeting, extractId } from "@/lib/api";
+import { getSellers, createMeeting, extractId, getAllLeads } from "@/lib/api";
 import { useRef } from "react";
 import { useParams } from "next/navigation";
 
@@ -52,8 +52,14 @@ const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
     to: "",
     description: "",
     value: "medium",
+    lead_id: "",
   });
 
+  const [leads, setLeads] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [attachments, setAttachments] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -66,6 +72,56 @@ const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
   const removeAttachment = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
+
+  const fetchLeads = async (search?: string) => {
+    setIsSearching(true);
+    try {
+      const data = await getAllLeads(search);
+      setLeads(data);
+    } catch (error) {
+      console.error("Error fetching leads:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Debounced search
+  useEffect(() => {
+    if (!isOpen || urlId) return;
+
+    const timer = setTimeout(() => {
+      if (searchQuery.trim() || isDropdownOpen) {
+        fetchLeads(searchQuery);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, isOpen, urlId, isDropdownOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Initialize/Update lead_id based on context
+  useEffect(() => {
+    if (urlId) {
+      setFormData((prev) => ({ ...prev, lead_id: String(urlId) }));
+      if (leadName) setSearchQuery(leadName);
+    } else if (leadId) {
+      const id = extractId(leadId);
+      setFormData((prev) => ({ ...prev, lead_id: id }));
+      if (leadName) setSearchQuery(leadName);
+    }
+  }, [urlId, leadId, leadName, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -106,12 +162,15 @@ const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
     try {
       const data = new FormData();
 
-      // Use URL ID (usually numeric) or extract from prop (e.g. L240004 -> 4)
-      const finalLeadId = urlId || (leadId ? extractId(leadId) : null);
+      // Use URL ID (usually numeric), form selection, or prop
+      const finalLeadId =
+        urlId || formData.lead_id || (leadId ? extractId(leadId) : null);
       if (finalLeadId) data.append("lead_id", String(finalLeadId));
 
       Object.entries(formData).forEach(([key, value]) => {
-        data.append(key, String(value));
+        if (key !== "lead_id") {
+          data.append(key, String(value));
+        }
       });
 
       attachments.forEach((file) => {
@@ -196,6 +255,58 @@ const ScheduleMeetingModal: React.FC<ScheduleMeetingModalProps> = ({
               <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
             </div>
           </div>
+
+          {!urlId && (
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-mainText italic flex items-center gap-2">
+                <User className="w-4 h-4 text-body" /> Lead
+              </label>
+              <div className="relative" ref={dropdownRef}>
+                <input
+                  type="text"
+                  placeholder="Search and select lead"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setIsDropdownOpen(true);
+                  }}
+                  onFocus={() => setIsDropdownOpen(true)}
+                  className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-white cursor-pointer"
+                />
+                <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
+
+                {isDropdownOpen && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-[#F1F5F9] rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                    {isSearching ? (
+                      <div className="px-4 py-3 flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    ) : leads.length > 0 ? (
+                      leads.map((lead) => (
+                        <div
+                          key={lead.id}
+                          className="px-4 py-2 text-sm text-body hover:bg-primary/5 cursor-pointer italic"
+                          onClick={() => {
+                            setFormData({ ...formData, lead_id: lead.id });
+                            setSearchQuery(
+                              lead.full_name || lead.name || `Lead #${lead.id}`,
+                            );
+                            setIsDropdownOpen(false);
+                          }}
+                        >
+                          {lead.full_name || lead.name || `Lead #${lead.id}`}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-2 text-sm text-body italic opacity-50">
+                        No leads found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Title */}

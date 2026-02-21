@@ -85,10 +85,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("primary-color", hex);
 
     // Convert hex to HSL and update CSS variable
-    const hsl = hexToHSL(hex);
+    const hsl = hexToHSL(hex) as string;
     if (hsl) {
       document.documentElement.style.setProperty("--primary", hsl);
     }
+
+    // Derive and set header colors
+    const { accent, gradientTo } = deriveHeaderColors(hex);
+    document.documentElement.style.setProperty("--header-accent", accent);
+    document.documentElement.style.setProperty(
+      "--header-gradient-to",
+      gradientTo,
+    );
   };
 
   return (
@@ -115,7 +123,10 @@ export const useTheme = () => {
 };
 
 // Helper function
-function hexToHSL(hex: string): string | null {
+function hexToHSL(
+  hex: string,
+  returnObject = false,
+): string | { h: number; s: number; l: number } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (!result) return null;
 
@@ -154,5 +165,37 @@ function hexToHSL(hex: string): string | null {
   const sPct = Math.round(s * 100);
   const lPct = Math.round(l * 100);
 
+  if (returnObject) {
+    return { h: hDeg, s: sPct, l: lPct };
+  }
+
   return `${hDeg} ${sPct}% ${lPct}%`;
+}
+
+function deriveHeaderColors(hex: string): {
+  accent: string;
+  gradientTo: string;
+} {
+  // Default values based on the original green theme colors
+  const defaultAccent = "97 73% 61%"; // #8CE553
+  const defaultGradientTo = "172 51% 48%"; // #3CB9A8
+
+  // If it's the default blue, return the original green/teal colors
+  if (hex.toUpperCase() === "#3672EA") {
+    return { accent: defaultAccent, gradientTo: defaultGradientTo };
+  }
+
+  // For other themes, derive colors that match
+  const hsl = hexToHSL(hex, true) as { h: number; s: number; l: number };
+  if (!hsl) return { accent: defaultAccent, gradientTo: defaultGradientTo };
+
+  // Hue shift the primary color to find a matching accent (e.g., +30 degrees)
+  // and a matching gradient-to (e.g., -30 degrees)
+  const accentHue = (hsl.h + 30) % 360;
+  const gradientHue = (hsl.h - 30 + 360) % 360;
+
+  return {
+    accent: `${accentHue} ${hsl.s}% ${Math.min(hsl.l + 10, 90)}%`,
+    gradientTo: `${gradientHue} ${hsl.s}% ${Math.max(hsl.l - 10, 20)}%`,
+  };
 }

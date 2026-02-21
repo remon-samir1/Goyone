@@ -325,61 +325,59 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Parent */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-mainText italic flex items-center gap-2">
-                <Link2 className="w-4 h-4 text-body" /> Lead
-              </label>
-              <div className="relative" ref={dropdownRef}>
-                <input
-                  type="text"
-                  placeholder="Search and select lead"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setIsDropdownOpen(true);
-                  }}
-                  onFocus={() => !urlId && setIsDropdownOpen(true)}
-                  disabled={!!urlId}
-                  className={`w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary ${
-                    urlId
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : "bg-white cursor-pointer"
-                  }`}
-                />
-                <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
+            {!urlId && (
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-mainText italic flex items-center gap-2">
+                  <Link2 className="w-4 h-4 text-body" /> Lead
+                </label>
+                <div className="relative" ref={dropdownRef}>
+                  <input
+                    type="text"
+                    placeholder="Search and select lead"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setIsDropdownOpen(true);
+                    }}
+                    onFocus={() => setIsDropdownOpen(true)}
+                    className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-white cursor-pointer"
+                  />
+                  <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
 
-                {isDropdownOpen && !urlId && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-[#F1F5F9] rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                    {isSearching ? (
-                      <div className="px-4 py-3 flex items-center justify-center">
-                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    ) : filteredLeads.length > 0 ? (
-                      filteredLeads.map((lead) => (
-                        <div
-                          key={lead.id}
-                          className="px-4 py-2 text-sm text-body hover:bg-primary/5 cursor-pointer italic"
-                          onClick={() => {
-                            setFormData({ ...formData, parent: lead.id });
-                            setSearchQuery(
-                              lead.full_name || lead.name || `Lead #${lead.id}`,
-                            );
-                            setIsDropdownOpen(false);
-                          }}
-                        >
-                          {lead.full_name || lead.name || `Lead #${lead.id}`}
+                  {isDropdownOpen && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-[#F1F5F9] rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                      {isSearching ? (
+                        <div className="px-4 py-3 flex items-center justify-center">
+                          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                         </div>
-                      ))
-                    ) : (
-                      <div className="px-4 py-2 text-sm text-body italic opacity-50">
-                        No leads found
-                      </div>
-                    )}
-                  </div>
-                )}
+                      ) : leads.length > 0 ? (
+                        leads.map((lead) => (
+                          <div
+                            key={lead.id}
+                            className="px-4 py-2 text-sm text-body hover:bg-primary/5 cursor-pointer italic"
+                            onClick={() => {
+                              setFormData({ ...formData, parent: lead.id });
+                              setSearchQuery(
+                                lead.full_name ||
+                                  lead.name ||
+                                  `Lead #${lead.id}`,
+                              );
+                              setIsDropdownOpen(false);
+                            }}
+                          >
+                            {lead.full_name || lead.name || `Lead #${lead.id}`}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2 text-sm text-body italic opacity-50">
+                          No leads found
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Title */}
             <div className="space-y-2">

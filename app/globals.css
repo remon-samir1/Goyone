@@ -68,6 +68,9 @@ body {
     --chart-5: 27 87% 67%;
 
     --radius: 0.5rem;
+
+    --header-accent: 97 73% 61%;
+    --header-gradient-to: 172 51% 48%;
   }
   .dark {
     --background: 222 47% 11%;

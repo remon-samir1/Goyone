@@ -130,19 +130,19 @@ const Header = ({ Links }: HeaderProps) => {
         className={`
           transition-all duration-300 z-[50] px-[3%]
           ${
-            
             isScrolled
-            ? "sticky top-0 left-0 right-0  bg-white/70 backdrop-blur-lg shadow-md  py-3"
-            : "sticky top-0 bg-transparent"
-            }
-            `
-        }
+              ? "sticky top-0 left-0 right-0  bg-white/70 backdrop-blur-lg shadow-md  py-3"
+              : "sticky top-0 bg-transparent"
+          }
+            `}
       >
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             <Logo />
-            <ChevronsRight className="text-[#8CE553] w-[18px] h-[18px]" />
-            <Link href={'/crm'} className="text-primary text-sm font-semibold">CRM </Link>
+            <ChevronsRight className="text-header-accent w-[18px] h-[18px]" />
+            <Link href={"/crm"} className="text-primary text-sm font-semibold">
+              CRM{" "}
+            </Link>
           </div>
 
           <div className="flex items-center gap-2 px-4 py-2 bg-white border border-stroke rounded-3xl ">
@@ -337,7 +337,7 @@ const Header = ({ Links }: HeaderProps) => {
         </div>
 
         {Links && (
-          <div className="mt-7 bg-gradient-to-r from-primary via-primary to-[#3CB9A8] p-4 flex items-center gap-1 rounded-full">
+          <div className="mt-7 bg-gradient-to-r from-header-gradient-from to-header-gradient-to p-4 flex items-center gap-1 rounded-full">
             {links.map((data, index) => {
               const isActive = pathname === data.link;
 
