@@ -55,7 +55,7 @@ const CallModal = ({ isOpen, onClose }: CallModalProps) => {
       {/* Call Modal Window */}
       <div
         ref={modalRef}
-        className="relative z-10 w-full max-w-[400px] mx-4 bg-white rounded-3xl shadow-2xl overflow-hidden"
+        className="relative z-10 w-full max-w-[400px] mx-4 bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden"
       >
         {/* Content */}
         <div className="p-8 text-center">

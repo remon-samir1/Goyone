@@ -51,7 +51,7 @@ const DeleteStageModal: React.FC<DeleteStageModalProps> = ({
       {/* Modal Content */}
       <div
         className={cn(
-          "relative bg-white rounded-[32px] w-full max-w-[500px] shadow-2xl transform transition-all duration-300 ease-out p-10 text-center flex flex-col items-center",
+          "relative bg-white dark:bg-gray-800 rounded-[32px] w-full max-w-[500px] shadow-2xl transform transition-all duration-300 ease-out p-10 text-center flex flex-col items-center",
           isAnimating ? "scale-100 translate-y-0" : "scale-95 translate-y-4",
         )}
       >

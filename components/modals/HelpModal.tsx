@@ -114,7 +114,7 @@ const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
     <div ref={containerRef} className="fixed bottom-20 right-6 z-50">
       <div
         ref={modalRef}
-        className="bg-white rounded-3xl shadow-2xl w-[400px] overflow-hidden border border-gray-100 origin-bottom-right"
+        className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-[400px] overflow-hidden border border-gray-100 origin-bottom-right"
       >
         {/* Header */}
         <div className="p-6 pb-2 help-header flex items-center justify-between">

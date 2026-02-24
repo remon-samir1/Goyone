@@ -631,7 +631,6 @@ const Page = () => {
     ids: string[],
     clearSelection: () => void,
   ) => {
-    
     const toastId = toast.loading(`Deleting ${ids.length} leads...`);
     try {
       await Promise.all(ids.map((id) => deleteLead(id)));

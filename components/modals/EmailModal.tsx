@@ -65,7 +65,7 @@ const EmailModal = ({ isOpen, onClose }: EmailModalProps) => {
       {/* Email Modal Window */}
       <div
         ref={modalRef}
-        className="relative z-10 w-full max-w-[450px] mx-4 bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col"
+        className="relative z-10 w-full max-w-[450px] mx-4 bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col"
       >
         {/* Header */}
         <div className="px-6 py-5 flex items-start justify-between border-b border-gray-100 flex-shrink-0">

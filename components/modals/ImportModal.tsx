@@ -70,7 +70,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose }) => {
 
       <div
         className={cn(
-          "relative bg-white rounded-xl w-full max-w-[600px] p-8 shadow-2xl transform transition-all duration-300 ease-out",
+          "relative bg-white dark:bg-gray-800 rounded-xl w-full max-w-[600px] p-8 shadow-2xl transform transition-all duration-300 ease-out",
           isAnimating ? "scale-100 translate-y-0" : "scale-95 translate-y-4"
         )}
       >

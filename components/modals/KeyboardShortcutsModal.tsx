@@ -45,7 +45,7 @@ const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/50">
                 <Command className="w-4 h-4" />
               </div>
               <h2 className="text-lg font-bold text-gray-900 italic">

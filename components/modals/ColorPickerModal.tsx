@@ -146,7 +146,7 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
 
       <div
         className={cn(
-          "relative bg-white rounded-3xl w-full max-w-[500px] shadow-2xl transform transition-all duration-300 ease-out max-h-[90vh] overflow-y-auto",
+          "relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-[500px] shadow-2xl transform transition-all duration-300 ease-out max-h-[90vh] overflow-y-auto",
           isAnimating ? "scale-100 translate-y-0" : "scale-95 translate-y-4"
         )}
       >

@@ -53,7 +53,7 @@ const CreatePositionModal: React.FC<CreatePositionModalProps> = ({
       {/* Modal Content */}
       <div
         className={cn(
-          "relative bg-white rounded-3xl w-full max-w-[600px] shadow-2xl transform transition-all duration-300 ease-out",
+          "relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-[600px] shadow-2xl transform transition-all duration-300 ease-out",
           isAnimating ? "scale-100 translate-y-0" : "scale-95 translate-y-4",
         )}
       >

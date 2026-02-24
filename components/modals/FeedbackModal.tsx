@@ -58,7 +58,7 @@ const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
       {/* Modal positioned at bottom right */}
       <div
         ref={modalRef}
-        className="absolute bottom-14 right-4 w-[320px] bg-white rounded-2xl shadow-2xl overflow-hidden pointer-events-auto border border-gray-100"
+        className="absolute bottom-14 right-4 w-[320px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden pointer-events-auto border border-gray-100"
       >
         {/* Header */}
         <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100">

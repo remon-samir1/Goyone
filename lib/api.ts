@@ -250,13 +250,33 @@ export const deleteCall = async (id: string | number): Promise<any> => {
 };
 
 export const getMeetings = async (params: { page?: number; search?: string; status?: string }): Promise<any> => {
-  const response = await api.get("/meetings", { params });
-  return response.data;
+  try {
+    // Filter out empty string params to avoid Laravel 422 validation errors
+    const cleanParams: Record<string, any> = {};
+    if (params.page) cleanParams.page = params.page;
+    if (params.search) cleanParams.search = params.search;
+    if (params.status) cleanParams.status = params.status;
+
+    const response = await api.get("/meetings", { params: cleanParams });
+    return response.data;
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || "Failed to fetch meetings";
+    const status = error.response?.status;
+    console.error(`getMeetings error (${status}):`, error.response?.data || error);
+    throw new Error(message);
+  }
 };
 
 export const deleteMeeting = async (id: string | number): Promise<any> => {
-  const response = await api.delete(`/meetings/${id}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/meetings/${id}`);
+    return response.data;
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || "Failed to delete meeting";
+    const status = error.response?.status;
+    console.error(`deleteMeeting error (${status}):`, error.response?.data || error);
+    throw new Error(message);
+  }
 };
 
 
@@ -276,6 +296,66 @@ export const exportLeads = async (params: { date_from?: string; date_to?: string
     responseType: 'blob'
   });
   return response;
+};
+
+export const getCalendars = async (params?: { only?: string }): Promise<any> => {
+  try {
+    const response = await api.get("/calendars", { params });
+    return response.data;
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || "Failed to fetch calendars";
+    console.error("getCalendars error:", error.response?.data || error);
+    throw new Error(message);
+  }
+};
+
+export const createCalendar = async (data: FormData): Promise<any> => {
+  try {
+    const response = await api.post("/calendars", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || "Failed to create calendar event";
+    console.error("createCalendar error:", error.response?.data || error);
+    throw new Error(message);
+  }
+};
+
+export const getCalendarColors = async (): Promise<any[]> => {
+  try {
+    const response = await api.get("/calendar_colors");
+    return response.data.data || response.data;
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || "Failed to fetch calendar colors";
+    console.error("getCalendarColors error:", error.response?.data || error);
+    throw new Error(message);
+  }
+};
+
+export const updateCalendar = async (id: string | number, data: FormData): Promise<any> => {
+  try {
+    data.append("_method", "PUT");
+    const response = await api.post(`/calendars/${id}`, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || "Failed to update calendar event";
+    console.error("updateCalendar error:", error.response?.data || error);
+    throw new Error(message);
+  }
+};
+
+export const deleteCalendar = async (id: string | number): Promise<any> => {
+  try {
+    const response = await api.delete(`/calendars/${id}`);
+    return response.data;
+  } catch (error: any) {
+    const message = error.response?.data?.message || error.message || "Failed to delete calendar event";
+    console.error("deleteCalendar error:", error.response?.data || error);
+    throw new Error(message);
+  }
 };
 
 export default api;

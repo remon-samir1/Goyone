@@ -104,7 +104,7 @@ const ChatModal = ({ isOpen, onClose }: ChatModalProps) => {
       {/* Chat Window */}
       <div
         ref={modalRef}
-        className="relative z-10 w-full max-w-[400px] mx-4 bg-white rounded-3xl shadow-2xl overflow-hidden"
+        className="relative z-10 w-full max-w-[400px] mx-4 bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden"
       >
         {/* Header */}
         <div className="bg-primary px-6 py-4 flex items-center justify-between">

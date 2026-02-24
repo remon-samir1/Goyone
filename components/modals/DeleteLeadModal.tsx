@@ -51,7 +51,7 @@ const DeleteLeadModal: React.FC<DeleteLeadModalProps> = ({
       {/* Modal Content */}
       <div
         className={cn(
-          "relative bg-white rounded-[8px] w-full max-w-[700px] shadow-2xl transform transition-all duration-300 ease-out p-10 text-center",
+          "relative bg-white dark:bg-gray-800 rounded-[8px] w-full max-w-[700px] shadow-2xl transform transition-all duration-300 ease-out p-10 text-center",
           isAnimating ? "scale-100 translate-y-0" : "scale-95 translate-y-4",
         )}
       >

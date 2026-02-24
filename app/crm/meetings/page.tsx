@@ -119,24 +119,38 @@ const MeetingsPage = () => {
     setLoading(true);
     try {
       const response = await getMeetings({ page, search, status });
-      const data = response.data || [];
 
-      const mappedData: MeetingData[] = data.map((item: any) => ({
-        id: item.id.toString(),
-        title: item.title || "No Title",
-        value: item.value || "Medium",
-        location: item.location || "Online",
-        from: item.from || "N/A",
-        to: item.to || "N/A",
-        host: item.user?.name || "N/A",
-        description: item.description || "N/A",
+      if (!response) {
+        toast.error("No response received from the server");
+        setMeetings([]);
+        setTotalResults(0);
+        return;
+      }
+
+      const data = response.data || response || [];
+      const dataArray = Array.isArray(data) ? data : [];
+
+      const mappedData: MeetingData[] = dataArray.map((item: any) => ({
+        id: item?.id?.toString() || "",
+        title: item?.title || "No Title",
+        value: item?.value || "Medium",
+        location: item?.location || "Online",
+        from: item?.from || "N/A",
+        to: item?.to || "N/A",
+        host: item?.user?.name || "N/A",
+        description: item?.description || "N/A",
       }));
 
       setMeetings(mappedData);
-      setTotalResults(response.total || mappedData.length);
-    } catch (error) {
+      setTotalResults(
+        response.total || response.meta?.total || mappedData.length,
+      );
+    } catch (error: any) {
       console.error("Error fetching meetings:", error);
-      toast.error("Failed to fetch meetings");
+      const errorMessage = error?.message || "Failed to fetch meetings";
+      toast.error(errorMessage);
+      setMeetings([]);
+      setTotalResults(0);
     } finally {
       setLoading(false);
     }
@@ -169,10 +183,11 @@ const MeetingsPage = () => {
         id: toastId,
       });
       clearSelection();
-      fetchMeetings(currentPage, debouncedSearch);
-    } catch (error) {
+      fetchMeetings(currentPage, debouncedSearch, selectedStatus);
+    } catch (error: any) {
       console.error("Error bulk deleting meetings:", error);
-      toast.error("Failed to delete some meetings", { id: toastId });
+      const errorMessage = error?.message || "Failed to delete some meetings";
+      toast.error(errorMessage, { id: toastId });
     }
   };
 
