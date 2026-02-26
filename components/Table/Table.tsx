@@ -108,7 +108,7 @@ const SortableTableHead = ({
     <th
       ref={setNodeRef}
       style={style}
-      className={`px-4 py-3 text-left text-sm font-semibold text-mainText whitespace-nowrap ${
+      className={`px-4 py-3 text-left text-sm font-bold italic text-[#576680] whitespace-nowrap ${
         isDragging ? "cursor-grabbing shadow-md rounded-md" : ""
       }`}
       {...attributes}
@@ -329,8 +329,8 @@ const Table = <T extends Record<string, any>>({
         >
           <table className="w-full border-collapse ">
             <thead>
-              <tr className="bg-[#F8FAFC]">
-                <th className="px-4 py-3 text-left text-sm font-semibold text-mainText w-[50px]">
+              <tr className="bg-[#F6F8FC] border-b border-[#E6E8EC]">
+                <th className="px-4 py-4 text-left text-sm font-bold italic text-[#576680] w-[50px]">
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
@@ -338,7 +338,7 @@ const Table = <T extends Record<string, any>>({
                         selectedRows.size === data.length && data.length > 0
                       }
                       onChange={toggleSelectAll}
-                      className="w-4 h-4 rounded border-stroke text-primary focus:ring-2 focus:ring-primary"
+                      className="w-4 h-4 rounded border-[#E6E8EC] text-[#3672EA] focus:ring-2 focus:ring-[#3672EA]"
                     />
                   </div>
                 </th>
@@ -387,7 +387,11 @@ const Table = <T extends Record<string, any>>({
                   return (
                     <tr
                       key={rowId}
-                      className="border-b border-stroke hover:bg-gray-50 transition-colors"
+                      className={`border-b border-[#E6E8EC] transition-colors ${
+                        selectedRows.has(rowId)
+                          ? "bg-[#3672EA]/10 hover:bg-[#3672EA]/15"
+                          : "hover:bg-[#F6F8FC]"
+                      }`}
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -408,7 +412,7 @@ const Table = <T extends Record<string, any>>({
                             type="checkbox"
                             checked={selectedRows.has(rowId)}
                             onChange={() => toggleRowSelection(rowId)}
-                            className="w-4 h-4 rounded border-stroke text-primary focus:ring-2 focus:ring-primary"
+                            className="w-4 h-4 rounded border-[#E6E8EC] text-[#3672EA] focus:ring-2 focus:ring-[#3672EA]"
                           />
                         </div>
                       </td>

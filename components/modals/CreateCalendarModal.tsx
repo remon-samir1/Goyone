@@ -112,7 +112,15 @@ const CreateCalendarModal: React.FC<CreateCalendarModalProps> = ({
       const data = new FormData();
 
       Object.entries(formData).forEach(([key, value]) => {
-        data.append(key, String(value));
+        let finalValue = String(value);
+        if ((key === "starts_at" || key === "ends_at") && finalValue) {
+          // Replace T with space and ensure Y-m-d H:i:s format
+          finalValue = finalValue.replace("T", " ");
+          if (finalValue.length === 16) {
+            finalValue += ":00";
+          }
+        }
+        data.append(key, finalValue);
       });
 
       attachments.forEach((file) => {

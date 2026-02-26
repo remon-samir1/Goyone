@@ -54,6 +54,54 @@ const resolveColor = (color: string) => {
   return TAILWIND_COLOR_MAP[color.toLowerCase()] || color;
 };
 
+const EventChip = ({
+  evt,
+  getColorDetails,
+}: {
+  evt: any;
+  getColorDetails: any;
+}) => {
+  const colorObj = getColorDetails(evt.calendar_color_id);
+  const rawColor = evt.textColor || colorObj.color || "#3B82F6";
+  const bgHex = resolveColor(rawColor);
+  const darkTextHex = bgHex;
+
+  return (
+    <div
+      key={evt.id}
+      className="px-2.5 py-2.5 shrink-0 rounded-lg text-xs font-bold flex flex-col justify-center cursor-pointer transition-opacity relative overflow-hidden"
+      style={{
+        color: darkTextHex,
+      }}
+      title={evt.name}
+    >
+      <div
+        className="absolute inset-0 opacity-[0.12]"
+        style={{ backgroundColor: bgHex }}
+      ></div>
+      <div
+        className="absolute left-0 top-0 bottom-0 w-[5px] rounded-r-lg z-10"
+        style={{ backgroundColor: bgHex }}
+      ></div>
+      <div className="relative z-10 flex items-center gap-1.5 pl-3">
+        <span
+          className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+          style={{ backgroundColor: bgHex }}
+        ></span>
+        <span className="truncate leading-tight text-mainText italic text-[12px]">
+          {evt.name}
+        </span>
+      </div>
+      <span className="relative z-10 text-[12px] pl-6 font-medium text-body italic mt-0.5">
+        {new Date(evt.starts_at).toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        })}
+      </span>
+    </div>
+  );
+};
+
 const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const CalendarPage = () => {
@@ -89,16 +137,52 @@ const CalendarPage = () => {
     }
   };
 
-  const nextMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
-    );
+  const next = () => {
+    if (viewMode === "Month") {
+      setCurrentDate(
+        new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
+      );
+    } else if (viewMode === "Week") {
+      setCurrentDate(
+        new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate() + 7,
+        ),
+      );
+    } else {
+      setCurrentDate(
+        new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate() + 1,
+        ),
+      );
+    }
   };
 
-  const prevMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
-    );
+  const prev = () => {
+    if (viewMode === "Month") {
+      setCurrentDate(
+        new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
+      );
+    } else if (viewMode === "Week") {
+      setCurrentDate(
+        new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate() - 7,
+        ),
+      );
+    } else {
+      setCurrentDate(
+        new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate() - 1,
+        ),
+      );
+    }
   };
 
   const goToToday = () => {
@@ -146,6 +230,29 @@ const CalendarPage = () => {
     return days;
   };
 
+  const generateWeekGrid = () => {
+    const startOfWeek = new Date(currentDate);
+    const day = startOfWeek.getDay();
+    startOfWeek.setDate(startOfWeek.getDate() - day);
+
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      days.push(new Date(startOfWeek));
+      startOfWeek.setDate(startOfWeek.getDate() + 1);
+    }
+    return days;
+  };
+
+  const generateTimeSlices = () => {
+    const slices = [];
+    for (let i = 0; i < 24; i++) {
+      const hour = i === 0 ? 12 : i > 12 ? i - 12 : i;
+      const ampm = i < 12 ? "AM" : "PM";
+      slices.push(`${hour}:00 ${ampm}`);
+    }
+    return slices;
+  };
+
   const getEventsForDay = (date: Date) => {
     if (!date) return [];
     return events.filter((e) => {
@@ -157,6 +264,20 @@ const CalendarPage = () => {
       );
     });
   };
+
+  const getEventsForHour = (date: Date, hourIndex: number) => {
+    return events.filter((e) => {
+      const start = new Date(e.starts_at);
+      return (
+        start.getDate() === date.getDate() &&
+        start.getMonth() === date.getMonth() &&
+        start.getFullYear() === date.getFullYear() &&
+        start.getHours() === hourIndex
+      );
+    });
+  };
+  // Simplified getEventsForDay already handles date check.
+  // For time grid, we'll filter events for that day and check the hour.
 
   const getColorDetails = (colorId: number | string) => {
     const colorObj = colors.find((c) => String(c.id) === String(colorId)) || {
@@ -272,21 +393,33 @@ const CalendarPage = () => {
               </button>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={prevMonth}
+                  onClick={prev}
                   className="p-1.5 hover:bg-gray-100 rounded-lg text-body transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5 text-[#3B82F6]" />
                 </button>
                 <button
-                  onClick={nextMonth}
+                  onClick={next}
                   className="p-1.5 hover:bg-gray-100 rounded-lg text-body transition-colors"
                 >
                   <ChevronRight className="w-5 h-5 text-[#3B82F6]" />
                 </button>
               </div>
               <h3 className="text-xl font-bold text-mainText ml-2 italic">
-                {currentDate.toLocaleString("default", { month: "long" })}{" "}
-                {currentDate.getFullYear()}
+                {viewMode === "Day" ? (
+                  <>
+                    {currentDate.toLocaleDateString("default", {
+                      weekday: "long",
+                    })}
+                    , {currentDate.toLocaleString("default", { month: "long" })}{" "}
+                    {currentDate.getDate()}, {currentDate.getFullYear()}
+                  </>
+                ) : (
+                  <>
+                    {currentDate.toLocaleString("default", { month: "long" })}{" "}
+                    {currentDate.getFullYear()}
+                  </>
+                )}
               </h3>
             </div>
 
@@ -308,97 +441,151 @@ const CalendarPage = () => {
             </div>
           </div>
 
-          {/* Calendar Grid */}
+          {/* Calendar Views */}
           <div className="w-full">
-            <div className="grid grid-cols-7 border-b border-[#F1F5F9]">
-              {DAYS_OF_WEEK.map((day) => (
-                <div
-                  key={day}
-                  className="py-4 text-center text-sm font-bold text-[#8A92A6] italic"
-                >
-                  {day}
+            {viewMode === "Month" && (
+              <div className="animate-in fade-in duration-300">
+                <div className="grid grid-cols-7 border-b border-[#F1F5F9]">
+                  {DAYS_OF_WEEK.map((day) => (
+                    <div
+                      key={day}
+                      className="py-4 text-center text-sm font-bold text-[#8A92A6] italic"
+                    >
+                      {day}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 auto-rows-[minmax(140px,auto)] bg-[#F1F5F9] gap-[1px]">
-              {generateMonthGrid().map((dayObj, idx) => {
-                const date = dayObj.date;
-                const isCurrentMonth = dayObj.isCurrentMonth;
-                const dayEvents = getEventsForDay(date);
-                const isToday =
-                  date.getDate() === new Date().getDate() &&
-                  date.getMonth() === new Date().getMonth() &&
-                  date.getFullYear() === new Date().getFullYear();
+                <div className="grid grid-cols-7 auto-rows-[minmax(140px,auto)] bg-[#F1F5F9] gap-[1px]">
+                  {generateMonthGrid().map((dayObj, idx) => {
+                    const date = dayObj.date;
+                    const isCurrentMonth = dayObj.isCurrentMonth;
+                    const dayEvents = getEventsForDay(date);
+                    const isToday =
+                      date.getDate() === new Date().getDate() &&
+                      date.getMonth() === new Date().getMonth() &&
+                      date.getFullYear() === new Date().getFullYear();
 
-                return (
-                  <div
-                    key={idx}
-                    className={cn(
-                      "bg-white p-3 flex flex-col transition-colors hover:bg-[#F8FAFC]",
-                      !isCurrentMonth && "opacity-40",
-                    )}
-                  >
-                    <div className="flex justify-start mb-2">
-                      <span
+                    return (
+                      <div
+                        key={idx}
                         className={cn(
-                          "w-7 h-7 flex items-center justify-center rounded-full text-[13px] font-bold italic",
-                          isToday ? "bg-[#3B82F6] text-white" : "text-mainText",
+                          "bg-white p-3 flex flex-col transition-colors hover:bg-[#F8FAFC]",
+                          !isCurrentMonth && "opacity-40",
                         )}
                       >
-                        {date.getDate()}
-                      </span>
-                    </div>
-
-                    <div className="flex-1 flex flex-col gap-2 overflow-y-auto max-h-[120px] custom-scrollbar">
-                      {dayEvents.map((evt) => {
-                        const colorObj = getColorDetails(evt.calendar_color_id);
-                        const bgHex = colorObj.color || "#3B82F6";
-                        const darkTextHex = bgHex; // Keep text same color as border/indicator
-
-                        return (
-                          <div
-                            key={evt.id}
-                            className="px-2.5 py-2.5  shrink-0 rounded-lg text-xs font-bold flex flex-col justify-center cursor-pointer transition-opacity relative overflow-hidden"
-                            style={{
-                              color: darkTextHex,
-                            }}
-                            title={evt.name}
+                        <div className="flex justify-start mb-2">
+                          <span
+                            className={cn(
+                              "w-7 h-7 flex items-center justify-center rounded-full text-[13px] font-bold italic",
+                              isToday
+                                ? "bg-[#3B82F6] text-white"
+                                : "text-mainText",
+                            )}
                           >
-                            {/* Background layer with correct opacity */}
-                            <div
-                              className="absolute inset-0 opacity-[0.19]"
-                              style={{ backgroundColor: bgHex }}
-                            ></div>
+                            {date.getDate()}
+                          </span>
+                        </div>
+                        <div className="flex-1 flex flex-col gap-2 overflow-y-auto max-h-[120px] custom-scrollbar">
+                          {dayEvents.map((evt) => (
+                            <EventChip
+                              key={evt.id}
+                              evt={evt}
+                              getColorDetails={getColorDetails}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-                            {/* Left border indicator */}
-                            <div
-                              className="absolute left-0 top-0 bottom-0 w-[5px] rounded-r-lg z-10"
-                              style={{ backgroundColor: bgHex }}
-                            ></div>
-
-                            <div className="relative z-10 flex items-center gap-1.5 pl-3">
-                              <span
-                                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                                style={{ backgroundColor: bgHex }}
-                              ></span>
-                              <span className="truncate leading-tight text-mainText  italic text-[12px]">
-                                {evt.name}
-                              </span>
-                            </div>
-                            <span className="relative z-10 text-[12px] pl-6  font-medium text-body italic mt-0.5">
-                              {new Date(evt.starts_at).toLocaleTimeString([], {
-                                hour: "numeric",
-                                minute: "2-digit",
-                              })}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
+            {(viewMode === "Week" || viewMode === "Day") && (
+              <div className="animate-in fade-in duration-300 flex flex-col">
+                {viewMode === "Week" && (
+                  <div className="grid grid-cols-[100px_repeat(7,1fr)] border-b border-[#F1F5F9] bg-white">
+                    <div className="border-r border-[#F1F5F9]"></div>
+                    {generateWeekGrid().map((date, i) => (
+                      <div
+                        key={i}
+                        className="py-4 flex flex-col items-center justify-center border-r border-[#F1F5F9] last:border-0"
+                      >
+                        <span className="text-xs font-bold text-[#8A92A6] italic uppercase">
+                          {DAYS_OF_WEEK[i]}
+                        </span>
+                        <span
+                          className={cn(
+                            "mt-1 w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold italic",
+                            date.getDate() === new Date().getDate() &&
+                              date.getMonth() === new Date().getMonth() &&
+                              date.getFullYear() === new Date().getFullYear()
+                              ? "bg-[#3B82F6] text-white"
+                              : "text-mainText",
+                          )}
+                        >
+                          {date.getDate()}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                );
-              })}
-            </div>
+                )}
+
+                <div className="overflow-y-auto max-h-[700px] custom-scrollbar bg-white relative">
+                  <div
+                    className={cn(
+                      "grid",
+                      viewMode === "Week"
+                        ? "grid-cols-[100px_repeat(7,1fr)]"
+                        : "grid-cols-[100px_1fr]",
+                    )}
+                  >
+                    {/* Time Column */}
+                    <div className="flex flex-col">
+                      {generateTimeSlices().map((time, i) => (
+                        <div
+                          key={i}
+                          className="h-[100px] border-b border-[#F1F5F9] border-r border-[#F1F5F9] p-3 text-right"
+                        >
+                          <span className="text-[11px] font-bold text-[#8A92A6] italic whitespace-nowrap">
+                            {time}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Day Columns */}
+                    {(viewMode === "Week"
+                      ? generateWeekGrid()
+                      : [currentDate]
+                    ).map((date, dayIdx) => (
+                      <div
+                        key={dayIdx}
+                        className="flex flex-col border-r border-[#F1F5F9] last:border-0 relative"
+                      >
+                        {generateTimeSlices().map((_, hourIdx) => {
+                          const hourEvents = getEventsForHour(date, hourIdx);
+                          return (
+                            <div
+                              key={hourIdx}
+                              className="h-[100px] border-b border-[#F1F5F9] p-2 space-y-1 relative group"
+                            >
+                              {hourEvents.map((evt) => (
+                                <EventChip
+                                  key={evt.id}
+                                  evt={evt}
+                                  getColorDetails={getColorDetails}
+                                />
+                              ))}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
