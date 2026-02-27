@@ -35,7 +35,6 @@ const Scorecard: React.FC<ScorecardProps> = ({
           <h3 className="text-[#111827] text-2xl font-bold italic">{value}</h3>
         </div>
         <div className="w-16 h-10">
-        
           <svg
             width="64"
             height="31"
@@ -44,9 +43,8 @@ const Scorecard: React.FC<ScorecardProps> = ({
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
-            stroke={chartColor}
+              stroke={chartColor}
               d="M0 29.2891L8 24.2891L16 27.2891L24 17.2891L32 21.2891L40 9.28906L48 13.2891L56 1.28906L64 5.28906"
-          
               stroke-width="2"
             />
           </svg>
@@ -67,12 +65,19 @@ const Scorecard: React.FC<ScorecardProps> = ({
   );
 };
 
-const InvoiceScorecards = () => {
+interface InvoiceTotals {
+  total_invoices: string;
+  total_sales: string;
+  total_paid_money: string;
+  total_due: string;
+}
+
+const InvoiceScorecards = ({ totals }: { totals?: InvoiceTotals }) => {
   const data = [
     {
       title: "Total Invoices",
-      value: "35",
-      change: "+12.5%",
+      value: totals?.total_invoices || "0",
+      change: "+0%",
       isUp: true,
       color: "text-[#22C55E]",
       chartColor: "#3672EA",
@@ -81,8 +86,8 @@ const InvoiceScorecards = () => {
     },
     {
       title: "Total Sales",
-      value: "336,950.00",
-      change: "+12.5%",
+      value: totals?.total_sales || "0",
+      change: "+0%",
       isUp: true,
       color: "text-[#8CE553]",
       chartColor: "#8CE553",
@@ -91,8 +96,8 @@ const InvoiceScorecards = () => {
     },
     {
       title: "Total Paid Money",
-      value: "245,750.00",
-      change: "+12.5%",
+      value: totals?.total_paid_money || "0",
+      change: "+0%",
       isUp: true,
       color: "text-[#8CE553]",
       chartColor: "#EDDA2E",
@@ -101,8 +106,8 @@ const InvoiceScorecards = () => {
     },
     {
       title: "Total Due",
-      value: "91,200.00",
-      change: "-5.2%",
+      value: totals?.total_due || "0",
+      change: "-0%",
       isUp: false,
       color: "text-red-500",
       chartColor: "#EF4444",

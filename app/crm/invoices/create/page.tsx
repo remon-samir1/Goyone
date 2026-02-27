@@ -28,7 +28,9 @@ import {
   getDeals,
   getCurrencies,
   createInvoice,
+  getUsers,
 } from "@/lib/api";
+import { Search } from "lucide-react"; // Import Search icon
 
 const CreateInvoicePage = () => {
   const router = useRouter();
@@ -37,16 +39,28 @@ const CreateInvoicePage = () => {
 
   // Dropdown data
   const [sellers, setSellers] = useState<any[]>([]);
-  const [leads, setLeads] = useState<any[]>([]);
-  const [deals, setDeals] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [currencies, setCurrencies] = useState<any[]>([]);
+  // Search state for From Entity
+  const [fromEntities, setFromEntities] = useState<any[]>([]);
+  const [fromSearchQuery, setFromSearchQuery] = useState("");
+  const [isFromDropdownOpen, setIsFromDropdownOpen] = useState(false);
+  const [isSearchingFrom, setIsSearchingFrom] = useState(false);
+  const fromDropdownRef = React.useRef<HTMLDivElement>(null);
+
+  // Search state for For Entity
+  const [forEntities, setForEntities] = useState<any[]>([]);
+  const [forSearchQuery, setForSearchQuery] = useState("");
+  const [isForDropdownOpen, setIsForDropdownOpen] = useState(false);
+  const [isSearchingFor, setIsSearchingFor] = useState(false);
+  const forDropdownRef = React.useRef<HTMLDivElement>(null);
 
   // Form State
   const [formData, setFormData] = useState({
     uuid: "",
-    from_type: "App\\Models\\User",
+    from_type: "default",
     from_id: "",
-    for_type: "App\\Models\\Deal",
+    for_type: "Deals", 
     for_id: "",
     name: "",
     phone: "",
@@ -79,16 +93,13 @@ const CreateInvoicePage = () => {
 
   const fetchInitialData = async () => {
     try {
-      const [sellersData, leadsData, dealsData, currenciesData] =
-        await Promise.all([
-          getSellers(),
-          getAllLeads(),
-          getDeals(),
-          getCurrencies(),
-        ]);
-      setSellers(sellersData);
-      setLeads(leadsData);
-      setDeals(dealsData);
+      const [ usersData, currenciesData] = await Promise.all([
+        // getSellers(),
+        getUsers(),
+        getCurrencies(),
+      ]);
+      // setSellers(sellersData);
+      setUsers(usersData);
       setCurrencies(currenciesData);
 
       // Set fallback defaults if data exists
@@ -98,11 +109,105 @@ const CreateInvoicePage = () => {
           currency_id: String(currenciesData[0].id),
         }));
       }
+
+      if (usersData.length > 0) {
+        const defaultUser = usersData[0];
+        setFormData((prev) => ({
+          ...prev,
+          from_id: String(defaultUser.id),
+        }));
+        setFromSearchQuery(defaultUser.name || defaultUser.full_name);
+      }
+
+      // Initial fetch for the default for_type (Deal)
+      fetchForEntities("", "App\\Models\\Deal");
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error("Failed to load some form data");
     }
   };
+
+  // Fetch functions for searchable inputs
+  const fetchFromEntities = async (query: string, type: string) => {
+    setIsSearchingFrom(true);
+    try {
+      let data: any[] = [];
+      data = await getUsers(query);
+
+      setFromEntities(data);
+    } catch (error) {
+      console.error("Error fetching from entities:", error);
+    } finally {
+      setIsSearchingFrom(false);
+    }
+  };
+
+  const fetchForEntities = async (query: string, type: string) => {
+    setIsSearchingFor(true);
+    try {
+      let data: any[] = [];
+      if (type === "Deals") {
+        data = await getDeals({ search: query });
+      } else if (type === "Individual") {
+        data = await getAllLeads(query, "contacts");
+      } else if (type === "Company") {
+        data = await getAllLeads(query, "companyAccounts");
+      }
+      setForEntities(data);
+    } catch (error) {
+      console.error("Error fetching for entities:", error);
+    } finally {
+      setIsSearchingFor(false);
+    }
+  };
+
+  // Debounced search for From Entity
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchFromEntities(fromSearchQuery, formData.from_type);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [fromSearchQuery, formData.from_type]);
+
+  // Debounced search for For Entity
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchForEntities(forSearchQuery, formData.for_type);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [forSearchQuery, formData.for_type]);
+
+  // Reset From Entity when From Type changes
+  useEffect(() => {
+    setFromSearchQuery("");
+    setFormData((prev) => ({ ...prev, from_id: "" }));
+  }, [formData.from_type]);
+
+  // Reset For Entity when For Type changes
+  useEffect(() => {
+    setForSearchQuery("");
+    setFormData((prev) => ({ ...prev, for_id: "" }));
+  }, [formData.for_type]);
+
+  // Click outside handler for dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        forDropdownRef.current &&
+        !forDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsForDropdownOpen(false);
+      }
+      if (
+        fromDropdownRef.current &&
+        !fromDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsFromDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleAddItem = (item: InvoiceItem) => {
     setItems([...items, item]);
@@ -122,8 +227,15 @@ const CreateInvoicePage = () => {
 
     setLoading(true);
     try {
+      // Map back to App\Models\Lead for submission if Individual or Company was selected
+      const submissionType =
+        formData.for_type === "Individual" || formData.for_type === "Company"
+          ? "App\\Models\\Lead"
+          : formData.for_type;
+
       const payload = {
         ...formData,
+        for_type: submissionType,
         total: grandTotal,
         discount: totalDiscount,
         vat: totalVAT,
@@ -238,28 +350,62 @@ const CreateInvoicePage = () => {
                     }
                     className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-[#F8FAFC]"
                   >
-                    <option value="App\\Models\\User">User</option>
-                    <option value="App\\Models\\Seller">Seller</option>
+                    <option value="default">Default</option>
                   </select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-mainText italic">
                     From Entity
                   </label>
-                  <select
-                    value={formData.from_id}
-                    onChange={(e) =>
-                      setFormData({ ...formData, from_id: e.target.value })
-                    }
-                    className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-[#F8FAFC]"
-                  >
-                    <option value="">Select from entity</option>
-                    {sellers.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name || s.full_name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative" ref={fromDropdownRef}>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search from entity"
+                        value={fromSearchQuery}
+                        onChange={(e) => {
+                          setFromSearchQuery(e.target.value);
+                          setIsFromDropdownOpen(true);
+                        }}
+                        onFocus={() => setIsFromDropdownOpen(true)}
+                        className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-[#F8FAFC]"
+                      />
+                      {isSearchingFrom ? (
+                        <div className="absolute right-4 top-3.5">
+                          <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                        </div>
+                      ) : (
+                        <Search className="absolute right-4 top-3.5 w-4 h-4 text-body opacity-50" />
+                      )}
+                    </div>
+
+                    {isFromDropdownOpen && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-[#F1F5F9] rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar">
+                        {fromEntities.length > 0 ? (
+                          fromEntities.map((item) => (
+                            <div
+                              key={item.id}
+                              className="px-4 py-2 text-sm text-body hover:bg-primary/5 cursor-pointer italic transition-colors"
+                              onClick={() => {
+                                setFormData({
+                                  ...formData,
+                                  from_id: String(item.id),
+                                });
+                                setFromSearchQuery(item.name || item.full_name);
+                                setIsFromDropdownOpen(false);
+                              }}
+                            >
+                              {item.name || item.full_name}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="px-4 py-3 text-sm text-body italic opacity-50 text-center">
+                            No results found
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </section>
@@ -286,34 +432,68 @@ const CreateInvoicePage = () => {
                     }
                     className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-[#F8FAFC]"
                   >
-                    <option value="App\\Models\\Deal">Deal</option>
-                    <option value="App\\Models\\Lead">Lead</option>
+                    <option value="Deals">Deals</option>
+                    <option value="Individual">Individual Account</option>
+                    <option value="Company">Company Account</option>
                   </select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-mainText italic">
                     For Entity
                   </label>
-                  <select
-                    value={formData.for_id}
-                    onChange={(e) =>
-                      setFormData({ ...formData, for_id: e.target.value })
-                    }
-                    className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-[#F8FAFC]"
-                  >
-                    <option value="">Select for entity</option>
-                    {formData.for_type === "App\\Models\\Deal"
-                      ? deals.map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {d.name}
-                          </option>
-                        ))
-                      : leads.map((l) => (
-                          <option key={l.id} value={l.id}>
-                            {l.name || l.full_name}
-                          </option>
-                        ))}
-                  </select>
+                  <div className="relative" ref={forDropdownRef}>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Search for entity"
+                        value={forSearchQuery}
+                        onChange={(e) => {
+                          setForSearchQuery(e.target.value);
+                          setIsForDropdownOpen(true);
+                        }}
+                        onFocus={() => setIsForDropdownOpen(true)}
+                        className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-[#F8FAFC]"
+                      />
+                      {isSearchingFor ? (
+                        <div className="absolute right-4 top-3.5">
+                          <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                        </div>
+                      ) : (
+                        <Search className="absolute right-4 top-3.5 w-4 h-4 text-body opacity-50" />
+                      )}
+                    </div>
+
+                    {isForDropdownOpen && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-[#F1F5F9] rounded-xl shadow-lg max-h-60 overflow-y-auto custom-scrollbar">
+                        {forEntities.length > 0 ? (
+                          forEntities.map((item) => (
+                            <div
+                              key={item.id}
+                              className="px-4 py-2 text-sm text-body hover:bg-primary/5 cursor-pointer italic transition-colors"
+                              onClick={() => {
+                                setFormData({
+                                  ...formData,
+                                  for_id: String(item.id),
+                                });
+                                setForSearchQuery(
+                                  item.name ||
+                                    item.full_name ||
+                                    item.company_name,
+                                );
+                                setIsForDropdownOpen(false);
+                              }}
+                            >
+                              {item.name || item.full_name || item.company_name}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="px-4 py-3 text-sm text-body italic opacity-50 text-center">
+                            No results found
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </section>
@@ -437,16 +617,16 @@ const CreateInvoicePage = () => {
                             {item.quantity}
                           </td>
                           <td className="px-4 py-4 text-right">
-                            ${item.price.toFixed(2)}
+                            EGP{item.price.toFixed(2)}
                           </td>
                           <td className="px-4 py-4 text-right text-red-500">
-                            -${item.discount.toFixed(2)}
+                            -EGP{item.discount.toFixed(2)}
                           </td>
                           <td className="px-4 py-4 text-right text-green-500">
-                            +${item.vat.toFixed(2)}
+                            +EGP{item.vat.toFixed(2)}
                           </td>
                           <td className="px-4 py-4 text-right font-bold text-mainText">
-                            ${item.total.toFixed(2)}
+                            EGP{item.total.toFixed(2)}
                           </td>
                           <td className="px-4 py-4 text-center">
                             <div className="flex items-center justify-center gap-2">
@@ -539,8 +719,10 @@ const CreateInvoicePage = () => {
                     }
                     className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-[#F8FAFC]"
                   >
-                    <option value="sale">Sale</option>
-                    <option value="purchase">Purchase</option>
+                    <option value="push">Push invoice</option>
+                    <option value="sale">Sale invoice</option>
+                    <option value="estimate">Estimate</option>
+                    <option value="saleorder">Sales Order</option>
                   </select>
                 </div>
                 <div className="space-y-2">
@@ -556,6 +738,8 @@ const CreateInvoicePage = () => {
                   >
                     <option value="sent">Sent</option>
                     <option value="paid">Paid</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="overdue">Overdue</option>
                     <option value="draft">Draft</option>
                   </select>
                 </div>
@@ -571,9 +755,9 @@ const CreateInvoicePage = () => {
                     className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-[#F8FAFC]"
                   >
                     <option value="">Select currency</option>
-                    {currencies.map((c) => (
+                    {currencies?.map((c) => (
                       <option key={c.id} value={c.id}>
-                        {c.name} ({c.code || c.symbol})
+                        {c.name} ({c.iso})
                       </option>
                     ))}
                   </select>
@@ -595,23 +779,23 @@ const CreateInvoicePage = () => {
                 <div className="flex justify-between text-sm italic py-2 border-b border-slate-50">
                   <span className="text-slate-500">Subtotal</span>
                   <span className="font-bold text-mainText">
-                    ${subtotal.toFixed(2)}
+                    EGP{subtotal.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm italic py-2 border-b border-slate-50 text-red-500">
                   <span>Discount</span>
                   <span className="font-bold">
-                    -${totalDiscount.toFixed(2)}
+                    -EGP{totalDiscount.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm italic py-2 border-b border-slate-50 text-green-500">
                   <span>VAT</span>
-                  <span className="font-bold">+${totalVAT.toFixed(2)}</span>
+                  <span className="font-bold">+EGP{totalVAT.toFixed(2)}</span>
                 </div>
                 <div className="bg-green-50/50 p-4 rounded-2xl flex justify-between items-center italic">
                   <span className="font-bold text-mainText">Grand Total</span>
                   <span className="text-2xl font-bold text-primary">
-                    ${grandTotal.toFixed(2)}
+                    EGP{grandTotal.toFixed(2)}
                   </span>
                 </div>
               </div>

@@ -91,7 +91,7 @@ const AddInvoiceItemModal: React.FC<AddInvoiceItemModalProps> = ({
 
       <div
         className={cn(
-          "relative bg-white rounded-3xl w-full max-w-md shadow-2xl transform transition-all duration-300 ease-out flex flex-col",
+          "relative bg-white rounded-3xl max-h-[90vh] overflow-y-auto w-full max-w-md shadow-2xl transform transition-all duration-300 ease-out flex flex-col",
           isAnimating ? "scale-100 translate-y-0" : "scale-95 translate-y-4",
         )}
       >
@@ -163,7 +163,7 @@ const AddInvoiceItemModal: React.FC<AddInvoiceItemModalProps> = ({
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-2 text-body opacity-50">
-                  $
+                  EGP
                 </span>
                 <input
                   type="number"
@@ -189,7 +189,7 @@ const AddInvoiceItemModal: React.FC<AddInvoiceItemModalProps> = ({
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-2 text-body opacity-50">
-                  $
+                  EGP
                 </span>
                 <input
                   type="number"
@@ -212,7 +212,7 @@ const AddInvoiceItemModal: React.FC<AddInvoiceItemModalProps> = ({
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-2 text-body opacity-50">
-                  $
+                  EGP
                 </span>
                 <input
                   type="number"
@@ -237,24 +237,24 @@ const AddInvoiceItemModal: React.FC<AddInvoiceItemModalProps> = ({
             </div>
             <div className="flex justify-between text-sm italic">
               <span className="text-slate-500">
-                Subtotal ({formData.quantity} × ${formData.price})
+                Subtotal ({formData.quantity} × EGP{formData.price})
               </span>
               <span className="font-bold text-mainText">
-                ${subtotal.toFixed(2)}
+                EGP{subtotal.toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between text-sm italic text-red-500">
               <span>Discount</span>
-              <span className="font-bold">-${discountAmount.toFixed(2)}</span>
+              <span className="font-bold">-EGP{discountAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm italic text-green-500">
               <span>VAT</span>
-              <span className="font-bold">+${vatAmount.toFixed(2)}</span>
+              <span className="font-bold">+EGP{vatAmount.toFixed(2)}</span>
             </div>
             <div className="pt-2 border-t border-slate-200 flex justify-between items-center italic">
               <span className="font-bold text-mainText">Item Total</span>
               <span className="text-lg font-bold text-primary">
-                ${itemTotal.toFixed(2)}
+                EGP{itemTotal.toFixed(2)}
               </span>
             </div>
           </div>

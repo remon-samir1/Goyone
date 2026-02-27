@@ -60,6 +60,12 @@ const InvoicesPage = () => {
   const [loading, setLoading] = useState(true);
   const [totalResults, setTotalResults] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [invoiceTotals, setInvoiceTotals] = useState({
+    total_invoices: "0",
+    total_sales: "0",
+    total_paid_money: "0",
+    total_due: "0",
+  });
 
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
     "uuid",
@@ -79,10 +85,35 @@ const InvoicesPage = () => {
         page: currentPage,
         search: searchTerm,
       });
-      setInvoices(response.data);
-      setTotalResults(response.total);
+      if (response) {
+        // Based on the API screenshot, the structure is { total_invoices, ..., data: { data: [...] } }
+        // or sometimes simplified. Let's handle the structure from the screenshot.
+        const data = response.data?.data || response.data || response || [];
+        setInvoices(Array.isArray(data) ? data : []);
+        setTotalResults(
+          response.data?.total ||
+            response.total ||
+            (Array.isArray(data) ? data.length : 0),
+        );
+
+        // Extract totals for scorecards
+        if (response.total_invoices !== undefined) {
+          setInvoiceTotals({
+            total_invoices: String(response.total_invoices),
+            total_sales: String(response.total_sales || "0"),
+            total_paid_money: String(response.total_paid_money || "0"),
+            total_due: String(response.total_due || "0"),
+          });
+        }
+      } else {
+        setInvoices([]);
+        setTotalResults(0);
+      }
     } catch (error) {
+      console.error("Error fetching invoices:", error);
       toast.error("Failed to fetch invoices");
+      setInvoices([]);
+      setTotalResults(0);
     } finally {
       setLoading(false);
     }
@@ -310,14 +341,17 @@ const InvoicesPage = () => {
               <Settings />
               Settings
             </button>
-            <Link href="/crm/invoices/create" className="bg-primary text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold italic shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap">
+            <Link
+              href="/crm/invoices/create"
+              className="bg-primary text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold italic shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+            >
               <Plus className="w-5 h-5" />
               New Invoices
             </Link>
           </div>
         </div>
 
-        <InvoiceScorecards />
+        <InvoiceScorecards totals={invoiceTotals} />
 
         <div className="relative mb-4"></div>
 

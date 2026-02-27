@@ -129,8 +129,13 @@ export const getStatuses = async (): Promise<any[]> => {
   return response.data.data || response.data;
 };
 
-export const getSellers = async (): Promise<any[]> => {
-  const response = await api.get("/sellers");
+export const getSellers = async (search?: string): Promise<any[]> => {
+  const response = await api.get("/sellers", { params: { search } });
+  return response.data.data || response.data;
+};
+
+export const getUsers = async (search?: string): Promise<any[]> => {
+  const response = await api.get("/users", { params: { search } });
   return response.data.data || response.data;
 };
 
@@ -503,8 +508,8 @@ export const deleteDeal = async (id: string | number): Promise<any> => {
 };
 
 export const getCurrencies = async (): Promise<any[]> => {
-  const response = await api.get("/currencies");
-  return response.data.data || response.data;
+  const response = await api.get("/currency");
+  return response.data
 };
 
 // Invoice API Functions
