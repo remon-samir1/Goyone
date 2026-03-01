@@ -5,6 +5,9 @@ import Header from "../header";
 import { getCalendars, getCalendarColors } from "@/lib/api";
 import { toast, Toaster } from "react-hot-toast";
 import CreateCalendarModal from "@/components/modals/CreateCalendarModal";
+import CreateCalendarColorModal from "@/components/modals/CreateCalendarColorModal";
+import EditCalendarColorModal from "@/components/modals/EditCalendarColorModal";
+import DeleteCalendarColorModal from "@/components/modals/DeleteCalendarColorModal";
 import {
   ChevronLeft,
   ChevronRight,
@@ -62,7 +65,7 @@ const EventChip = ({
   getColorDetails: any;
 }) => {
   const colorObj = getColorDetails(evt.calendar_color_id);
-  const rawColor = evt.textColor || colorObj.color || "#3B82F6";
+  const rawColor = colorObj.color || "#3B82F6";
   const bgHex = resolveColor(rawColor);
   const darkTextHex = bgHex;
 
@@ -112,6 +115,10 @@ const CalendarPage = () => {
   const [loading, setLoading] = useState(true);
   const [filterMode, setFilterMode] = useState<string | undefined>(undefined);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreateColorModalOpen, setIsCreateColorModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedColorData, setSelectedColorData] = useState<any>(null);
   const [colorSearch, setColorSearch] = useState("");
 
   useEffect(() => {
@@ -606,7 +613,10 @@ const CalendarPage = () => {
                   className="pl-9 pr-4 py-2.5 rounded-xl border border-[#F1F5F9] bg-[#F8FAFC] text-sm text-body italic focus:outline-none focus:border-[#3B82F6] w-[250px]"
                 />
               </div>
-              <button className="flex items-center bg-[#3B82F6] text-white py-2.5 px-5 rounded-xl hover:bg-blue-600 transition-colors font-bold italic text-sm shadow-sm shadow-blue-500/20">
+              <button
+                onClick={() => setIsCreateColorModalOpen(true)}
+                className="flex items-center bg-[#3B82F6] text-white py-2.5 px-5 rounded-xl hover:bg-blue-600 transition-colors font-bold italic text-sm shadow-sm shadow-blue-500/20"
+              >
                 <Plus className="w-4 h-4 mr-1" /> Add New Color
               </button>
             </div>
@@ -648,10 +658,22 @@ const CalendarPage = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button className="p-2 hover:bg-blue-50 rounded-lg group transition-colors">
+                          <button
+                            onClick={() => {
+                              setSelectedColorData(c);
+                              setIsEditModalOpen(true);
+                            }}
+                            className="p-2 hover:bg-blue-50 rounded-lg group transition-colors"
+                          >
                             <Edit2 className="w-4 h-4 text-[#3B82F6] opacity-70 group-hover:opacity-100" />
                           </button>
-                          <button className="p-2 hover:bg-red-50 rounded-lg group transition-colors">
+                          <button
+                            onClick={() => {
+                              setSelectedColorData(c);
+                              setIsDeleteModalOpen(true);
+                            }}
+                            className="p-2 hover:bg-red-50 rounded-lg group transition-colors"
+                          >
                             <Trash2 className="w-4 h-4 text-[#EF4444] opacity-70 group-hover:opacity-100" />
                           </button>
                         </div>
@@ -706,6 +728,35 @@ const CalendarPage = () => {
           onClose={() => setIsCreateModalOpen(false)}
           onSuccess={() => fetchData()}
         />
+
+        <CreateCalendarColorModal
+          isOpen={isCreateColorModalOpen}
+          onClose={() => setIsCreateColorModalOpen(false)}
+          onSuccess={() => fetchData()}
+        />
+
+        {selectedColorData && (
+          <>
+            <EditCalendarColorModal
+              isOpen={isEditModalOpen}
+              onClose={() => {
+                setIsEditModalOpen(false);
+                setSelectedColorData(null);
+              }}
+              onSuccess={() => fetchData()}
+              colorData={selectedColorData}
+            />
+            <DeleteCalendarColorModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => {
+                setIsDeleteModalOpen(false);
+                setSelectedColorData(null);
+              }}
+              onSuccess={() => fetchData()}
+              colorId={selectedColorData.id}
+            />
+          </>
+        )}
       </div>
     </>
   );

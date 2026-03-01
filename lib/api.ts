@@ -379,6 +379,20 @@ export const createCalendar = async (data: FormData): Promise<any> => {
   }
 };
 
+export const createCalendarColor = async (data: any): Promise<any> => {
+  try {
+    const response = await api.post("/calendar_colors", data);
+    return response.data;
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to create calendar color";
+    console.error("createCalendarColor error:", error.response?.data || error);
+    throw new Error(message);
+  }
+};
+
 export const getCalendarColors = async (): Promise<any[]> => {
   try {
     const response = await api.get("/calendar_colors");
@@ -389,6 +403,62 @@ export const getCalendarColors = async (): Promise<any[]> => {
       error.message ||
       "Failed to fetch calendar colors";
     console.error("getCalendarColors error:", error.response?.data || error);
+    throw new Error(message);
+  }
+};
+
+export const getCalendarColor = async (id: string | number): Promise<any> => {
+  try {
+    const response = await api.get(`/calendar_colors/${id}`);
+    return response.data.data || response.data;
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to fetch calendar color";
+    console.error("getCalendarColor error:", error.response?.data || error);
+    throw new Error(message);
+  }
+};
+
+export const updateCalendarColor = async (
+  id: string | number,
+  data: any,
+): Promise<any> => {
+  try {
+    const isFormData = data instanceof FormData;
+    if (isFormData) {
+      data.append("_method", "PUT");
+      const response = await api.post(`/calendar_colors/${id}`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data;
+    } else {
+      const response = await api.put(`/calendar_colors/${id}`, data);
+      return response.data;
+    }
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to update calendar color";
+    console.error("updateCalendarColor error:", error.response?.data || error);
+    throw new Error(message);
+  }
+};
+
+export const deleteCalendarColor = async (
+  id: string | number,
+): Promise<any> => {
+  try {
+    const response = await api.delete(`/calendar_colors/${id}`);
+    return response.data;
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to delete calendar color";
+    console.error("deleteCalendarColor error:", error.response?.data || error);
     throw new Error(message);
   }
 };
@@ -517,6 +587,24 @@ export const getCurrencies = async (): Promise<any[]> => {
 export const getInvoices = async (params?: {
   page?: number;
   search?: string;
+  status?: string;
+  type?: string;
+  category_id?: number | string;
+  currency_id?: number | string;
+  date_from?: string;
+  date_to?: string;
+  due_from?: string;
+  due_to?: string;
+  is_activated?: boolean | number;
+  is_offer?: boolean | number;
+  max_paid?: number;
+  max_total?: number;
+  min_paid?: number;
+  min_total?: number;
+  only_trashed?: boolean | number;
+  with_trashed?: boolean | number;
+  user_id?: number | string;
+  per_page?: number;
 }): Promise<any> => {
   const response = await api.get("/invoices", { params });
   return response.data;

@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { HiViewColumns } from "react-icons/hi2";
 import InvoiceScorecards from "@/components/crm/InvoiceScorecards";
+import InvoiceFilterSidebar from "@/components/crm/InvoiceFilterSidebar";
 import Link from "next/link";
 import { Toaster, toast } from "react-hot-toast";
 import DeleteInvoiceModal from "@/components/modals/DeleteInvoiceModal";
@@ -60,6 +61,15 @@ const InvoicesPage = () => {
   const [loading, setLoading] = useState(true);
   const [totalResults, setTotalResults] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    status: "",
+    type: "",
+    only_trashed: false,
+    with_trashed: false,
+    over_due: false,
+    today: false,
+  });
   const [invoiceTotals, setInvoiceTotals] = useState({
     total_invoices: "0",
     total_sales: "0",
@@ -81,10 +91,25 @@ const InvoicesPage = () => {
   const fetchInvoices = async () => {
     setLoading(true);
     try {
-      const response = await getInvoices({
+      const todayDate = new Date().toISOString().split("T")[0];
+      const apiParams: any = {
         page: currentPage,
         search: searchTerm,
-      });
+        ...filters,
+        only_trashed: filters.only_trashed ? 1 : 0,
+        with_trashed: filters.with_trashed ? 1 : 0,
+      };
+
+      if (filters.today) {
+        apiParams.date_from = todayDate;
+        apiParams.date_to = todayDate;
+      }
+
+      if (filters.over_due) {
+        apiParams.status = "overdue";
+      }
+
+      const response = await getInvoices(apiParams);
       if (response) {
         // Based on the API screenshot, the structure is { total_invoices, ..., data: { data: [...] } }
         // or sometimes simplified. Let's handle the structure from the screenshot.
@@ -121,7 +146,7 @@ const InvoicesPage = () => {
 
   useEffect(() => {
     fetchInvoices();
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, filters]);
 
   const handleDelete = async (id: number | string) => {
     try {
@@ -168,7 +193,6 @@ const InvoicesPage = () => {
       label: "Account",
       render: (val, row) => (
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-[#E6E8EC]" />
           <div className="flex flex-col">
             <span className="font-bold italic text-[#111827]">{val}</span>
             <span className="text-[10px] text-[#9CA3AF] italic">
@@ -207,7 +231,7 @@ const InvoicesPage = () => {
         };
         const color = statusColors[val?.toLowerCase()] || "text-gray-500";
         return (
-          <span className={`font-bold italic underline ${color}`}>
+          <span className={`font-bold italic  ${color}`}>
             {val?.charAt(0).toUpperCase() + val?.slice(1)}
           </span>
         );
@@ -266,7 +290,9 @@ const InvoicesPage = () => {
           <Link href={`/crm/invoices/${row.id}`}>
             <Eye className="w-4 h-4 text-[#3672EA] cursor-pointer hover:scale-110 transition-transform" />
           </Link>
-          <Pencil className="w-4 h-4 text-[#EDDA2E] cursor-pointer hover:scale-110 transition-transform" />
+          <Link href={`/crm/invoices/${row.id}/edit`}>
+            <Pencil className="w-4 h-4 text-[#EDDA2E] cursor-pointer hover:scale-110 transition-transform" />
+          </Link>
           <Trash2
             className="w-4 h-4 text-red-500 cursor-pointer hover:scale-110 transition-transform"
             onClick={() => {
@@ -307,7 +333,10 @@ const InvoicesPage = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button className="bg-[#8CE553] text-white px-8 py-2.5 rounded-full flex items-center gap-2 font-bold italic shadow-lg hover:opacity-90 transition-all active:scale-95 whitespace-nowrap">
+            <button
+              onClick={() => setIsFilterSidebarOpen(true)}
+              className="bg-[#8CE553] text-white px-8 py-2.5 rounded-full flex items-center gap-2 font-bold italic shadow-lg hover:opacity-90 transition-all active:scale-95 whitespace-nowrap"
+            >
               <ListFilter className="w-5 h-5" />
               Filters
             </button>
@@ -337,7 +366,7 @@ const InvoicesPage = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <button className="border border-primary text-primary flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm italic shadow-sm">
+            <button className="border border-primary hidden text-primary  items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm italic shadow-sm">
               <Settings />
               Settings
             </button>
@@ -399,6 +428,29 @@ const InvoicesPage = () => {
           invoice={selectedInvoice}
         />
       )}
+
+      <InvoiceFilterSidebar
+        isOpen={isFilterSidebarOpen}
+        onClose={() => setIsFilterSidebarOpen(false)}
+        currentFilters={filters}
+        onApply={(newFilters) => {
+          setFilters(newFilters);
+          setCurrentPage(1);
+          setIsFilterSidebarOpen(false);
+        }}
+        onReset={() => {
+          setFilters({
+            status: "",
+            type: "",
+            only_trashed: false,
+            with_trashed: false,
+            over_due: false,
+            today: false,
+          });
+          setCurrentPage(1);
+          setIsFilterSidebarOpen(false);
+        }}
+      />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../../header";
 import {
   Pencil,
@@ -20,136 +20,72 @@ import {
 import Link from "next/link";
 import { Toaster, toast } from "react-hot-toast";
 import DeleteInvoiceModal from "@/components/modals/DeleteInvoiceModal";
+import { getInvoice, deleteInvoice } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import InvoiceSkeleton from "./InvoiceSkeleton";
 
-const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
+const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
+  const { id } = React.use(params);
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"logs" | "payments">("logs");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [invoice, setInvoice] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data to match Image 1
-  const invoice = {
-    id: params.id,
-    invoice_id: "INV-2024-001",
-    bill_from: {
-      name: "SunMed CRM",
-      email: "billing@sunmedcrm.com",
-    },
-    bill_to: {
-      name: "Ahmed Hassan",
-      email: "ahmed.hassan@healthcare.com",
-    },
-    issue_date: "2024-01-15",
-    due_date: "2024-02-15",
-    status: "Paid",
-    type: "Sale Invoice",
-    sub_total: 1340.0,
-    discount: 15.0,
-    tax: 72.0,
-    paid: 1397.0,
-    balance_due: 0.0,
-    items: [
-      {
-        id: 1,
-        name: "Lorem ipsum",
-        description: "Heart medications - Premium quality",
-        price: 250.0,
-        vat: 37.5,
-        discount: 10.0,
-        qty: 2,
-        total: 527.5,
-      },
-      {
-        id: 2,
-        name: "Lorem ipsum",
-        description: "Medical supplies - Sterile equipment",
-        price: 250.0,
-        vat: 37.5,
-        discount: 10.0,
-        qty: 2,
-        total: 527.5,
-      },
-      {
-        id: 3,
-        name: "Lorem ipsum",
-        description: "Measuring devices - Digital thermometers",
-        price: 250.0,
-        vat: 37.5,
-        discount: 10.0,
-        qty: 2,
-        total: 527.5,
-      },
-    ],
+  useEffect(() => {
+    fetchInvoiceData();
+  }, [id]);
+
+  const fetchInvoiceData = async () => {
+    try {
+      setLoading(true);
+      const data = await getInvoice(id);
+      setInvoice(data);
+    } catch (error) {
+      console.error("Error fetching invoice:", error);
+      toast.error("Failed to load invoice details");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const logs = [
-    {
-      id: 1,
-      log: "Invoice created",
-      type: "Created",
-      created_at: "2024-01-15 10:30 AM",
-    },
-    {
-      id: 2,
-      log: "Invoice sent to client via email",
-      type: "Sent",
-      created_at: "2024-01-15 11:00 AM",
-    },
-    {
-      id: 3,
-      log: "Invoice viewed by client",
-      type: "Viewed",
-      created_at: "2024-01-16 09:15 AM",
-    },
-    {
-      id: 4,
-      log: "Payment received - Full amount",
-      type: "Payment",
-      created_at: "2024-01-18 02:30 PM",
-    },
-    {
-      id: 5,
-      log: "Invoice marked as paid",
-      type: "Updated",
-      created_at: "2024-01-18 02:35 PM",
-    },
-  ];
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "N/A";
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
-  const payments = [
-    {
-      id: 1,
-      amount: "55,000 EGP",
-      description: "ماركتينج حساب شهر يناير",
-      attachments: 1,
-      created_at: "Jan 11, 2026 14:13:58",
-    },
-    {
-      id: 2,
-      amount: "55,000 EGP",
-      description: "ماركتينج حساب شهر يناير",
-      attachments: 1,
-      created_at: "Jan 11, 2026 14:13:58",
-    },
-    {
-      id: 3,
-      amount: "55,000 EGP",
-      description: "ماركتينج حساب شهر يناير",
-      attachments: 1,
-      created_at: "Jan 11, 2026 14:13:58",
-    },
-    {
-      id: 4,
-      amount: "55,000 EGP",
-      description: "ماركتينج حساب شهر يناير",
-      attachments: 1,
-      created_at: "Jan 11, 2026 14:13:58",
-    },
-    {
-      id: 5,
-      amount: "55,000 EGP",
-      description: "ماركتينج حساب شهر يناير",
-      attachments: 1,
-      created_at: "Jan 11, 2026 14:13:58",
-    },
-  ];
+  if (loading) return <InvoiceSkeleton />;
+  if (!invoice)
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8FAFC]">
+        <Header Links={true} />
+        <div className="text-center p-8 bg-white rounded-3xl shadow-sm border border-slate-100">
+          <h2 className="text-2xl font-bold italic text-mainText mb-2">
+            Invoice Not Found
+          </h2>
+          <p className="text-slate-400 italic mb-6">
+            The invoice you're looking for doesn't exist or you don't have
+            access.
+          </p>
+          <Link
+            href="/crm/invoices"
+            className="bg-blue-500 text-white px-8 py-3 rounded-xl font-bold italic shadow-md hover:bg-blue-600 transition-all"
+          >
+            Back to Invoices
+          </Link>
+        </div>
+      </div>
+    );
+
+  // Mock items and logs as they are not present in the example response
+  // In a real scenario, these would ideally come from the API as relations
+  const items = invoice.items || [];
+  const logs = invoice.logs || [];
+  const payments = invoice.payments || [];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -167,10 +103,13 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
             </p>
           </div>
           <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-6 py-2 bg-blue-500 text-white rounded-lg font-bold italic shadow-sm hover:bg-blue-600 transition-all">
+            <Link
+              href={`/crm/invoices/${id}/edit`}
+              className="flex items-center gap-2 px-6 py-2 bg-blue-500 text-white rounded-lg font-bold italic shadow-sm hover:bg-blue-600 transition-all cursor-pointer"
+            >
               <Pencil className="w-4 h-4" />
               Edit
-            </button>
+            </Link>
             <button
               onClick={() => setIsDeleteModalOpen(true)}
               className="flex items-center gap-2 px-6 py-2 border border-red-200 text-red-500 rounded-lg font-bold italic hover:bg-red-50 transition-all"
@@ -178,7 +117,10 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
               <Trash2 className="w-4 h-4" />
               Delete
             </button>
-            <button className="flex items-center gap-2 px-6 py-2 border border-slate-200 text-slate-600 rounded-lg font-bold italic hover:bg-slate-50 transition-all">
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-2 px-6 py-2 border border-slate-200 text-slate-600 rounded-lg font-bold italic hover:bg-slate-50 transition-all"
+            >
               <Printer className="w-4 h-4" />
               Print
             </button>
@@ -206,7 +148,7 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
                 Invoice
               </p>
               <h3 className="text-2xl font-bold italic text-mainText">
-                {invoice.invoice_id}
+                {invoice.uuid}
               </h3>
             </div>
           </div>
@@ -218,10 +160,10 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
                   Bill From
                 </p>
                 <h4 className="text-lg font-bold italic text-mainText">
-                  {invoice.bill_from.name}
+                  SunMed CRM
                 </h4>
                 <p className="text-sm text-slate-400 italic mt-1">
-                  {invoice.bill_from.email}
+                  billing@sunmedcrm.com
                 </p>
               </div>
               <div>
@@ -229,10 +171,10 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
                   Bill To
                 </p>
                 <h4 className="text-lg font-bold italic text-mainText">
-                  {invoice.bill_to.name}
+                  {invoice.name || "N/A"}
                 </h4>
                 <p className="text-sm text-slate-400 italic mt-1">
-                  {invoice.bill_to.email}
+                  {invoice.phone || "No phone provided"}
                 </p>
               </div>
               <div>
@@ -272,7 +214,7 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
                   Issue Date
                 </p>
                 <p className="text-lg font-bold italic text-mainText">
-                  {invoice.issue_date}
+                  {formatDate(invoice.date)}
                 </p>
               </div>
               <div className="flex flex-col items-end">
@@ -280,7 +222,7 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
                   Due Date
                 </p>
                 <p className="text-lg font-bold italic text-mainText">
-                  {invoice.due_date}
+                  {formatDate(invoice.due_date)}
                 </p>
               </div>
               <div className="flex flex-col items-end">
@@ -288,9 +230,13 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
                   Status
                 </p>
                 <span
-                  className={`px-4 py-1 rounded-full text-xs font-bold italic bg-green-50 text-green-500 border border-green-100`}
+                  className={`px-4 py-1 rounded-full text-xs font-bold italic border ${
+                    invoice.status?.toLowerCase() === "paid"
+                      ? "bg-green-50 text-green-500 border-green-100"
+                      : "bg-orange-50 text-orange-500 border-orange-100"
+                  }`}
                 >
-                  {invoice.status}
+                  {invoice.status?.toUpperCase() || "PENDING"}
                 </span>
               </div>
               <div className="flex flex-col items-end pt-2">
@@ -298,76 +244,78 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
                   Type
                 </p>
                 <span className="px-4 py-1 rounded-full text-xs font-bold italic bg-blue-50 text-blue-500 border border-blue-100">
-                  {invoice.type}
+                  {invoice.type?.toUpperCase() || "SALE"}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="mb-12">
-            <h4 className="text-lg font-bold italic text-mainText mb-6">
-              Invoice Items
-            </h4>
-            <div className="w-full overflow-hidden rounded-xl border border-slate-50">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-[#F8FAFC]">
-                    <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
-                      Item Name
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
-                      Description
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
-                      Price
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
-                      VAT
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
-                      Discount
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
-                      Qty
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
-                      Total
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {invoice.items.map((item) => (
-                    <tr
-                      key={item.id}
-                      className="hover:bg-slate-50 transition-colors"
-                    >
-                      <td className="px-6 py-4 text-sm font-bold italic text-mainText">
-                        {item.name}
-                      </td>
-                      <td className="px-6 py-4 text-sm italic text-slate-400">
-                        {item.description}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold italic text-mainText">
-                        ${item.price.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold italic text-slate-400">
-                        ${item.vat.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold italic text-slate-400">
-                        ${item.discount.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold italic text-mainText">
-                        {item.qty}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold italic text-mainText">
-                        ${item.total.toFixed(2)}
-                      </td>
+          {items.length > 0 && (
+            <div className="mb-12">
+              <h4 className="text-lg font-bold italic text-mainText mb-6">
+                Invoice Items
+              </h4>
+              <div className="w-full overflow-hidden rounded-xl border border-slate-50">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-[#F8FAFC]">
+                      <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
+                        Item Name
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
+                        Description
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
+                        Price
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
+                        VAT
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
+                        Discount
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
+                        Qty
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
+                        Total
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {items.map((item: any) => (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-slate-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 text-sm font-bold italic text-mainText">
+                          {item.name}
+                        </td>
+                        <td className="px-6 py-4 text-sm italic text-slate-400">
+                          {item.description}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-bold italic text-mainText">
+                          ${Number(item.price).toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-bold italic text-slate-400">
+                          ${Number(item.vat).toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-bold italic text-slate-400">
+                          ${Number(item.discount).toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-bold italic text-mainText">
+                          {item.qty}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-bold italic text-mainText">
+                          ${Number(item.total).toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="max-w-xs ml-auto space-y-4">
             <div className="flex justify-between items-center italic">
@@ -375,7 +323,12 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
                 Sub Total
               </span>
               <span className="text-sm font-bold text-mainText">
-                ${invoice.sub_total.toLocaleString()}
+                $
+                {(
+                  Number(invoice.total) -
+                  Number(invoice.vat) +
+                  Number(invoice.discount)
+                ).toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center italic">
@@ -383,19 +336,19 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
                 Discount
               </span>
               <span className="text-sm font-bold text-mainText">
-                -${invoice.discount.toLocaleString()}
+                -${Number(invoice.discount).toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center italic">
               <span className="text-sm font-medium text-slate-400">Tax</span>
               <span className="text-sm font-bold text-mainText">
-                ${invoice.tax.toLocaleString()}
+                ${Number(invoice.vat).toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center italic pt-4">
               <span className="text-sm font-medium text-slate-400">Paid</span>
               <span className="text-sm font-bold text-green-500">
-                ${invoice.paid.toLocaleString()}
+                ${Number(invoice.paid).toLocaleString()}
               </span>
             </div>
             <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 flex justify-between items-center italic">
@@ -403,7 +356,10 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
                 Balance Due
               </span>
               <span className="text-xl font-bold text-mainText">
-                ${invoice.balance_due.toLocaleString()}
+                $
+                {(
+                  Number(invoice.total) - Number(invoice.paid)
+                ).toLocaleString()}
               </span>
             </div>
           </div>
@@ -425,27 +381,24 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
           </button>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden min-h-[300px]">
           <div className="p-6 border-b border-slate-50 flex justify-between items-center">
             <div className="flex-1 max-w-md flex items-center bg-slate-50 border border-slate-100 rounded-2xl px-4 py-2 gap-2">
               <Search className="w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search logs..."
+                placeholder={`Search ${activeTab}...`}
                 className="bg-transparent border-none outline-none text-sm w-full italic"
               />
             </div>
-            <span className="text-xs text-slate-400 italic">
-              Showing 1-5 of 6 results
-            </span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-[#F8FAFC]">
-                  {activeTab === "logs" ? (
-                    <>
+          {activeTab === "logs" ? (
+            <div className="overflow-x-auto">
+              {logs.length > 0 ? (
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-[#F8FAFC]">
                       <th className="px-8 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest w-1/2">
                         Log
                       </th>
@@ -455,9 +408,41 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
                       <th className="px-8 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest text-right">
                         Created At
                       </th>
-                    </>
-                  ) : (
-                    <>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {logs.map((log: any) => (
+                      <tr
+                        key={log.id}
+                        className="hover:bg-slate-50/50 transition-colors"
+                      >
+                        <td className="px-8 py-5 text-sm font-bold italic text-mainText">
+                          {log.log}
+                        </td>
+                        <td className="px-8 py-5 text-center">
+                          <span className="px-4 py-1 rounded-full text-[10px] font-bold italic bg-blue-50 text-blue-500 border border-blue-100">
+                            {log.type}
+                          </span>
+                        </td>
+                        <td className="px-8 py-5 text-right text-xs italic text-slate-400 font-bold">
+                          {formatDate(log.created_at)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="p-20 text-center italic text-slate-400">
+                  No logs found for this invoice.
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              {payments.length > 0 ? (
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-[#F8FAFC]">
                       <th className="px-8 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest">
                         Amount
                       </th>
@@ -468,47 +453,12 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
                         Attachments
                       </th>
                       <th className="px-8 py-4 text-left text-xs font-bold italic text-slate-500 uppercase tracking-widest text-right">
-                        Created at
+                        Date
                       </th>
-                    </>
-                  )}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {activeTab === "logs"
-                  ? logs.map((log) => (
-                      <tr
-                        key={log.id}
-                        className="hover:bg-slate-50/50 transition-colors"
-                      >
-                        <td className="px-8 py-5 text-sm font-bold italic text-mainText">
-                          {log.log}
-                        </td>
-                        <td className="px-8 py-5 text-center">
-                          <span
-                            className={`px-4 py-1 rounded-full text-[10px] font-bold italic inline-block
-                           ${
-                             log.type === "Created"
-                               ? "bg-blue-50 text-blue-500 border border-blue-100"
-                               : log.type === "Sent"
-                                 ? "bg-purple-50 text-purple-500 border border-purple-100"
-                                 : log.type === "Viewed"
-                                   ? "bg-cyan-50 text-cyan-500 border border-cyan-100"
-                                   : log.type === "Payment"
-                                     ? "bg-green-50 text-green-500 border border-green-100"
-                                     : "bg-yellow-50 text-yellow-500 border border-yellow-100"
-                           }
-                         `}
-                          >
-                            {log.type}
-                          </span>
-                        </td>
-                        <td className="px-8 py-5 text-right text-xs italic text-slate-400 font-bold">
-                          {log.created_at}
-                        </td>
-                      </tr>
-                    ))
-                  : payments.map((payment) => (
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {payments.map((payment: any) => (
                       <tr
                         key={payment.id}
                         className="hover:bg-slate-50/50 transition-colors"
@@ -519,41 +469,23 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
                         <td className="px-8 py-5 text-center text-sm italic font-bold text-mainText">
                           {payment.description}
                         </td>
-                        <td className="px-8 py-5 text-center">
-                          <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-lg px-2 py-1">
-                            <Paperclip className="w-3 h-3 text-blue-500" />
-                            <span className="text-[10px] font-bold text-white bg-blue-500 w-4 h-4 rounded-full flex items-center justify-center">
-                              {payment.attachments}
-                            </span>
-                          </div>
+                        <td className="px-8 py-5 text-center text-xs italic">
+                          {payment.attachments || 0}
                         </td>
                         <td className="px-8 py-5 text-right text-xs italic text-slate-400 font-bold">
-                          {payment.created_at}
+                          {formatDate(payment.created_at)}
                         </td>
                       </tr>
                     ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="p-6 border-t border-slate-50 flex items-center justify-between">
-            <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold italic text-slate-400 hover:bg-slate-50 transition-all">
-              <ChevronLeft className="w-4 h-4" />
-              Previous
-            </button>
-            <div className="flex gap-2">
-              <button className="w-8 h-8 rounded-lg bg-blue-500 text-white flex items-center justify-center text-xs font-bold italic shadow-md shadow-blue-200">
-                1
-              </button>
-              <button className="w-8 h-8 rounded-lg border border-slate-200 text-slate-400 flex items-center justify-center text-xs font-bold italic hover:bg-slate-50 transition-all">
-                2
-              </button>
+                  </tbody>
+                </table>
+              ) : (
+                <div className="p-20 text-center italic text-slate-400">
+                  No payments recorded for this invoice.
+                </div>
+              )}
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-500 border border-blue-100 rounded-xl text-xs font-bold italic hover:bg-blue-100 transition-all">
-              Next
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+          )}
         </div>
       </div>
 
@@ -561,9 +493,15 @@ const InvoiceDetailPage = ({ params }: { params: { id: string } }) => {
         <DeleteInvoiceModal
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
-          invoiceId={invoice.invoice_id}
-          onConfirm={() => {
-            toast.success("Invoice deleted");
+          invoiceId={invoice.id}
+          onConfirm={async () => {
+            try {
+              await deleteInvoice(invoice.id);
+              toast.success("Invoice deleted successfully");
+              router.push("/crm/invoices");
+            } catch (error) {
+              toast.error("Failed to delete invoice");
+            }
             setIsDeleteModalOpen(false);
           }}
         />

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ChevronLeft,
   ChevronRight,
   Plus,
   Trash2,
@@ -13,11 +12,10 @@ import {
   User,
   Building2,
   Calendar,
-  DollarSign,
-  Tag,
   Loader2,
+  Search,
 } from "lucide-react";
-import Header from "../../header";
+import Header from "../../../header";
 import { toast, Toaster } from "react-hot-toast";
 import AddInvoiceItemModal, {
   InvoiceItem,
@@ -27,21 +25,23 @@ import {
   getAllLeads,
   getDeals,
   getCurrencies,
-  createInvoice,
+  updateInvoice,
   getUsers,
-  getInvoices,
+  getInvoice,
 } from "@/lib/api";
-import { Search } from "lucide-react"; // Import Search icon
+import InvoiceSkeleton from "../InvoiceSkeleton";
 
-const CreateInvoicePage = () => {
+const EditInvoicePage = ({ params }: { params: Promise<{ id: string }> }) => {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { id } = React.use(params);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
 
   // Dropdown data
-  const [sellers, setSellers] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [currencies, setCurrencies] = useState<any[]>([]);
+
   // Search state for From Entity
   const [fromEntities, setFromEntities] = useState<any[]>([]);
   const [fromSearchQuery, setFromSearchQuery] = useState("");
@@ -66,7 +66,7 @@ const CreateInvoicePage = () => {
     name: "",
     phone: "",
     address: "",
-    date: new Date().toISOString().split("T")[0],
+    date: "",
     due_date: "",
     type: "sale",
     status: "sent",
@@ -78,7 +78,6 @@ const CreateInvoicePage = () => {
     is_offer: false,
     send_email: false,
   });
-  console.log(formData.uuid);
 
   const [items, setItems] = useState<InvoiceItem[]>([]);
 
@@ -93,81 +92,93 @@ const CreateInvoicePage = () => {
 
   useEffect(() => {
     fetchInitialData();
-  }, []);
+  }, [id]);
 
-  const generateNextUuid = (lastUuid: string | null) => {
-    const currentYear = new Date().getFullYear().toString().slice(-2);
-    const prefix = `INV ${currentYear}/`;
-
-    if (lastUuid && lastUuid.startsWith(prefix)) {
-      const parts = lastUuid.split("/");
-      if (parts.length > 1) {
-        const numberStr = parts[parts.length - 1]; // Get last part after /
-        if (!isNaN(parseInt(numberStr))) {
-          const nextNumber = parseInt(numberStr) + 1;
-          return `${prefix}${nextNumber.toString().padStart(4, "0")}`;
-        }
-      }
-    }
-
-    return `${prefix}0001`;
+  const formatDateForInput = (dateStr: string) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "";
+    return date.toISOString().split("T")[0];
   };
 
   const fetchInitialData = async () => {
     try {
-      const [usersData, currenciesData, invoicesResponse] = await Promise.all([
+      setLoading(true);
+      const [usersData, currenciesData, invoiceData] = await Promise.all([
         getUsers(),
         getCurrencies(),
-        getInvoices({ page: 1 }),
+        getInvoice(id),
       ]);
 
       setUsers(usersData);
       setCurrencies(currenciesData);
 
-      // Handle UUID automation
-      const invoiceList =
-        invoicesResponse?.data?.data || invoicesResponse?.data || [];
-      if (invoiceList.length > 0) {
-        const lastInvoice = invoiceList[0];
-        const nextUuid = generateNextUuid(lastInvoice.uuid || null);
-        setFormData((prev) => ({ ...prev, uuid: nextUuid }));
-      } else {
-        setFormData((prev) => ({ ...prev, uuid: generateNextUuid(null) }));
-      }
+      // Map invoice data to form
+      if (invoiceData) {
+        setFormData({
+          uuid: invoiceData.uuid || "",
+          from_type: "default", // Fixed for now as per create page
+          from_id: String(invoiceData.user_id || ""),
+          for_type:
+            invoiceData.for_type === "App\\Models\\Deal"
+              ? "Deals"
+              : invoiceData.for_type === "App\\Models\\Lead"
+                ? "Individual"
+                : "Deals", // Minimal mapping
+          for_id: String(invoiceData.for_id || ""),
+          name: invoiceData.name || "",
+          phone: invoiceData.phone || "",
+          address: invoiceData.address || "",
+          date: formatDateForInput(invoiceData.date),
+          due_date: formatDateForInput(invoiceData.due_date),
+          type: invoiceData.type?.toLowerCase() || "sale",
+          status: invoiceData.status?.toLowerCase() || "sent",
+          currency_id: String(invoiceData.currency_id || ""),
+          user_id: String(invoiceData.user_id || ""),
+          notes: invoiceData.notes || "",
+          is_bank_transfer: !!invoiceData.is_bank_transfer,
+          is_activated: invoiceData.is_activated || 0,
+          is_offer: !!invoiceData.is_offer,
+          send_email: false,
+        });
 
-      // Set fallback defaults if data exists
-      if (currenciesData.length > 0) {
-        setFormData((prev) => ({
-          ...prev,
-          currency_id: String(currenciesData[0].id),
-        }));
-      }
+        // Map items
+        if (invoiceData.items && Array.isArray(invoiceData.items)) {
+          setItems(
+            invoiceData.items.map((item: any) => ({
+              id: String(item.id),
+              name: item.name || "",
+              description: item.description || "",
+              price: Number(item.price),
+              quantity: Number(item.qty),
+              vat: Number(item.vat),
+              discount: Number(item.discount),
+              total: Number(item.total),
+            })),
+          );
+        }
 
-      if (usersData.length > 0) {
-        const defaultUser = usersData[0];
-        setFormData((prev) => ({
-          ...prev,
-          from_id: String(defaultUser.id),
-          user_id: String(defaultUser.id),
-        }));
-        setFromSearchQuery(defaultUser.name || defaultUser.full_name);
-      }
+        // Set search queries for UI
+        const fromUser = usersData.find(
+          (u) => String(u.id) === String(invoiceData.user_id),
+        );
+        if (fromUser) setFromSearchQuery(fromUser.name || fromUser.full_name);
 
-      // Initial fetch for the default for_type (Deal)
-      fetchForEntities("", "App\\Models\\Deal");
+        setForSearchQuery(invoiceData.name || ""); // Fallback for entity name
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
-      toast.error("Failed to load some form data");
+      toast.error("Failed to load invoice data");
+    } finally {
+      setLoading(false);
     }
   };
 
   // Fetch functions for searchable inputs
-  const fetchFromEntities = async (query: string, type: string) => {
+  const fetchFromEntities = async (query: string) => {
     setIsSearchingFrom(true);
     try {
-      let data: any[] = [];
-      data = await getUsers(query);
-
+      const data = await getUsers(query);
       setFromEntities(data);
     } catch (error) {
       console.error("Error fetching from entities:", error);
@@ -197,31 +208,23 @@ const CreateInvoicePage = () => {
 
   // Debounced search for From Entity
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchFromEntities(fromSearchQuery, formData.from_type);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [fromSearchQuery, formData.from_type]);
+    if (!loading) {
+      const timer = setTimeout(() => {
+        fetchFromEntities(fromSearchQuery);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [fromSearchQuery, loading]);
 
   // Debounced search for For Entity
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchForEntities(forSearchQuery, formData.for_type);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [forSearchQuery, formData.for_type]);
-
-  // Reset From Entity when From Type changes
-  useEffect(() => {
-    setFromSearchQuery("");
-    setFormData((prev) => ({ ...prev, from_id: "" }));
-  }, [formData.from_type]);
-
-  // Reset For Entity when For Type changes
-  useEffect(() => {
-    setForSearchQuery("");
-    setFormData((prev) => ({ ...prev, for_id: "" }));
-  }, [formData.for_type]);
+    if (!loading) {
+      const timer = setTimeout(() => {
+        fetchForEntities(forSearchQuery, formData.for_type);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [forSearchQuery, formData.for_type, loading]);
 
   // Click outside handler for dropdowns
   useEffect(() => {
@@ -251,7 +254,7 @@ const CreateInvoicePage = () => {
     setItems(items.filter((item) => item.id !== id));
   };
 
-  const handleSubmit = async (e: React.FormEvent, stay = false) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.name || !formData.date || !formData.currency_id) {
@@ -259,51 +262,44 @@ const CreateInvoicePage = () => {
       return;
     }
 
-    setLoading(true);
+    setSaving(true);
     try {
-      // Map back to App\Models\Lead for submission if Individual or Company was selected
       const submissionType =
         formData.for_type === "Individual" || formData.for_type === "Company"
           ? "App\\Models\\Lead"
-          : formData.for_type;
+          : "App\\Models\\Deal";
 
       const payload = {
         ...formData,
         due_date: formData.due_date || formData.date,
-        user_id: formData.user_id || formData.from_id, // Ensure user_id is sent
+        user_id: formData.user_id || formData.from_id,
         for_type: submissionType,
         total: grandTotal,
         discount: totalDiscount,
         vat: totalVAT,
-        shipping: 0,
-        paid: 0,
-        insert_in_to_inventory: 0,
-        is_updated: 0,
+        items: items.map((item) => ({
+          name: item.name,
+          description: item.description,
+          price: item.price,
+          qty: item.quantity,
+          vat: item.vat,
+          discount: item.discount,
+          total: item.total,
+        })),
       };
 
-      await createInvoice(payload);
-      toast.success("Invoice created successfully");
-
-      if (stay) {
-        setFormData({
-          ...formData,
-          uuid: "",
-          name: "",
-          phone: "",
-          address: "",
-          notes: "",
-        });
-        setItems([]);
-      } else {
-        router.push("/crm/invoices");
-      }
+      await updateInvoice(id, payload);
+      toast.success("Invoice updated successfully");
+      router.push(`/crm/invoices/${id}`);
     } catch (error: any) {
-      console.error("Submission error:", error);
-      toast.error(error.response?.data?.message || "Failed to create invoice");
+      console.error("Update error:", error);
+      toast.error(error.response?.data?.message || "Failed to update invoice");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) return <InvoiceSkeleton />;
 
   return (
     <div className="min-h-screen bg-[#F6F8FC]">
@@ -319,21 +315,31 @@ const CreateInvoicePage = () => {
             Invoices
           </Link>
           <ChevronRight className="w-4 h-4" />
-          <span className="text-mainText">Create Invoice</span>
+          <Link
+            href={`/crm/invoices/${id}`}
+            className="hover:text-primary transition-colors"
+          >
+            View Invoice
+          </Link>
+          <ChevronRight className="w-4 h-4" />
+          <span className="text-mainText">Edit Invoice</span>
         </div>
 
         <div className="flex justify-between items-end mb-8">
           <div>
             <h1 className="text-2xl font-bold italic text-mainText">
-              Create Invoice
+              Edit Invoice {formData.uuid}
             </h1>
             <p className="text-sm italic text-slate-400 mt-1">
-              Generate a new invoice for your customer
+              Update existing invoice details
             </p>
           </div>
         </div>
 
-        <form className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+        >
           {/* Left Column */}
           <div className="lg:col-span-8 space-y-8">
             {/* Invoice Details */}
@@ -353,11 +359,7 @@ const CreateInvoicePage = () => {
                 <input
                   disabled
                   type="text"
-                  placeholder="INV-7856"
                   value={formData.uuid}
-                  onChange={(e) =>
-                    setFormData({ ...formData, uuid: e.target.value })
-                  }
                   className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-[#F8FAFC]"
                 />
               </div>
@@ -668,12 +670,6 @@ const CreateInvoicePage = () => {
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 type="button"
-                                className="p-1.5 text-slate-400 hover:text-primary transition-colors"
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </button>
-                              <button
-                                type="button"
                                 onClick={() => handleRemoveItem(item.id)}
                                 className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
                               >
@@ -801,71 +797,58 @@ const CreateInvoicePage = () => {
               </div>
             </section>
 
-            {/* Totals */}
-            <section className="bg-white rounded-[32px] p-8 shadow-sm space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-                  <Tag className="w-5 h-5 text-primary" />
-                </div>
-                <h2 className="text-lg font-bold text-mainText italic">
-                  Totals
-                </h2>
+            {/* Totals Section */}
+            <section className="bg-white rounded-[32px] p-8 shadow-sm space-y-4">
+              <div className="flex justify-between items-center text-sm italic">
+                <span className="font-bold text-slate-400">Sub Total</span>
+                <span className="font-bold text-mainText">
+                  EGP{subtotal.toFixed(2)}
+                </span>
               </div>
-              <div className="space-y-4">
-                <div className="flex justify-between text-sm italic py-2 border-b border-slate-50">
-                  <span className="text-slate-500">Subtotal</span>
-                  <span className="font-bold text-mainText">
-                    EGP{subtotal.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm italic py-2 border-b border-slate-50 text-red-500">
-                  <span>Discount</span>
-                  <span className="font-bold">
-                    -EGP{totalDiscount.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm italic py-2 border-b border-slate-50 text-green-500">
-                  <span>VAT</span>
-                  <span className="font-bold">+EGP{totalVAT.toFixed(2)}</span>
-                </div>
-                <div className="bg-green-50/50 p-4 rounded-2xl flex justify-between items-center italic">
-                  <span className="font-bold text-mainText">Grand Total</span>
-                  <span className="text-2xl font-bold text-primary">
-                    EGP{grandTotal.toFixed(2)}
-                  </span>
-                </div>
+              <div className="flex justify-between items-center text-sm italic">
+                <span className="font-bold text-slate-400">Total Discount</span>
+                <span className="font-bold text-red-500">
+                  -EGP{totalDiscount.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-sm italic">
+                <span className="font-bold text-slate-400">Total VAT</span>
+                <span className="font-bold text-green-500">
+                  +EGP{totalVAT.toFixed(2)}
+                </span>
+              </div>
+              <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
+                <span className="text-lg font-bold text-mainText italic uppercase">
+                  Total
+                </span>
+                <span className="text-2xl font-bold text-primary italic">
+                  EGP{grandTotal.toFixed(2)}
+                </span>
               </div>
             </section>
 
             {/* Actions */}
             <div className="space-y-4">
               <button
-                type="button"
-                onClick={(e) => handleSubmit(e, false)}
-                disabled={loading}
-                className="w-full bg-primary text-white py-4 rounded-xl font-bold italic shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+                type="submit"
+                disabled={saving}
+                className="w-full bg-primary text-white py-4 rounded-2xl font-bold italic shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
               >
-                {loading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                {saving ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Updating Invoice...
+                  </>
                 ) : (
-                  "Create Invoice"
+                  "Update Invoice"
                 )}
               </button>
-              <button
-                type="button"
-                onClick={(e) => handleSubmit(e, true)}
-                disabled={loading}
-                className="w-full py-4 rounded-xl border border-primary text-primary font-bold italic hover:bg-white transition-all flex items-center justify-center"
-              >
-                Create & Create Another
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push("/crm/invoices")}
-                className="w-full py-4 rounded-xl border border-slate-200 text-slate-400 font-bold italic hover:bg-white transition-all flex items-center justify-center"
+              <Link
+                href={`/crm/invoices/${id}`}
+                className="w-full bg-white text-slate-400 py-4 rounded-2xl font-bold italic border border-[#F1F5F9] hover:bg-slate-50 transition-all block text-center"
               >
                 Cancel
-              </button>
+              </Link>
             </div>
           </div>
         </form>
@@ -880,4 +863,4 @@ const CreateInvoicePage = () => {
   );
 };
 
-export default CreateInvoicePage;
+export default EditInvoicePage;
