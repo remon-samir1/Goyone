@@ -1,0 +1,87 @@
+version: "2"
+type: frontend
+tech_stack:
+  - TypeScript
+  - Next.js 16 (App Router)
+  - Tailwind CSS
+  - Radix UI
+  - GSAP
+  - Axios
+routes:
+  - path: /crm
+    file: app/crm/page.tsx
+    auth_required: false
+    description: Main CRM Dashboard featuring Leads table
+  - path: /crm/tasks
+    file: app/crm/tasks/page.tsx
+    auth_required: false
+    description: Task management page
+  - path: /crm/deals
+    file: app/crm/deals/page.tsx
+    auth_required: false
+    description: Deals management page
+  - path: /crm/calls
+    file: app/crm/calls/page.tsx
+    auth_required: false
+    description: Calls log page
+  - path: /crm/invoices
+    file: app/crm/invoices/page.tsx
+    auth_required: false
+    description: Invoices listing page
+  - path: /crm/calender
+    file: app/crm/calender/page.tsx
+    auth_required: false
+    description: Calendar view for schedules
+  - path: /crm/help-articles
+    file: app/crm/help-articles/page.tsx
+    auth_required: false
+    description: Help center and documentation
+features:
+  - name: Lead Management
+    description: View, search, filter, and manage CRM leads
+    files:
+      - app/crm/page.tsx
+      - lib/api.ts
+    entry_route: /crm
+    user_interactions:
+      - Search leads via search bar
+      - Filter leads by status and communication state
+      - Toggle communication status switch
+      - Export lead data
+      - Navigate to add/edit/view lead pages
+    api_calls:
+      - method: GET
+        endpoint: /leads
+      - method: PUT
+        endpoint: /leads/{id}
+      - method: DELETE
+        endpoint: /leads/{id}
+    auth_required: false
+  - name: Task Management
+    description: Track and manage CRM tasks
+    files:
+      - app/crm/tasks/page.tsx
+    entry_route: /crm/tasks
+    user_interactions:
+      - View task list
+      - Filter and sort tasks
+    api_calls:
+      - method: GET
+        endpoint: /tasks
+    auth_required: false
+  - name: Invoice Management
+    description: Create and manage invoices
+    files:
+      - app/crm/invoices/page.tsx
+    entry_route: /crm/invoices
+    user_interactions:
+      - View invoice list
+      - Create new invoice
+    api_calls:
+      - method: GET
+        endpoint: /invoices
+    auth_required: false
+known_limitations:
+  - issue: Import functionality is disabled
+    location: app/crm/page.tsx
+    impact: Users cannot import leads from CSV/Excel

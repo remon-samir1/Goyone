@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "loginUser": "remosamir443@gmail.com ",
+  "loginPassword": "rbnamogood1",
+  "executionArgs": {
+    "projectName": "goyone",
+    "projectPath": "c:\\Users\\Mega Store\\Desktop\\Remon\\goyone",
+    "testIds": [],
+    "additionalInstruction": "Perform a full audit of all core routes and features. Focus on functionality and identifying any UI regressions.",
+    "serverMode": "production",
+    "envs": {
+      "API_KEY": "sk-user-ThvXtlT5Vk2a0JTMVWVZbJl7DgryZH4j4ve5yAsjjISqN-qocLXRpoFNCnovTy702u3oTr3oD3KyAvNaYczD_CxTvOuKZ7XxcAErGsawMBK8B0W90MDLPiJgsyszAAIHuDc"
+    }
+  }
+}

@@ -1,0 +1,1457 @@
+[
+  {
+    "id": "TC001",
+    "title": "Search and filter leads, open details, edit a lead, and verify updated value appears in the table",
+    "description": "Verifies a user can search and filter leads, edit a lead in detail view, save, and see the updated lead data reflected back in the leads table.",
+    "category": "Lead Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Leads\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Test\" into the leads search bar"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Active\" from the Status filter dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Contacted\" from the Communication State filter dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first lead row in the leads table"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Updated Lead Name\" into the Lead Name field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Save\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Updated Lead Name\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Search with no matching results shows empty-state message",
+    "description": "Verifies searching with a query that returns no leads shows a clear 'No leads found' message.",
+    "category": "Lead Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Leads table\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"zzzz-no-such-lead-12345\" into the leads search bar"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No leads found\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Leads table\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Filter leads by status and communication state updates visible results",
+    "description": "Verifies applying lead status and communication state filters updates the list view to show filtered results.",
+    "category": "Lead Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Leads table\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Select \"New\" from the Status filter dropdown"
+      },
+      {
+        "type": "action",
+        "description": "Select \"Not Contacted\" from the Communication State filter dropdown"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Filtered results\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Clear filters\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Leads table\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Toggle communication status switch from the leads list updates the row state",
+    "description": "Verifies the communication status can be toggled directly in the leads table and the new state is shown visually.",
+    "category": "Lead Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Leads table\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the communication status switch for the first lead row"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Communication status switched on\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the communication status switch for the first lead row"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Communication status switched off\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Export lead data success shows confirmation and starts download",
+    "description": "Verifies the export flow shows a confirmation and indicates a download has started.",
+    "category": "Lead Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Export lead data\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Export lead data\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Confirm export\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Confirm\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Export started\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Export lead data error shows an error notification",
+    "description": "Verifies the UI surfaces an export failure as an error notification when the export action cannot be completed.",
+    "category": "Lead Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Export lead data\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Export lead data\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Confirm export\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Confirm\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Export failed\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Please try again\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Open lead detail view and cancel edits does not change displayed values",
+    "description": "Verifies that leaving the lead detail view without saving does not apply changes.",
+    "category": "Lead Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first lead row in the leads table"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Lead detail\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Unsaved Name Change\" into the Lead Name field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Cancel\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Leads table\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Unsaved Name Change\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "View tasks list loads successfully",
+    "description": "Verifies the Tasks page loads and displays a visible task list state.",
+    "category": "Task Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/tasks"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Tasks\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Tasks\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Task list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Filter\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Sort\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Filter tasks and verify the list updates",
+    "description": "Verifies applying a task filter updates the visible task results.",
+    "category": "Task Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/tasks"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Task list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Filter\""
+      },
+      {
+        "type": "action",
+        "description": "Select \"Open\" from dropdown \"Status\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Task list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No tasks found\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Sort tasks and verify ordering control is applied",
+    "description": "Verifies sorting can be applied and the task list refreshes to reflect the chosen sort.",
+    "category": "Task Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/tasks"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Task list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Sort\""
+      },
+      {
+        "type": "action",
+        "description": "Select \"Due date\" from dropdown \"Sort by\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Task list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Failed to load tasks\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Open a task details view from the list",
+    "description": "Verifies a user can open task details by clicking a task row/card.",
+    "category": "Task Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/tasks"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Task list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first task in the task list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Task details\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Mark complete\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Task status\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Mark a task complete and verify status updates in the list",
+    "description": "Verifies marking a task complete updates its status and is reflected back in the tasks list.",
+    "category": "Task Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/tasks"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Task list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first task in the task list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Mark complete\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Mark complete\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Back to tasks\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Completed\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Apply a filter that returns no tasks and show empty-state message",
+    "description": "Verifies the UI shows an appropriate empty state when filters return no results.",
+    "category": "Task Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/tasks"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Filter\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Filter\""
+      },
+      {
+        "type": "action",
+        "description": "Select \"Completed\" from dropdown \"Status\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"zzzz-nonexistent-task\" into field \"Search\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No tasks found\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Clear filters after an empty result set restores task list",
+    "description": "Verifies clearing filters/search after a no-results state restores visible tasks (when tasks exist).",
+    "category": "Task Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/tasks"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Filter\""
+      },
+      {
+        "type": "action",
+        "description": "Type \"zzzz-nonexistent-task\" into field \"Search\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No tasks found\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Clear filters\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No tasks found\" is not visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Task list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "View invoices listing page loads successfully",
+    "description": "Verifies the invoices listing page opens and shows the invoice list UI.",
+    "category": "Invoice Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/invoices"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Invoices\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Create\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"invoice list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Create a new invoice successfully and see it in the list",
+    "description": "Verifies a user can create an invoice and the newly created invoice appears in the invoices list.",
+    "category": "Invoice Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/invoices"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Create new invoice\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"New Invoice\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Invoice Number\" with \"INV-TS-001\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Customer\" with \"Test Customer A\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Save\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"INV-TS-001\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Test Customer A\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Cancel out of invoice creation without saving",
+    "description": "Verifies a user can exit the create-invoice flow without creating an invoice.",
+    "category": "Invoice Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/invoices"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Create new invoice\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"New Invoice\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Cancel\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"invoice list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"New Invoice\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Required-field validation when saving an empty invoice",
+    "description": "Verifies validation errors appear when attempting to save with required fields left empty.",
+    "category": "Invoice Management",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/invoices"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Create new invoice\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"New Invoice\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Save\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Required\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Please fill out\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Inline validation clears after fixing a missing required field",
+    "description": "Verifies a required-field error is removed once the user fills the missing field and saves successfully.",
+    "category": "Invoice Management",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/invoices"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Create new invoice\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Save\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Required\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Invoice Number\" with \"INV-TS-002\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Customer\" with \"Test Customer B\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Save\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"INV-TS-002\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Invoices list supports basic search/filter (if present)",
+    "description": "Verifies any visible search/filter control on the invoices page can narrow results in the list.",
+    "category": "Invoice Management",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/invoices"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"invoice list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Search\" with \"INV\""
+      },
+      {
+        "type": "action",
+        "description": "Press \"Enter\" key"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"invoice list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Open Deals page and verify Kanban board is visible",
+    "description": "Verifies the Deals page loads and the Kanban board UI is visible to the user.",
+    "category": "Deal Pipeline (Kanban)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/deals"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Deals\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Kanban board\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"deal card\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC022",
+    "title": "Open a deal card and save edits to deal fields",
+    "description": "Verifies a user can open a deal from the Kanban board, edit fields, save, and see the updated information reflected in the UI.",
+    "category": "Deal Pipeline (Kanban)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/deals"
+      },
+      {
+        "type": "action",
+        "description": "Click on a deal card"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Deal Details\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Updated Deal Name\" into the \"Deal Name\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Save\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Updated Deal Name\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC023",
+    "title": "Cancel/close deal details without saving changes",
+    "description": "Verifies that a user can exit the deal details view without saving and does not see the unsaved changes applied in the UI.",
+    "category": "Deal Pipeline (Kanban)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/deals"
+      },
+      {
+        "type": "action",
+        "description": "Click on a deal card"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Deal Details\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Unsaved Deal Name\" into the \"Deal Name\" field"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Cancel\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Unsaved Deal Name\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC024",
+    "title": "View Calls Log page loads and shows call entries",
+    "description": "Verifies that the Calls Log page loads successfully and displays the calls log list UI.",
+    "category": "Calls Log",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calls"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Calls\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Calls\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Calls log\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Call entry\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC025",
+    "title": "Filter calls by call type and see filtered results",
+    "description": "Verifies that filtering the calls log by call type updates the visible results.",
+    "category": "Calls Log",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calls"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Filter\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Filter\""
+      },
+      {
+        "type": "action",
+        "description": "Select \"Outbound\" from dropdown \"Call type\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Apply\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Outbound\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC026",
+    "title": "Filter calls by date and see results update",
+    "description": "Verifies that filtering the calls log by a specific date updates the visible results.",
+    "category": "Calls Log",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calls"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Filter\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"2026-02-01\" into field \"Start date\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"2026-02-28\" into field \"End date\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Apply\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Call entry\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC027",
+    "title": "Open a call entry details view",
+    "description": "Verifies that a user can open call details from the calls log list.",
+    "category": "Calls Log",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calls"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Call entry\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Call entry\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Call details\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Notes\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC028",
+    "title": "Add call notes and save successfully",
+    "description": "Verifies that a user can add notes to a call and save them so they remain visible on the call entry.",
+    "category": "Calls Log",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calls"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Call entry\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Notes\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Followed up with customer about pricing; awaiting confirmation.\" into field \"Notes\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Save\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Followed up with customer about pricing; awaiting confirmation.\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC029",
+    "title": "Notes persist when reopening the same call details",
+    "description": "Verifies that saved call notes are still visible after leaving and reopening the call details view within the same session.",
+    "category": "Calls Log",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calls"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Call entry\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Left voicemail; will try again tomorrow.\" into field \"Notes\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Save\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Back\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Call entry\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Left voicemail; will try again tomorrow.\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC030",
+    "title": "Filter by a date range that returns no results shows empty state",
+    "description": "Verifies that filtering to a range with no calls displays a clear \"No calls found\" message.",
+    "category": "Calls Log",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calls"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Filter\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"1999-01-01\" into field \"Start date\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"1999-01-02\" into field \"End date\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Apply\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No calls found\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC031",
+    "title": "Clear filters restores call results",
+    "description": "Verifies that clearing active filters returns the calls log to a normal (non-empty) results state when calls exist.",
+    "category": "Calls Log",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calls"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Filter\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"1999-01-01\" into field \"Start date\""
+      },
+      {
+        "type": "action",
+        "description": "Fill \"1999-01-02\" into field \"End date\""
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Apply\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No calls found\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"Clear filters\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Call entry\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC032",
+    "title": "Create a calendar event from a specific date and verify it appears on that date",
+    "description": "Verifies a user can create a new calendar event from a selected date and see it displayed on the calendar.",
+    "category": "Calendar / Scheduling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calender"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Calendar\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on a visible date cell in the current month"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Create event\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Team sync meeting\" into the event title field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Save\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Team sync meeting\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC033",
+    "title": "Verify monthly calendar view is visible on load",
+    "description": "Verifies the calendar page renders a monthly view layout that users can interact with.",
+    "category": "Calendar / Scheduling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calender"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Monthly calendar grid\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Previous month\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Next month\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Today\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC034",
+    "title": "Open event creation on a selected date and verify event details form is shown",
+    "description": "Verifies clicking a date opens the event creation UI with expected fields.",
+    "category": "Calendar / Scheduling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calender"
+      },
+      {
+        "type": "action",
+        "description": "Click on a visible date cell in the current month"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Create event\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Event title\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Start time\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"End time\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC035",
+    "title": "Validate error when end time is before start time",
+    "description": "Verifies the calendar event form prevents saving when the end time is earlier than the start time and shows the correct validation error.",
+    "category": "Calendar / Scheduling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calender"
+      },
+      {
+        "type": "action",
+        "description": "Click on a visible date cell in the current month"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Invalid time test\" into the event title field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"03:00 PM\" into the start time field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"02:00 PM\" into the end time field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Save\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"End time must be after start time\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC036",
+    "title": "Close event creation without saving and verify the calendar remains unchanged",
+    "description": "Verifies a user can dismiss the event creation UI and that the unsaved event does not appear on the calendar.",
+    "category": "Calendar / Scheduling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calender"
+      },
+      {
+        "type": "action",
+        "description": "Click on a visible date cell in the current month"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Create event\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"Unsaved event\" into the event title field"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Cancel\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Unsaved event\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC037",
+    "title": "Attempt to save an event with missing required title and verify validation",
+    "description": "Verifies the event creation form enforces required fields before saving.",
+    "category": "Calendar / Scheduling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/calender"
+      },
+      {
+        "type": "action",
+        "description": "Click on a visible date cell in the current month"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Create event\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Save\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Title is required\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC038",
+    "title": "Browse help articles, search, open an article, and read content",
+    "description": "Verifies the user can view the help articles list, search, open an article, and see readable article content.",
+    "category": "Help Articles / Documentation",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/help-articles"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Help\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Help articles list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"invoice\" into the \"Search\" field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search results list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first article in the results list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Article title\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Article content\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC039",
+    "title": "Search returns matching results and updates the visible list",
+    "description": "Verifies searching help articles filters the list to relevant items.",
+    "category": "Help Articles / Documentation",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/help-articles"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Help articles list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"calendar\" into the \"Search\" field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search results list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"calendar\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the \"Clear search\" control"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Help articles list\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC040",
+    "title": "Search with no matching results shows 'No articles found'",
+    "description": "Verifies the empty-state message appears when a search yields no results.",
+    "category": "Help Articles / Documentation",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/help-articles"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Help articles list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"zzzz-no-such-article\" into the \"Search\" field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No articles found\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Help articles list\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC041",
+    "title": "Open an article and verify key reading UI is present",
+    "description": "Verifies the article detail view displays core reading elements after opening an article.",
+    "category": "Help Articles / Documentation",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/help-articles"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Help articles list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first article in the list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Article title\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Article content\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Back to articles\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC042",
+    "title": "Search field handles special characters without breaking the list",
+    "description": "Verifies entering special characters in search does not break the UI and returns either results or the empty state.",
+    "category": "Help Articles / Documentation",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/help-articles"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Help articles list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"!@#$%^&*()\" into the \"Search\" field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search results list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"No articles found\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC043",
+    "title": "Search with leading/trailing spaces still behaves correctly",
+    "description": "Verifies the search feature tolerates whitespace and still returns expected results or the correct empty state.",
+    "category": "Help Articles / Documentation",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /crm/help-articles"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Help articles list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"   invoice   \" into the \"Search\" field"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search results list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Search results list\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first article in the results list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Article content\" is visible"
+      }
+    ]
+  }
+]

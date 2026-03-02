@@ -1,28 +1,27 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Header from "../header";
-import { getCalendars, getCalendarColors } from "@/lib/api";
-import { toast, Toaster } from "react-hot-toast";
-import CreateCalendarModal from "@/components/modals/CreateCalendarModal";
 import CreateCalendarColorModal from "@/components/modals/CreateCalendarColorModal";
-import EditCalendarColorModal from "@/components/modals/EditCalendarColorModal";
+import CreateCalendarModal from "@/components/modals/CreateCalendarModal";
 import DeleteCalendarColorModal from "@/components/modals/DeleteCalendarColorModal";
+import EditCalendarColorModal from "@/components/modals/EditCalendarColorModal";
+import { getCalendarColors, getCalendars } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import {
+  Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
-  RefreshCw,
-  Plus,
+  Edit2,
   Filter,
   MonitorPlay,
-  Video,
-  User,
+  Plus,
+  RefreshCw,
   Search,
-  Edit2,
   Trash2,
-  Calendar as CalendarIcon,
+  Video
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { toast, Toaster } from "react-hot-toast";
+import Header from "../header";
 
 const TAILWIND_COLOR_MAP: Record<string, string> = {
   stone: "#78716c",
