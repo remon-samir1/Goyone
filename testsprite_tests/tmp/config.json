@@ -14,5 +14,7 @@
     "envs": {
       "API_KEY": "sk-user-ThvXtlT5Vk2a0JTMVWVZbJl7DgryZH4j4ve5yAsjjISqN-qocLXRpoFNCnovTy702u3oTr3oD3KyAvNaYczD_CxTvOuKZ7XxcAErGsawMBK8B0W90MDLPiJgsyszAAIHuDc"
     }
-  }
+  },
+  "serverPort": 63661,
+  "proxy": "http://41616513-158f-4bd1-b174-8c92f6f8b56d:luCSH2eAdFsjpo1z0h4Tp74dn8o2IM3J@tun.testsprite.com:8080"
 }

@@ -1,4 +1,3 @@
-"use strict";
 "use client";
 import React, { useEffect, useState } from "react";
 import Header from "../header";
@@ -68,9 +67,15 @@ const DealsPage = () => {
         getDealStages(),
         getDeals(),
       ]);
-      setStages(stagesData);
+      setStages(
+        Array.isArray(stagesData)
+          ? stagesData
+          : (stagesData as any)?.data || [],
+      );
       // Ensure deals is an array
-      setDeals(Array.isArray(dealsData) ? dealsData : dealsData.data || []);
+      setDeals(
+        Array.isArray(dealsData) ? dealsData : (dealsData as any)?.data || [],
+      );
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error("Failed to load deals data");

@@ -17,7 +17,7 @@ import {
   RefreshCw,
   Search,
   Trash2,
-  Video
+  Video,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
@@ -95,10 +95,12 @@ const EventChip = ({
         </span>
       </div>
       <span className="relative z-10 text-[12px] pl-6 font-medium text-body italic mt-0.5">
-        {new Date(evt.starts_at).toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-        })}
+        {evt.starts_at && !isNaN(new Date(evt.starts_at).getTime())
+          ? new Date(evt.starts_at).toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "2-digit",
+            })
+          : "TBA"}
       </span>
     </div>
   );
@@ -133,11 +135,17 @@ const CalendarPage = () => {
         getCalendars(filterMode ? { only: filterMode } : undefined),
         getCalendarColors(),
       ]);
-      setEvents(eventsRes?.data || eventsRes || []);
-      setColors(colorsRes || []);
+      setEvents(
+        Array.isArray(eventsRes) ? eventsRes : (eventsRes as any)?.data || [],
+      );
+      setColors(
+        Array.isArray(colorsRes) ? colorsRes : (colorsRes as any)?.data || [],
+      );
     } catch (error) {
       console.error("Failed to fetch calendar data:", error);
       toast.error("Failed to fetch calendar data");
+      setEvents([]);
+      setColors([]);
     } finally {
       setLoading(false);
     }
@@ -261,8 +269,9 @@ const CalendarPage = () => {
 
   const getEventsForDay = (date: Date) => {
     if (!date) return [];
-    return events.filter((e) => {
+    return (events || []).filter((e) => {
       const start = new Date(e.starts_at);
+      if (isNaN(start.getTime())) return false;
       return (
         start.getDate() === date.getDate() &&
         start.getMonth() === date.getMonth() &&
