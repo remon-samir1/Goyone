@@ -213,7 +213,8 @@ const EditInvoicePage = ({ params }: { params: Promise<{ id: string }> }) => {
     try {
       let data: any[] = [];
       if (type === "Deals") {
-        data = await getDeals({ search: query });
+        const response = await getDeals({ search: query });
+        data = response.data;
       } else if (type === "Individual") {
         data = await getAllLeads(query, "contacts");
       } else if (type === "Company") {
@@ -367,7 +368,6 @@ const EditInvoicePage = ({ params }: { params: Promise<{ id: string }> }) => {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <Toaster position="top-right" />
-      <Header Links={true} />
 
       <main className="px-[3%] py-8">
         {/* Breadcrumbs */}

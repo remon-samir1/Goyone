@@ -320,7 +320,6 @@ const CreateInvoicePage = () => {
   return (
     <div className="min-h-screen bg-[#F6F8FC]">
       <Toaster position="top-right" />
-      <Header Links={true} />
 
       <main className="px-[3%] py-8">
         <div className="flex items-center gap-2 mb-8 text-sm italic font-bold text-slate-400">

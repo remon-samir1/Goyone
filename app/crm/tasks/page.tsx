@@ -74,8 +74,8 @@ const TasksPage = () => {
         getTaskStages(),
         getTasks(),
       ]);
-      setStages(stagesData);
-      setTasks(tasksData);
+      setStages(stagesData as any);
+      setTasks(tasksData as any);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -167,7 +167,6 @@ const TasksPage = () => {
 
   return (
     <div className=" min-h-screen pb-10">
-  
       <div className="px-[3%] pt-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold italic text-mainText">Tasks</h1>

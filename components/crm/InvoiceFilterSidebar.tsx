@@ -71,7 +71,8 @@ const InvoiceFilterSidebar: React.FC<InvoiceFilterSidebarProps> = ({
     try {
       let data: any[] = [];
       if (type === "Deals") {
-        data = await getDeals({ search: query });
+        const response = await getDeals({ search: query });
+        data = response.data;
       } else if (type === "Individual") {
         data = await getAllLeads(query, "contacts");
       } else if (type === "Company") {

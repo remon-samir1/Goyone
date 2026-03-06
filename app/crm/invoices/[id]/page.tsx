@@ -126,7 +126,6 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <Toaster position="top-right" />
-      <Header Links={true} />
 
       <div className="px-[3%] py-8">
         <div className="flex justify-between items-center mb-8">

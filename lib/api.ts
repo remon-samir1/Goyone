@@ -22,6 +22,10 @@ export interface BaseEntity {
 export interface ApiResponse<T> {
   data: T;
   total?: number;
+  total_invoices?: number | string;
+  total_sales?: number | string;
+  total_paid_money?: number | string;
+  total_due?: number | string;
   all_count?: number;
   communicationed_count?: number;
   not_communicationed_count?: number;
