@@ -7,15 +7,44 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
+    container: {
+      center: true,
+      padding: {
+        DEFAULT: "1.5rem",
+        sm: "2rem",
+        lg: "4rem",
+        xl: "5rem",
+        "2xl": "6rem",
+      },
+      screens: {
+        "2xl": "1280px",
+      },
+    },
     extend: {
+      spacing: {
+        px: "1px",
+        0: "0",
+        1: "var(--spacing-1)",
+        2: "var(--spacing-2)",
+        3: "var(--spacing-3)",
+        4: "var(--spacing-4)",
+        6: "var(--spacing-6)",
+        8: "var(--spacing-8)",
+        12: "var(--spacing-12)",
+        16: "var(--spacing-16)",
+      },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        none: "0",
+        sm: "0.5rem",
+        md: "0.75rem",
+        lg: "1rem",
+        xl: "1.5rem",
+        "3xl": "2.5rem",
+        full: "9999px",
       },
       colors: {
         background: {
-          DEFAULT: "#3672EA0D",
+          DEFAULT: "#F8FAFC", // Cleaner light background
           dark: "hsl(222 47% 11%)",
         },
         stroke: {
@@ -79,5 +108,6 @@ module.exports = {
       },
     },
   },
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require("tailwindcss-animate")],
 };

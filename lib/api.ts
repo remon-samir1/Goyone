@@ -12,6 +12,21 @@ const api = axios.create({
   },
 });
 
+export interface BaseEntity {
+  id: number | string;
+  name?: string;
+  title?: string;
+  [key: string]: any;
+}
+
+export interface ApiResponse<T> {
+  data: T;
+  total?: number;
+  all_count?: number;
+  communicationed_count?: number;
+  not_communicationed_count?: number;
+}
+
 export const createLead = async (data: LeadFormData): Promise<any> => {
   const formData = new FormData();
 
@@ -41,7 +56,7 @@ export const createLead = async (data: LeadFormData): Promise<any> => {
   return response.data;
 };
 
-export const deleteLead = async (id: string | number): Promise<any> => {
+export const deleteLead = async (id: string | number): Promise<{ message: string }> => {
   const response = await api.delete(`/leads/${id}`);
   return response.data;
 };
@@ -53,7 +68,7 @@ export function extractId(id: string | number | undefined): string {
   return match ? String(parseInt(match[0], 10)) : strId;
 }
 
-export const getLead = async (id: string | number): Promise<any> => {
+export const getLead = async (id: string | number): Promise<ApiResponse<any>> => {
   const response = await api.get(`/leads/${id}`);
   console.log(response);
   return response.data;
@@ -99,42 +114,42 @@ export const updateLead = async (
   return response.data;
 };
 
-export const getPositions = async (): Promise<any[]> => {
+export const getPositions = async (): Promise<BaseEntity[]> => {
   const response = await api.get("/positions");
   return response.data;
 };
 
-export const getServices = async (): Promise<any[]> => {
+export const getServices = async (): Promise<BaseEntity[]> => {
   const response = await api.get("/services");
   return response.data.data || response.data;
 };
 
-export const getCategories = async (): Promise<any[]> => {
+export const getCategories = async (): Promise<BaseEntity[]> => {
   const response = await api.get("/categories");
   return response.data.data || response.data;
 };
 
-export const getLeadSources = async (): Promise<any[]> => {
+export const getLeadSources = async (): Promise<BaseEntity[]> => {
   const response = await api.get("/lead_source_types");
   return response.data.data || response.data;
 };
 
-export const getChannels = async (): Promise<any[]> => {
+export const getChannels = async (): Promise<BaseEntity[]> => {
   const response = await api.get("/channels");
   return response.data.data || response.data;
 };
 
-export const getStatuses = async (): Promise<any[]> => {
+export const getStatuses = async (): Promise<BaseEntity[]> => {
   const response = await api.get("/statuses");
   return response.data.data || response.data;
 };
 
-export const getSellers = async (search?: string): Promise<any[]> => {
-  const response = await api.get("/sellers", { params: { search } });
+export const getSellers = async (search?: string): Promise<BaseEntity[]> => {
+  const response = await api.get("/users", { params: { search } });
   return response.data.data || response.data;
 };
 
-export const getUsers = async (search?: string): Promise<any[]> => {
+export const getUsers = async (search?: string): Promise<BaseEntity[]> => {
   const response = await api.get("/users", { params: { search } });
   return response.data.data || response.data;
 };
@@ -160,14 +175,13 @@ export const changeOwner = async (
   return response.data;
 };
 
-export const getTaskStages = async (): Promise<any[]> => {
+export const getTaskStages = async (): Promise<BaseEntity[]> => {
   const response = await api.get("/task_stages");
   return response.data.data || response.data;
 };
 
-export const getTaskStage = async (id: string | number): Promise<any> => {
+export const getTaskStage = async (id: string | number): Promise<BaseEntity> => {
   const response = await api.get(`/task_stages/${id}`);
-  console.log(response);
   return response.data.data || response.data;
 };
 
@@ -192,13 +206,12 @@ export const deleteTaskStage = async (id: string | number): Promise<any> => {
   return response.data;
 };
 
-export const getTasks = async (): Promise<any[]> => {
+export const getTasks = async (): Promise<BaseEntity[]> => {
   const response = await api.get("/tasks");
-  console.log(response);
   return response.data.data || response.data;
 };
 
-export const getTask = async (id: string | number): Promise<any> => {
+export const getTask = async (id: string | number): Promise<BaseEntity> => {
   const response = await api.get(`/tasks/${id}`);
   return response.data.data || response.data;
 };
@@ -499,12 +512,12 @@ export const deleteCalendar = async (id: string | number): Promise<any> => {
 
 // Deal API Functions
 
-export const getDealStages = async (): Promise<any[]> => {
+export const getDealStages = async (): Promise<BaseEntity[]> => {
   const response = await api.get("/deal_stages");
   return response.data.data || response.data;
 };
 
-export const getDealStage = async (id: string | number): Promise<any> => {
+export const getDealStage = async (id: string | number): Promise<BaseEntity> => {
   const response = await api.get(`/deal_stages/${id}`);
   return response.data.data || response.data;
 };
@@ -540,9 +553,9 @@ export const deleteDealStage = async (id: string | number): Promise<any> => {
 export const getDeals = async (params?: {
   page?: number;
   search?: string;
-}): Promise<any> => {
+}): Promise<ApiResponse<BaseEntity[]>> => {
   const response = await api.get("/deals", { params });
-  return response.data.data || response.data;
+  return response.data;
 };
 
 export const getDeal = async (id: string | number): Promise<any> => {
@@ -605,13 +618,14 @@ export const getInvoices = async (params?: {
   with_trashed?: boolean | number;
   user_id?: number | string;
   per_page?: number;
-}): Promise<any> => {
+}): Promise<ApiResponse<BaseEntity[]>> => {
   const response = await api.get("/invoices", { params });
   return response.data;
 };
 
 export const getInvoice = async (id: string | number): Promise<any> => {
   const response = await api.get(`/invoices/${id}`);
+  console.log(response.data);
   return response.data.data || response.data;
 };
 
@@ -660,6 +674,16 @@ export const exportInvoices = async (params: {
     responseType: "blob",
   });
   return response;
+};
+
+export const getActivities = async (params?: {
+  event?: string;
+  subject_id?: string | number;
+  subject_type?: string;
+  page?: number;
+}): Promise<any> => {
+  const response = await api.get("/activitie_logs", { params });
+  return response.data;
 };
 
 export default api;

@@ -157,7 +157,7 @@ const DealsPage = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-10">
-      <Header Links={true} />
+
       <div className="px-[3%] pt-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold italic text-mainText">Deals</h1>

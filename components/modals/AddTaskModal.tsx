@@ -253,28 +253,33 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         )}
       >
         {/* Header */}
-        <div className="p-8 pb-4 flex items-start justify-between">
+        <div className="p-6 pb-4 flex items-start justify-between border-b border-stroke/10 bg-white/50 backdrop-blur-sm">
           <div>
-            <h2 className="text-xl font-bold text-mainText italic">Add Task</h2>
-            <p className="text-sm text-body italic opacity-70">
-              Create a new task for {leadName || "the lead"}
+            <h2 className="text-xl font-bold tracking-tight text-mainText italic">
+              Add Task
+            </h2>
+            <p className="text-xs text-placeholder mt-0.5 font-medium italic">
+              Create a new task for{" "}
+              <span className="text-primary font-bold">
+                {leadName || "the lead"}
+              </span>
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-background/80 rounded-full transition-all group"
           >
-            <X className="w-5 h-5 text-body" />
+            <X className="w-5 h-5 text-placeholder group-hover:text-mainText" />
           </button>
         </div>
 
         {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-8 pt-0 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Select Sellers */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-mainText italic block">
-                Select sellers <span className="text-red-500">*</span>
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-placeholder uppercase tracking-widest italic block">
+                Assign To <span className="text-primary">*</span>
               </label>
               <div className="relative">
                 <select
@@ -282,7 +287,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                   onChange={(e) =>
                     setFormData({ ...formData, user_id: e.target.value })
                   }
-                  className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer"
+                  className="w-full bg-background/30 border border-stroke/30 rounded-lg px-4 py-3 text-sm font-semibold text-mainText outline-none focus:border-primary/50 cursor-pointer appearance-none hover:bg-white transition-all shadow-sm italic"
                 >
                   <option value="" disabled>
                     Select an option
@@ -293,14 +298,14 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-placeholder pointer-events-none" />
               </div>
             </div>
 
             {/* Task Stage */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-mainText italic block">
-                Task Stage <span className="text-red-500">*</span>
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-placeholder uppercase tracking-widest italic block">
+                Task Stage <span className="text-primary">*</span>
               </label>
               <div className="relative">
                 <select
@@ -308,7 +313,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                   onChange={(e) =>
                     setFormData({ ...formData, task_stage_id: e.target.value })
                   }
-                  className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary appearance-none bg-white cursor-pointer"
+                  className="w-full bg-background/30 border border-stroke/30 rounded-lg px-4 py-3 text-sm font-semibold text-mainText outline-none focus:border-primary/50 cursor-pointer appearance-none hover:bg-white transition-all shadow-sm italic"
                 >
                   <option value="" disabled>
                     Select stage
@@ -319,42 +324,42 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-placeholder pointer-events-none" />
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {!urlId && (
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-mainText italic flex items-center gap-2">
-                  <Link2 className="w-4 h-4 text-body" /> Lead
+              <div className="space-y-3">
+                <label className="text-[11px] font-black text-placeholder uppercase tracking-widest italic flex items-center gap-2">
+                  <Link2 className="w-3.5 h-3.5" /> Associated Lead
                 </label>
                 <div className="relative" ref={dropdownRef}>
                   <input
                     type="text"
-                    placeholder="Search and select lead"
+                    placeholder="Search Lead..."
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
                       setIsDropdownOpen(true);
                     }}
                     onFocus={() => setIsDropdownOpen(true)}
-                    className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-white cursor-pointer"
+                    className="w-full bg-background/30 border border-stroke/30 rounded-lg px-4 py-3 text-sm font-semibold text-mainText outline-none focus:border-primary/50 hover:bg-white transition-all shadow-sm italic placeholder:text-placeholder/60"
                   />
-                  <ChevronDown className="absolute right-4 top-3.5 w-4 h-4 text-body pointer-events-none" />
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-placeholder pointer-events-none" />
 
                   {isDropdownOpen && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-[#F1F5F9] rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-10 w-full mt-2 bg-white border border-stroke/20 rounded-xl shadow-2xl max-h-60 overflow-y-auto custom-scrollbar p-1">
                       {isSearching ? (
-                        <div className="px-4 py-3 flex items-center justify-center">
+                        <div className="px-4 py-6 flex items-center justify-center">
                           <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                         </div>
                       ) : leads.length > 0 ? (
                         leads.map((lead) => (
                           <div
                             key={lead.id}
-                            className="px-4 py-2 text-sm text-body hover:bg-primary/5 cursor-pointer italic"
+                            className="px-4 py-2.5 text-sm font-bold text-mainText hover:bg-primary/5 rounded-lg cursor-pointer italic transition-colors"
                             onClick={() => {
                               setFormData({ ...formData, parent: lead.id });
                               setSearchQuery(
@@ -369,7 +374,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                           </div>
                         ))
                       ) : (
-                        <div className="px-4 py-2 text-sm text-body italic opacity-50">
+                        <div className="px-4 py-4 text-sm font-bold text-placeholder italic text-center opacity-50">
                           No leads found
                         </div>
                       )}
@@ -380,26 +385,26 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             )}
 
             {/* Title */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-mainText italic flex items-center gap-2">
-                <Type className="w-4 h-4 text-body" /> Title{" "}
-                <span className="text-red-500">*</span>
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-placeholder uppercase tracking-widest italic flex items-center gap-2">
+                <Type className="w-3.5 h-3.5" /> Task Title{" "}
+                <span className="text-primary">*</span>
               </label>
               <input
                 type="text"
-                placeholder="Enter task title"
+                placeholder="What needs to be done?"
                 value={formData.title}
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
-                className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-gray-50"
+                className="w-full bg-background/30 border border-stroke/30 rounded-lg px-4 py-3 text-sm font-semibold text-mainText outline-none focus:border-primary/50 hover:bg-white transition-all shadow-sm italic placeholder:text-placeholder/60"
               />
             </div>
 
             {/* Started at */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-mainText italic flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-body" /> Started at
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-placeholder uppercase tracking-widest italic flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5" /> Start Date
               </label>
               <input
                 type="datetime-local"
@@ -407,14 +412,14 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, started_at: e.target.value })
                 }
-                className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-gray-50"
+                className="w-full bg-background/30 border border-stroke/30 rounded-lg px-4 py-3 text-sm font-semibold text-mainText outline-none focus:border-primary/50 hover:bg-white transition-all shadow-sm italic h-[46px]"
               />
             </div>
 
             {/* Ended at */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-mainText italic flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-body" /> Ended at
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-placeholder uppercase tracking-widest italic flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5" /> End Date
               </label>
               <input
                 type="datetime-local"
@@ -422,24 +427,24 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                 onChange={(e) =>
                   setFormData({ ...formData, ended_at: e.target.value })
                 }
-                className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-gray-50"
+                className="w-full bg-background/30 border border-stroke/30 rounded-lg px-4 py-3 text-sm font-semibold text-mainText outline-none focus:border-primary/50 hover:bg-white transition-all shadow-sm italic h-[46px]"
               />
             </div>
           </div>
 
           {/* Description */}
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-mainText italic flex items-center gap-2">
-              <FileText className="w-4 h-4 text-body" /> Description
+          <div className="space-y-3">
+            <label className="text-[11px] font-black text-placeholder uppercase tracking-widest italic flex items-center gap-2">
+              <FileText className="w-3.5 h-3.5" /> Additional Notes
             </label>
             <textarea
-              placeholder="Enter task description"
+              placeholder="Describe the task details..."
               value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
-              rows={3}
-              className="w-full border border-[#F1F5F9] rounded-xl px-4 py-3 text-sm text-body italic focus:outline-none focus:border-primary bg-gray-50 resize-none"
+              rows={4}
+              className="w-full bg-background/30 border border-stroke/30 rounded-lg px-4 py-3 text-sm font-semibold text-mainText outline-none focus:border-primary/50 hover:bg-white transition-all shadow-sm italic placeholder:text-placeholder/60 resize-none"
             />
           </div>
 
@@ -563,20 +568,20 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-8 pt-4 flex items-center justify-center gap-4 border-t border-[#F1F5F9]">
+        <div className="p-6 flex items-center justify-center gap-4 bg-background/20 border-t border-stroke/10">
           <button
             onClick={onClose}
             disabled={loading}
-            className="flex-1 py-3 px-8 rounded-full border border-primary text-primary font-bold italic text-[15px] hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="flex-1 py-3.5 px-8 rounded-xl border border-stroke/30 text-mainText font-bold italic text-sm hover:bg-gray-50 transition-all disabled:opacity-50"
           >
-            Cancel
+            Discard
           </button>
           <button
             onClick={handleSave}
             disabled={loading}
-            className="flex-1 py-3 px-8 rounded-full bg-primary text-white font-bold italic text-[15px] hover:bg-primary/90 transition-all shadow-lg shadow-primary/30 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 py-3.5 px-8 rounded-xl bg-primary text-white font-bold italic text-sm hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {loading ? "Saving..." : "Save Task"}
+            {loading ? "Creating..." : "Create Task"}
           </button>
         </div>
       </div>

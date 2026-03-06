@@ -74,7 +74,6 @@ const CreateInvoicePage = () => {
     user_id: "",
     notes: "",
     is_bank_transfer: false,
-    is_activated: 0,
     is_offer: false,
     send_email: false,
   });
@@ -125,8 +124,7 @@ const CreateInvoicePage = () => {
       setCurrencies(currenciesData);
 
       // Handle UUID automation
-      const invoiceList =
-        invoicesResponse?.data?.data || invoicesResponse?.data || [];
+      const invoiceList = invoicesResponse?.data || [];
       if (invoiceList.length > 0) {
         const lastInvoice = invoiceList[0];
         const nextUuid = generateNextUuid(lastInvoice.uuid || null);
@@ -181,7 +179,8 @@ const CreateInvoicePage = () => {
     try {
       let data: any[] = [];
       if (type === "Deals") {
-        data = await getDeals({ search: query });
+        const response = await getDeals({ search: query });
+        data = response.data || [];
       } else if (type === "Individual") {
         data = await getAllLeads(query, "contacts");
       } else if (type === "Company") {
@@ -269,16 +268,29 @@ const CreateInvoicePage = () => {
 
       const payload = {
         ...formData,
-        due_date: formData.due_date || formData.date,
-        user_id: formData.user_id || formData.from_id, // Ensure user_id is sent
+        due_date: formData.due_date || null,
+        user_id: formData.user_id || formData.from_id,
         for_type: submissionType,
-        total: grandTotal,
-        discount: totalDiscount,
-        vat: totalVAT,
+        total: String(grandTotal),
+        discount: String(totalDiscount),
+        vat: String(totalVAT),
         shipping: 0,
         paid: 0,
-        insert_in_to_inventory: 0,
-        is_updated: 0,
+        is_activated: 0,
+        is_offer: formData.is_offer,
+        send_email: formData.send_email,
+        is_updated: false,
+        created_at: null,
+        updated_at: null,
+        items: items.map((item) => ({
+          type: "service",
+          item: item.name,
+          qty: String(item.quantity),
+          price: String(item.price),
+          discount: String(item.discount || 0),
+          vat: String(item.vat || 0),
+          total: String(item.total),
+        })),
       };
 
       await createInvoice(payload);

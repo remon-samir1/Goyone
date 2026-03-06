@@ -136,7 +136,7 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
     <div
       className={cn(
         "fixed inset-0 z-[100] flex items-center justify-center p-4 transition-opacity duration-300 ease-in-out",
-        isAnimating ? "opacity-100" : "opacity-0"
+        isAnimating ? "opacity-100" : "opacity-0",
       )}
     >
       <div
@@ -147,7 +147,7 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
       <div
         className={cn(
           "relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-[500px] shadow-2xl transform transition-all duration-300 ease-out max-h-[90vh] overflow-y-auto",
-          isAnimating ? "scale-100 translate-y-0" : "scale-95 translate-y-4"
+          isAnimating ? "scale-100 translate-y-0" : "scale-95 translate-y-4",
         )}
       >
         {/* Header */}
@@ -251,7 +251,7 @@ const ColorPickerModal: React.FC<ColorPickerModalProps> = ({
                     "h-8 w-8 rounded-full transition-transform hover:scale-110 focus:outline-none flex items-center justify-center",
                     selectedColor.toUpperCase() === color.toUpperCase()
                       ? "ring-2 ring-primary ring-offset-2"
-                      : ""
+                      : "",
                   )}
                   style={{ backgroundColor: color }}
                   onClick={() => setSelectedColor(color)}

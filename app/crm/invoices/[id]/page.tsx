@@ -31,7 +31,8 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [invoice, setInvoice] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
+  const [searchQuery, setSearchQuery] = useState("");
+  console.log(invoice);
   useEffect(() => {
     fetchInvoiceData();
   }, [id]);
@@ -81,11 +82,46 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
       </div>
     );
 
-  // Mock items and logs as they are not present in the example response
-  // In a real scenario, these would ideally come from the API as relations
-  const items = invoice.items || [];
-  const logs = invoice.logs || [];
-  const payments = invoice.payments || [];
+  // Handle potential nesting and ensure we have the invoice object
+  const inv =
+    invoice?.data && typeof invoice.data === "object"
+      ? invoice.data
+      : invoice?.id
+        ? invoice
+        : null;
+
+  if (!inv && !loading) return null;
+
+  const items = inv?.invoices_items || inv?.invoice_items || inv?.items || [];
+  const logs = inv?.invoice_logs || inv?.logs || [];
+  const payments = (inv?.invoice_metas || inv?.metas || []).filter(
+    (meta: any) =>
+      meta.key?.toLowerCase() === "payments" ||
+      meta.key?.toLowerCase() === "payment",
+  );
+
+  const currencySymbol =
+    inv?.currency?.iso || inv?.currency?.symbol || inv?.currency_symbol || "$";
+
+  const filteredLogs = logs.filter(
+    (log: any) =>
+      log.log?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.type?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  const filteredPayments = payments.filter(
+    (payment: any) =>
+      payment.value
+        ?.toString()
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      payment.amount
+        ?.toString()
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      payment.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      payment.note?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -148,7 +184,7 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 Invoice
               </p>
               <h3 className="text-2xl font-bold italic text-mainText">
-                {invoice.uuid}
+                {inv.uuid}
               </h3>
             </div>
           </div>
@@ -171,10 +207,10 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   Bill To
                 </p>
                 <h4 className="text-lg font-bold italic text-mainText">
-                  {invoice.name || "N/A"}
+                  {inv.name || "N/A"}
                 </h4>
                 <p className="text-sm text-slate-400 italic mt-1">
-                  {invoice.phone || "No phone provided"}
+                  {inv.phone || "No phone provided"}
                 </p>
               </div>
               <div>
@@ -214,7 +250,7 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   Issue Date
                 </p>
                 <p className="text-lg font-bold italic text-mainText">
-                  {formatDate(invoice.date)}
+                  {formatDate(inv.date)}
                 </p>
               </div>
               <div className="flex flex-col items-end">
@@ -222,7 +258,7 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   Due Date
                 </p>
                 <p className="text-lg font-bold italic text-mainText">
-                  {formatDate(invoice.due_date)}
+                  {formatDate(inv.due_date)}
                 </p>
               </div>
               <div className="flex flex-col items-end">
@@ -231,12 +267,12 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 </p>
                 <span
                   className={`px-4 py-1 rounded-full text-xs font-bold italic border ${
-                    invoice.status?.toLowerCase() === "paid"
+                    inv.status?.toLowerCase() === "paid"
                       ? "bg-green-50 text-green-500 border-green-100"
                       : "bg-orange-50 text-orange-500 border-orange-100"
                   }`}
                 >
-                  {invoice.status?.toUpperCase() || "PENDING"}
+                  {inv.status?.toUpperCase() || "PENDING"}
                 </span>
               </div>
               <div className="flex flex-col items-end pt-2">
@@ -244,7 +280,7 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   Type
                 </p>
                 <span className="px-4 py-1 rounded-full text-xs font-bold italic bg-blue-50 text-blue-500 border border-blue-100">
-                  {invoice.type?.toUpperCase() || "SALE"}
+                  {inv.type?.toUpperCase() || "SALE"}
                 </span>
               </div>
             </div>
@@ -289,25 +325,29 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                         className="hover:bg-slate-50 transition-colors"
                       >
                         <td className="px-6 py-4 text-sm font-bold italic text-mainText">
-                          {item.name}
+                          {item.item}
                         </td>
                         <td className="px-6 py-4 text-sm italic text-slate-400">
                           {item.description}
                         </td>
                         <td className="px-6 py-4 text-sm font-bold italic text-mainText">
-                          ${Number(item.price).toFixed(2)}
+                          {currencySymbol}
+                          {Number(item.price).toFixed(2)}
                         </td>
                         <td className="px-6 py-4 text-sm font-bold italic text-slate-400">
-                          ${Number(item.vat).toFixed(2)}
+                          {currencySymbol}
+                          {Number(item.vat).toFixed(2)}
                         </td>
                         <td className="px-6 py-4 text-sm font-bold italic text-slate-400">
-                          ${Number(item.discount).toFixed(2)}
+                          {currencySymbol}
+                          {Number(item.discount).toFixed(2)}
                         </td>
                         <td className="px-6 py-4 text-sm font-bold italic text-mainText">
                           {item.qty}
                         </td>
                         <td className="px-6 py-4 text-sm font-bold italic text-mainText">
-                          ${Number(item.total).toFixed(2)}
+                          {currencySymbol}
+                          {Number(item.total).toFixed(2)}
                         </td>
                       </tr>
                     ))}
@@ -317,17 +357,17 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             </div>
           )}
 
-          <div className="max-w-xs ml-auto space-y-4">
+          <div className="w-full ml-auto space-y-4 mx-4">
             <div className="flex justify-between items-center italic">
               <span className="text-sm font-medium text-slate-400">
                 Sub Total
               </span>
               <span className="text-sm font-bold text-mainText">
-                $
+                {currencySymbol}
                 {(
-                  Number(invoice.total) -
-                  Number(invoice.vat) +
-                  Number(invoice.discount)
+                  Number(inv.total) -
+                  Number(inv.vat) +
+                  Number(inv.discount)
                 ).toLocaleString()}
               </span>
             </div>
@@ -336,19 +376,22 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 Discount
               </span>
               <span className="text-sm font-bold text-mainText">
-                -${Number(invoice.discount).toLocaleString()}
+                -{currencySymbol}
+                {Number(inv.discount).toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center italic">
               <span className="text-sm font-medium text-slate-400">Tax</span>
               <span className="text-sm font-bold text-mainText">
-                ${Number(invoice.vat).toLocaleString()}
+                {currencySymbol}
+                {Number(inv.vat).toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center italic pt-4">
               <span className="text-sm font-medium text-slate-400">Paid</span>
               <span className="text-sm font-bold text-green-500">
-                ${Number(invoice.paid).toLocaleString()}
+                {currencySymbol}
+                {Number(inv.paid).toLocaleString()}
               </span>
             </div>
             <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 flex justify-between items-center italic">
@@ -356,10 +399,8 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 Balance Due
               </span>
               <span className="text-xl font-bold text-mainText">
-                $
-                {(
-                  Number(invoice.total) - Number(invoice.paid)
-                ).toLocaleString()}
+                {currencySymbol}
+                {(Number(inv.total) - Number(inv.paid)).toLocaleString()}
               </span>
             </div>
           </div>
@@ -388,6 +429,8 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
               <input
                 type="text"
                 placeholder={`Search ${activeTab}...`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="bg-transparent border-none outline-none text-sm w-full italic"
               />
             </div>
@@ -395,7 +438,7 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
           {activeTab === "logs" ? (
             <div className="overflow-x-auto">
-              {logs.length > 0 ? (
+              {filteredLogs.length > 0 ? (
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="bg-[#F8FAFC]">
@@ -411,7 +454,7 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {logs.map((log: any) => (
+                    {filteredLogs.map((log: any) => (
                       <tr
                         key={log.id}
                         className="hover:bg-slate-50/50 transition-colors"
@@ -433,13 +476,13 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 </table>
               ) : (
                 <div className="p-20 text-center italic text-slate-400">
-                  No logs found for this invoice.
+                  No logs found for this inv.
                 </div>
               )}
             </div>
           ) : (
             <div className="overflow-x-auto">
-              {payments.length > 0 ? (
+              {filteredPayments.length > 0 ? (
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="bg-[#F8FAFC]">
@@ -458,19 +501,21 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {payments.map((payment: any) => (
+                    {filteredPayments.map((payment: any) => (
                       <tr
                         key={payment.id}
                         className="hover:bg-slate-50/50 transition-colors"
                       >
                         <td className="px-8 py-5 text-sm font-bold italic text-mainText">
-                          {payment.amount}
+                          {payment.value || payment.amount || 0}
                         </td>
                         <td className="px-8 py-5 text-center text-sm italic font-bold text-mainText">
-                          {payment.description}
+                          {payment.description || payment.note || "N/A"}
                         </td>
                         <td className="px-8 py-5 text-center text-xs italic">
-                          {payment.attachments || 0}
+                          {Array.isArray(payment.attachments)
+                            ? payment.attachments.length
+                            : payment.attachments || 0}
                         </td>
                         <td className="px-8 py-5 text-right text-xs italic text-slate-400 font-bold">
                           {formatDate(payment.created_at)}
@@ -481,7 +526,7 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 </table>
               ) : (
                 <div className="p-20 text-center italic text-slate-400">
-                  No payments recorded for this invoice.
+                  No payments recorded for this inv.
                 </div>
               )}
             </div>
@@ -493,10 +538,10 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
         <DeleteInvoiceModal
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
-          invoiceId={invoice.id}
+          invoiceId={inv.id}
           onConfirm={async () => {
             try {
-              await deleteInvoice(invoice.id);
+              await deleteInvoice(inv.id);
               toast.success("Invoice deleted successfully");
               router.push("/crm/invoices");
             } catch (error) {

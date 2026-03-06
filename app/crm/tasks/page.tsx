@@ -167,7 +167,7 @@ const TasksPage = () => {
 
   return (
     <div className=" min-h-screen pb-10">
-      <Header Links={true} />
+  
       <div className="px-[3%] pt-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold italic text-mainText">Tasks</h1>
@@ -211,7 +211,7 @@ const TasksPage = () => {
               return (
                 <div
                   key={stage.id}
-                  className="min-w-[350px] flex flex-col h-full relative"
+                  className="min-w-[400px] flex-1 flex flex-col h-full relative"
                 >
                   {/* Selection Overlay/Click Handler */}
                   {isSelectMode && (

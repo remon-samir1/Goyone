@@ -142,7 +142,6 @@ const CalendarPage = () => {
         Array.isArray(colorsRes) ? colorsRes : (colorsRes as any)?.data || [],
       );
     } catch (error) {
-      console.error("Failed to fetch calendar data:", error);
       toast.error("Failed to fetch calendar data");
       setEvents([]);
       setColors([]);
@@ -312,9 +311,8 @@ const CalendarPage = () => {
   return (
     <>
       <Toaster position="top-right" />
-      <Header Links={true} />
 
-      <div className="pb-12 px-[3%] pt-8 min-h-screen bg-[#F8FAFC]">
+      <div className="pb-12  pt-8 min-h-screen bg-[#F8FAFC]">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-[1.5rem] font-bold text-mainText italic">
             Calendar
@@ -560,7 +558,7 @@ const CalendarPage = () => {
                       {generateTimeSlices().map((time, i) => (
                         <div
                           key={i}
-                          className="h-[100px] border-b border-[#F1F5F9] border-r border-[#F1F5F9] p-3 text-right"
+                          className="h-[100px] border-b border-r border-[#F1F5F9] p-3 text-right"
                         >
                           <span className="text-[11px] font-bold text-[#8A92A6] italic whitespace-nowrap">
                             {time}

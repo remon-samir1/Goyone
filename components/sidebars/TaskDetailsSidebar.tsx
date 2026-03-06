@@ -126,7 +126,6 @@ const TaskDetailsSidebar: React.FC<TaskDetailsSidebarProps> = ({
   const handleDelete = async () => {
     if (!taskId) return;
 
-
     setIsDeleting(true);
     try {
       await deleteTask(taskId);

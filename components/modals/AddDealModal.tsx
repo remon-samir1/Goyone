@@ -240,7 +240,7 @@ const AddDealModal: React.FC<AddDealModalProps> = ({
   };
 
   if (!shouldRender) return null;
-console.log(formData.company_account_id)
+  console.log(formData.company_account_id);
   return createPortal(
     <div
       className={cn(

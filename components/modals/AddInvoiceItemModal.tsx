@@ -162,11 +162,9 @@ const AddInvoiceItemModal: React.FC<AddInvoiceItemModalProps> = ({
                 Price
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-body opacity-50">
-                  EGP
-                </span>
                 <input
                   type="number"
+                  placeholder="EGP"
                   min="0"
                   step="0.01"
                   value={formData.price}
@@ -188,13 +186,11 @@ const AddInvoiceItemModal: React.FC<AddInvoiceItemModalProps> = ({
                 Discount
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-body opacity-50">
-                  EGP
-                </span>
                 <input
                   type="number"
                   min="0"
                   step="0.01"
+                  placeholder="EGP"
                   value={formData.discount}
                   onChange={(e) =>
                     setFormData({
@@ -211,12 +207,10 @@ const AddInvoiceItemModal: React.FC<AddInvoiceItemModalProps> = ({
                 VAT (Tax)
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-body opacity-50">
-                  EGP
-                </span>
                 <input
                   type="number"
                   min="0"
+                  placeholder="EGP"
                   step="0.01"
                   value={formData.vat}
                   onChange={(e) =>

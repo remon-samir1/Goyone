@@ -513,7 +513,6 @@ const EditLeadPage = () => {
 
       <div className="min-h-screen pb-20">
         {/* Custom Header for CRM Section */}
-        <Header Links={false} />
         <div className="px-8 mt-6">
           <h1 className="text-2xl font-bold text-mainText italic mb-1">
             Update lead

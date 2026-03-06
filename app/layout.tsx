@@ -62,7 +62,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={ginoraSans.className}>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children}
+          <Toaster position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

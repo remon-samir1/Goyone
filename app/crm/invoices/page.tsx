@@ -122,12 +122,12 @@ const InvoicesPage = () => {
         );
 
         // Extract totals for scorecards
-        if (response.total_invoices !== undefined) {
+        if (response?.total_invoices !== undefined) {
           setInvoiceTotals({
-            total_invoices: String(response.total_invoices),
-            total_sales: String(response.total_sales || "0"),
-            total_paid_money: String(response.total_paid_money || "0"),
-            total_due: String(response.total_due || "0"),
+            total_invoices: String(response?.total_invoices || "0"),
+            total_sales: String(response?.total_sales || "0"),
+            total_paid_money: String(response?.total_paid_money || "0"),
+            total_due: String(response?.total_due || "0"),
           });
         }
       } else {
@@ -315,42 +315,60 @@ const InvoicesPage = () => {
   const columns = allColumns.filter((col) => visibleColumns.includes(col.key));
 
   return (
-    <div className="min-h-screen bg-[#F6F8FC]">
-      <Toaster position="top-right" />
-      <Header Links={true} />
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight italic text-mainText">
+            Invoices
+          </h1>
+          <p className="text-placeholder mt-1 font-medium">
+            Manage your billing and financial records
+          </p>
+        </div>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Link
+            href="/crm/invoices/create"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-md border border-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all font-semibold"
+          >
+            <Plus className="w-4 h-4" /> <span>New Invoice</span>
+          </Link>
+        </div>
+      </div>
 
-      <div className="px-[3%] py-8">
-        <div className="flex justify-between gap-3 items-center mb-8">
-          <h1 className="text-2xl font-bold italic text-mainText">Invoices</h1>
-          <div className="flex items-center gap-4 w-3/4">
-            <div className="flex-1 flex items-center bg-white border border-[#E6E8EC] rounded-full px-5 py-2.5 gap-3 ">
-              <Search className="w-5 h-5 text-[#9CA3AF]" />
+      <InvoiceScorecards totals={invoiceTotals} />
+
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-stroke/20">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex items-center gap-4 flex-1 max-w-2xl">
+            <div className="flex items-center border border-stroke/30 p-2.5 bg-background/30 gap-3 rounded-lg flex-1 focus-within:border-primary/50 focus-within:bg-white transition-all group">
+              <Search className="text-placeholder w-4 h-4 group-focus-within:text-primary transition-colors" />
               <input
                 type="text"
-                placeholder="Search Invoices.."
-                className="bg-transparent border-none outline-none text-sm w-full italic text-[#111827] placeholder-[#9CA3AF]"
+                className="flex-1 border-none outline-none text-mainText bg-transparent text-sm font-medium placeholder:text-placeholder"
+                placeholder="Search by ID or account..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button
-              onClick={() => setIsFilterSidebarOpen(true)}
-              className="bg-[#8CE553] text-white px-8 py-2.5 rounded-full flex items-center gap-2 font-bold italic shadow-lg hover:opacity-90 transition-all active:scale-95 whitespace-nowrap"
-            >
-              <ListFilter className="w-5 h-5" />
-              Filters
-            </button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="outline-none">
-                  <HiViewColumns className="text-3xl text-slate-400 cursor-pointer hover:text-primary transition-colors" />
+                <button className="flex items-center justify-center w-11 h-11 rounded-lg border border-stroke/30 hover:bg-gray-50 transition-all group">
+                  <HiViewColumns className="text-placeholder text-xl group-hover:text-mainText" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent
+                align="end"
+                className="w-52 p-2 bg-white rounded-xl shadow-2xl border border-stroke/20"
+              >
+                <div className="px-2 py-1.5 text-xs font-bold text-placeholder uppercase tracking-wider">
+                  Visible Columns
+                </div>
                 {allColumns.map((col) => (
                   <DropdownMenuCheckboxItem
                     key={col.key}
                     checked={visibleColumns.includes(col.key)}
+                    className="capitalize text-sm font-medium rounded-lg py-2 cursor-pointer"
                     onCheckedChange={(checked) => {
                       if (checked) {
                         setVisibleColumns((prev) => [...prev, col.key]);
@@ -366,51 +384,52 @@ const InvoicesPage = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <button className="border border-primary hidden text-primary  items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm italic shadow-sm">
-              <Settings />
-              Settings
-            </button>
-            <Link
-              href="/crm/invoices/create"
-              className="bg-primary text-white px-6 py-2.5 rounded-lg flex items-center gap-2 font-bold italic shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsFilterSidebarOpen(true)}
+              className="flex items-center gap-2 px-5 py-2.5 border border-stroke/30 rounded-lg text-sm font-bold text-mainText hover:bg-gray-50 transition-all shadow-sm"
             >
-              <Plus className="w-5 h-5" />
-              New Invoices
-            </Link>
+              <ListFilter className="w-4 h-4 text-placeholder" />
+              Filters
+            </button>
           </div>
         </div>
-
-        <InvoiceScorecards totals={invoiceTotals} />
-
-        <div className="relative mb-4"></div>
-
-        <Table
-          data={invoices}
-          columns={columns}
-          idKey="id"
-          loading={loading}
-          onRowSelect={(ids) => setSelectedIds(ids)}
-          bulkActions={() => (
-            <button
-              onClick={handleBulkDelete}
-              className="bg-red-500 text-white px-4 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-red-600 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete Selected
-            </button>
-          )}
-          pagination={{
-            currentPage: currentPage,
-            totalResults: totalResults,
-            onPageChange: (p) => setCurrentPage(p),
-          }}
-        />
-
-        <div className="mt-4 text-[10px] text-slate-400 italic">
-          Showing {invoices.length > 0 ? (currentPage - 1) * 10 + 1 : 0} to{" "}
-          {Math.min(currentPage * 10, totalResults)} of {totalResults} results
-        </div>
       </div>
+
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold text-placeholder">
+          Showing{" "}
+          <span className="text-mainText">
+            {invoices.length > 0 ? (currentPage - 1) * 10 + 1 : 0}-
+            {Math.min(currentPage * 10, totalResults)}
+          </span>{" "}
+          of <span className="text-mainText">{totalResults}</span> results
+        </p>
+      </div>
+
+      <Table
+        data={invoices}
+        columns={columns}
+        idKey="id"
+        loading={loading}
+        onRowSelect={(ids) => setSelectedIds(ids)}
+        bulkActions={() => (
+          <button
+            onClick={handleBulkDelete}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all text-xs font-bold shadow-lg shadow-red-500/20"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Delete {selectedIds.length} Selected</span>
+          </button>
+        )}
+        pagination={{
+          currentPage: currentPage,
+          totalResults: totalResults,
+          onPageChange: (p) => setCurrentPage(p),
+        }}
+      />
 
       {isDeleteModalOpen && selectedInvoice && (
         <DeleteInvoiceModal

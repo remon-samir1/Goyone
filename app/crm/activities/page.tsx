@@ -192,33 +192,8 @@ const Page = () => {
   };
 
   return (
-    <div className="pb-14 px-[3%]">
+    <div className="pb-14 ">
       {/* Custom Header Extension - Mark all as read and Search */}
-      <div className="z-10 justify-between flex items-center gap-4">
-        <div className="flex items-center gap-1">
-          <Logo />
-          <ChevronsRight className="text-[#8CE553] w-[18px] h-[18px]" />
-          <p className="text-primary text-sm font-semibold">CRM</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2  bg-white px-4 py-2 rounded-full border border-stroke  text-primary hover:text-primary/80 transition-colors">
-            <CheckCheck className="w-4 h-4" />
-            <span className="text-sm font-medium italic ">
-              Mark all as read
-            </span>
-          </button>
-          <div className="flex items-center gap-2 px-4 py-2 bg-white border border-stroke rounded-3xl w-[250px]">
-            <Search className="text-placeholder w-4 h-4" />
-            <input
-              type="text"
-              className="flex-1 border-none outline-none text-placeholder text-sm"
-              placeholder="Search notifications..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
 
       <div className="mt-7">
         {/* Page Header */}

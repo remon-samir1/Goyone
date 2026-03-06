@@ -51,11 +51,38 @@ export interface LeadFormData {
   is_active?: boolean;
   social_media?: SocialMedia[];
   activities?: {
-    calls: any[];
-    mails: any[];
-    meetings: any[];
-    tasks: any[];
+    calls: CallActivity[];
+    mails: MailActivity[];
+    meetings: MeetingActivity[];
+    tasks: TaskActivity[];
   };
+}
+
+export interface CallActivity {
+  id: number;
+  subject: string;
+  start_time: string;
+  status: string;
+}
+
+export interface MailActivity {
+  id: number;
+  subject: string;
+  created_at: string;
+}
+
+export interface MeetingActivity {
+  id: number;
+  title: string;
+  start_at: string;
+  status: string;
+}
+
+export interface TaskActivity {
+  id: number;
+  title: string;
+  started_at: string;
+  status?: string;
 }
 
 export interface Feedback {

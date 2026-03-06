@@ -45,6 +45,7 @@ import ChangeOwnerModal from "@/components/modals/ChangeOwnerModal";
 import { deleteLead, getLead, updateLead } from "@/lib/api";
 import { toast, Toaster } from "react-hot-toast";
 import { LeadFormData } from "@/types/leadTypes";
+import CreativeFilter from "@/components/crm/CreativeFilter";
 
 // Define your data type
 interface LeadData {
@@ -625,8 +626,6 @@ const CompanyAccountsPage = () => {
     ids: string[],
     clearSelection: () => void,
   ) => {
-  
-
     const toastId = toast.loading(`Deleting ${ids.length} accounts...`);
     try {
       await Promise.all(ids.map((id) => deleteLead(id)));
@@ -656,8 +655,7 @@ const CompanyAccountsPage = () => {
           },
         }}
       />
-      <Header Links={true} />
-      <div className="pb-12 px-[3%]">
+      <div className="space-y-8">
         <div className="mt-7">
           <ExportModal
             isOpen={isExportModalOpen}
@@ -684,107 +682,85 @@ const CompanyAccountsPage = () => {
             leadName={leadToDelete?.fullName || ""}
             isLoading={isDeleting}
           />
-          <div className="flex items-center justify-between">
-            <h3 className="text-mainText text-[1.5rem] font-bold italic">
-              Company Accounts
-            </h3>
-            <div className="flex mt-5 w-[40%] items-center gap-3">
-              <div className="flex items-center border border-stroke p-3 bg-white gap-2 rounded-3xl flex-1">
-                <Search className="text-placeholder w-[18px] h-[18px]" />
+          {/* Removed title and search row as requested */}
+          {/* Action Bar */}
+          <div className="bg-white flex flex-col md:flex-row md:items-center gap-6 p-6 rounded-xl shadow-sm border border-stroke/20">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 flex-1">
+              <CreativeFilter
+                total={totalResults}
+                communicated={communicationed}
+                notCommunicated={notcommunicationed}
+                currentFilter={filters.communicationed}
+                onFilterChange={(val) =>
+                  setFilters({ ...filters, communicationed: val })
+                }
+              />
+
+              <div className="flex items-center border border-stroke/50 px-4 py-3 bg-background gap-3 rounded-md w-full sm:w-[320px] transition-all focus-within:border-primary group">
+                <Search className="text-placeholder w-4 h-4 group-focus-within:text-primary" />
                 <input
                   type="text"
-                  className="flex-1 border-none outline-none text-placeholder h-full"
-                  placeholder="Serach"
+                  className="flex-1 border-none outline-none text-mainText h-full text-base bg-transparent placeholder:text-placeholder"
+                  placeholder="Search accounts..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <button
-                onClick={() => setIsFiltersModalOpen(true)}
-                className="flex items-center text-white rounded-3xl bg-[#8CE553] py-2 px-5  gap-2 bg"
-              >
-                <ListFilter className="text-white w-[1.5rem] h-[1.5rem] font-semibold" />
-                Filters
-              </button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="outline-none">
-                    <HiViewColumns className="text-body text-[2rem] cursor-pointer" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[200px] p-2">
-                  {columns.map((column) => (
-                    <DropdownMenuCheckboxItem
-                      key={column.key}
-                      className="capitalize text-body"
-                      checked={visibleColumns.has(column.key)}
-                      onCheckedChange={() => toggleColumnVisibility(column.key)}
-                    >
-                      {column.label}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <button
+                  onClick={() => setIsFiltersModalOpen(true)}
+                  className="flex-1 sm:flex-none flex items-center justify-center text-body rounded-md border border-stroke/50 p-3 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all"
+                  title="Filters"
+                >
+                  <ListFilter className="w-5 h-5 font-semibold" />
+                </button>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex-1 sm:flex-none flex items-center justify-center text-body rounded-md border border-stroke/50 p-3 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all outline-none">
+                      <HiViewColumns className="text-xl" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[200px] p-2">
+                    {columns.map((column) => (
+                      <DropdownMenuCheckboxItem
+                        key={column.key}
+                        className="capitalize text-body"
+                        checked={visibleColumns.has(column.key)}
+                        onCheckedChange={() =>
+                          toggleColumnVisibility(column.key)
+                        }
+                      >
+                        {column.label}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
-          </div>
-          <div className="mt-7 bg-white flex items-center rounded py-3 px-4 justify-between">
-            <div className="flex items-center gap-2">
+
+            <div className="flex items-center gap-3 w-full md:w-auto">
               <button
-                onClick={() => setFilters({ ...filters, communicationed: "" })}
-                className={`text-mainText italic text-base font-bold flex items-center gap-2 p-3 rounded transition-colors ${filters.communicationed === "" ? "bg-background/10" : "hover:bg-background/5"}`}
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 border rounded-md border-primary text-primary hover:bg-primary/5 transition-all font-semibold"
+                onClick={() => setIsImportModalOpen(true)}
               >
-                All Accounts{" "}
-                <span className="text-white bg-primary p-1 rounded-full text-xs min-w-[20px] text-center">
-                  {totalResults}
-                </span>
+                <Download className="w-4 h-4" />
+                <span>Import</span>
               </button>
               <button
-                onClick={() =>
-                  setFilters({ ...filters, communicationed: true })
-                }
-                className={`text-mainText italic text-base font-bold flex items-center gap-2 p-3 rounded transition-colors ${filters.communicationed === true ? "bg-background/10" : "hover:bg-background/5"}`}
-              >
-                Communicationed{" "}
-                <span className="text-white bg-[#8CE553] p-1 rounded-full text-xs min-w-[20px] text-center">
-                  {communicationed}
-                </span>
-              </button>
-              <button
-                onClick={() =>
-                  setFilters({ ...filters, communicationed: false })
-                }
-                className={`text-mainText italic text-base font-bold flex items-center gap-2 p-3 rounded transition-colors ${filters.communicationed === false ? "bg-background/10" : "hover:bg-background/5"}`}
-              >
-                Not Communicationed{" "}
-                <span className="text-white bg-[#EDDA2E] p-1 rounded-full text-xs min-w-[20px] text-center">
-                  {notcommunicationed}
-                </span>
-              </button>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                disabled
-                className="flex items-center gap-2 px-4 py-3 border rounded-lg border-primary hover:bg-gray-50 transition-colors"
-                onClick={() => setIsImportModalOpen(true)} // Open ImportModal
-              >
-                <Download className="text-primary w-[1.3rem] h-[1.3rem]" />
-                <span className="text-primary text-sm font-bold ">Import</span>
-              </button>
-              <button
-                className="flex items-center gap-2 px-4 py-3 border bg-primary rounded-lg border-primary hover:bg-primary/90 transition-colors"
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-md border border-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all font-semibold"
                 onClick={() => setIsExportModalOpen(true)}
               >
-                <Upload className="text-white w-[1.3rem] h-[1.3rem] " />
-                <span className="text-white text-sm font-bold ">Export</span>
+                <Upload className="w-4 h-4" />
+                <span>Export</span>
               </button>
               <Link
                 href="/crm/addLead"
-                className="flex items-center gap-2 px-4 py-3 border bg-primary rounded-lg border-primary hover:bg-primary/90 transition-colors"
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-md border border-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all font-semibold"
               >
-                <Plus className="text-white w-[1.3rem] h-[1.3rem]" />
-                <span className="text-white block text-sm font-bold">
-                  Add new lead
-                </span>
+                <Plus className="w-5 h-5" />
+                <span>Add New</span>
               </Link>
             </div>
           </div>
