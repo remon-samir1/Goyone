@@ -183,7 +183,8 @@ const EditInvoicePage = ({ params }: { params: Promise<{ id: string }> }) => {
         const fromUser = usersData.find(
           (u) => String(u.id) === String(inv.user_id),
         );
-        if (fromUser) setFromSearchQuery(fromUser.name || fromUser.full_name);
+        if (fromUser)
+          setFromSearchQuery(fromUser.name || fromUser.full_name || "");
 
         setForSearchQuery(inv.name || "");
       }
@@ -214,7 +215,10 @@ const EditInvoicePage = ({ params }: { params: Promise<{ id: string }> }) => {
       let data: any[] = [];
       if (type === "Deals") {
         const response = await getDeals({ search: query });
-        data = response.data;
+        const responseData = response.data;
+        data = Array.isArray(responseData)
+          ? responseData
+          : responseData?.data || [];
       } else if (type === "Individual") {
         data = await getAllLeads(query, "contacts");
       } else if (type === "Company") {
@@ -500,7 +504,9 @@ const EditInvoicePage = ({ params }: { params: Promise<{ id: string }> }) => {
                                   from_id: String(item.id),
                                   user_id: String(item.id),
                                 });
-                                setFromSearchQuery(item.name || item.full_name);
+                                setFromSearchQuery(
+                                  item.name || item.full_name || "",
+                                );
                                 setIsFromDropdownOpen(false);
                               }}
                             >

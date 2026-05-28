@@ -15,7 +15,31 @@ const api = axios.create({
 export interface BaseEntity {
   id: number | string;
   name?: string;
+  full_name?: string;
+  company_name?: string;
+  uuid?: string;
   title?: string;
+  [key: string]: any;
+}
+
+export interface TaskStage extends BaseEntity {
+  color?: string;
+  order?: number;
+}
+
+export interface Task extends BaseEntity {
+  task_stage_id: number | string;
+  due_date?: string;
+  priority?: string;
+  description?: string;
+}
+
+export interface PaginatedData<T> {
+  data: T[];
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
   [key: string]: any;
 }
 
@@ -29,6 +53,8 @@ export interface ApiResponse<T> {
   all_count?: number;
   communicationed_count?: number;
   not_communicationed_count?: number;
+  message?: string;
+  status?: string | number;
 }
 
 export const createLead = async (data: LeadFormData): Promise<any> => {
@@ -179,7 +205,7 @@ export const changeOwner = async (
   return response.data;
 };
 
-export const getTaskStages = async (): Promise<BaseEntity[]> => {
+export const getTaskStages = async (): Promise<TaskStage[]> => {
   const response = await api.get("/task_stages");
   return response.data.data || response.data;
 };
@@ -210,7 +236,7 @@ export const deleteTaskStage = async (id: string | number): Promise<any> => {
   return response.data;
 };
 
-export const getTasks = async (): Promise<BaseEntity[]> => {
+export const getTasks = async (): Promise<Task[]> => {
   const response = await api.get("/tasks");
   return response.data.data || response.data;
 };
@@ -557,7 +583,7 @@ export const deleteDealStage = async (id: string | number): Promise<any> => {
 export const getDeals = async (params?: {
   page?: number;
   search?: string;
-}): Promise<ApiResponse<BaseEntity[]>> => {
+}): Promise<ApiResponse<PaginatedData<BaseEntity> | BaseEntity[]>> => {
   const response = await api.get("/deals", { params });
   return response.data;
 };
@@ -622,7 +648,7 @@ export const getInvoices = async (params?: {
   with_trashed?: boolean | number;
   user_id?: number | string;
   per_page?: number;
-}): Promise<ApiResponse<BaseEntity[]>> => {
+}): Promise<ApiResponse<PaginatedData<BaseEntity> | BaseEntity[]>> => {
   const response = await api.get("/invoices", { params });
   return response.data;
 };

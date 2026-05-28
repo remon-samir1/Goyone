@@ -113,8 +113,11 @@ const InvoicesPage = () => {
       if (response) {
         // Based on the API screenshot, the structure is { total_invoices, ..., data: { data: [...] } }
         // or sometimes simplified. Let's handle the structure from the screenshot.
-        const data = (response.data as any)?.data || response.data || [];
-        setInvoices(Array.isArray(data) ? data : []);
+        const responseData = response.data;
+        const data = (
+          Array.isArray(responseData) ? responseData : responseData?.data || []
+        ) as InvoiceData[];
+        setInvoices(data);
         setTotalResults(
           (response.data as any)?.total ||
             response.total ||

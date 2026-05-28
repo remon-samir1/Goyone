@@ -124,7 +124,11 @@ const CreateInvoicePage = () => {
       setCurrencies(currenciesData);
 
       // Handle UUID automation
-      const invoiceList = invoicesResponse?.data || [];
+      const responseData = invoicesResponse?.data;
+      const invoiceList = Array.isArray(responseData)
+        ? responseData
+        : responseData?.data || [];
+
       if (invoiceList.length > 0) {
         const lastInvoice = invoiceList[0];
         const nextUuid = generateNextUuid(lastInvoice.uuid || null);
@@ -148,7 +152,7 @@ const CreateInvoicePage = () => {
           from_id: String(defaultUser.id),
           user_id: String(defaultUser.id),
         }));
-        setFromSearchQuery(defaultUser.name || defaultUser.full_name);
+        setFromSearchQuery(defaultUser.name || defaultUser.full_name || "");
       }
 
       // Initial fetch for the default for_type (Deal)
@@ -180,7 +184,10 @@ const CreateInvoicePage = () => {
       let data: any[] = [];
       if (type === "Deals") {
         const response = await getDeals({ search: query });
-        data = response.data || [];
+        const responseData = response.data;
+        data = Array.isArray(responseData)
+          ? responseData
+          : responseData?.data || [];
       } else if (type === "Individual") {
         data = await getAllLeads(query, "contacts");
       } else if (type === "Company") {
